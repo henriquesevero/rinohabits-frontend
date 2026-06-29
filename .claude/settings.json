@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(go version *)",
+      "Bash(npm --version)",
+      "Bash(docker --version)",
+      "Bash(docker compose *)",
+      "Bash(echo \"PID: $!\")",
+      "Bash(lsof -nP -iTCP:8080 -sTCP:LISTEN)",
+      "Bash(PORT=8090 nohup go run ./cmd/api)",
+      "Bash(curl -s -i http://localhost:8090/health)",
+      "Bash(kill 61118)",
+      "Bash(npm create *)",
+      "Bash(npm view *)",
+      "Bash(kill 67948)",
+      "Bash(npx --yes chromium-cli --help)",
+      "Bash(command -v chromium-cli)",
+      "Bash(find / -maxdepth 4 -iname \"*chromium-cli*\")",
+      "Bash(find / -maxdepth 6 -iname \"*chromium*\")",
+      "Bash(npm list *)",
+      "Bash(node shot.mjs)",
+      "Bash(lsof -nP -iTCP:8090 -sTCP:LISTEN)",
+      "Bash(kill 61123)",
+      "Bash(curl -s -i -X POST http://localhost:8090/auth/register -H \"Content-Type: application/json\" -d '{\"name\":\"Henrique Severo\",\"email\":\"henrique@example.com\",\"password\":\"super-secret-123\",\"timezone\":\"America/Sao_Paulo\"}')",
+      "Bash(lsof -nP -iTCP:5174 -sTCP:LISTEN)",
+      "Bash(curl -sf http://localhost:5173)",
+      "Bash(curl -sf http://localhost:8090/health)",
+      "Bash(lsof -nP -iTCP:5173 -sTCP:LISTEN)",
+      "Bash(lsof -nP -iTCP:5180 -sTCP:LISTEN)",
+      "Bash(sed -i '' 's/5173/5180/' shot.mjs)",
+      "Bash(sed -i '' 's/5173/5180/' shot-debug.mjs)",
+      "Bash(node shot-debug.mjs)",
+      "Bash(curl -sf http://localhost:5180)",
+      "Bash(date -j -f \"%Y-%m-%d\" \"2026-06-29\" \"+%A\")",
+      "Bash(node shot-dashboard.mjs)"
+    ]
+  }
+}
