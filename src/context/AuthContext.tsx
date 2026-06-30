@@ -10,6 +10,7 @@ interface AuthContextValue {
   login: (credentials: LoginCredentials) => Promise<void>
   register: (payload: RegisterPayload) => Promise<void>
   logout: () => void
+  refreshUser: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -17,6 +18,11 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+
+  const logout = useCallback(() => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY)
+    setUser(null)
+  }, [])
 
   useEffect(() => {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY)
@@ -28,9 +34,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     authService
       .me()
       .then(setUser)
-      .catch(() => localStorage.removeItem(TOKEN_STORAGE_KEY))
+      .catch(() => logout())
       .finally(() => setIsLoading(false))
-  }, [])
+  }, [logout])
+
+  // Listen for 401s emitted by the apiClient interceptor
+  useEffect(() => {
+    window.addEventListener('auth:logout', logout)
+    return () => window.removeEventListener('auth:logout', logout)
+  }, [logout])
 
   const login = useCallback(async (credentials: LoginCredentials) => {
     const { token } = await authService.login(credentials)
@@ -44,14 +56,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(await authService.me())
   }, [])
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY)
-    setUser(null)
+  const refreshUser = useCallback(async () => {
+    const updated = await authService.me()
+    setUser(updated)
   }, [])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, isAuthenticated: user !== null, isLoading, login, register, logout }),
-    [user, isLoading, login, register, logout],
+    () => ({ user, isAuthenticated: user !== null, isLoading, login, register, logout, refreshUser }),
+    [user, isLoading, login, register, logout, refreshUser],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

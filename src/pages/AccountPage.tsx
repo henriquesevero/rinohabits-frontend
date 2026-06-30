@@ -8,7 +8,7 @@ import { useThemeContext } from '../context/ThemeContext'
 import { accountService } from '../features/profile/services/accountService'
 
 export function AccountPage() {
-  const { user, logout } = useAuthContext()
+  const { user, logout, refreshUser } = useAuthContext()
   const { theme, setTheme } = useThemeContext()
   const emailHash = user ? md5(user.email.trim().toLowerCase()) : ''
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=128`
@@ -54,7 +54,7 @@ export function AccountPage() {
       </div>
 
       {/* Alterar e-mail */}
-      <ChangeEmailForm currentEmail={user?.email ?? ''} />
+      <ChangeEmailForm currentEmail={user?.email ?? ''} onSuccess={refreshUser} />
 
       {/* Alterar senha */}
       <ChangePasswordForm />
@@ -73,7 +73,7 @@ export function AccountPage() {
   )
 }
 
-function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
+function ChangeEmailForm({ currentEmail, onSuccess }: { currentEmail: string; onSuccess: () => Promise<void> }) {
   const [isOpen, setIsOpen] = useState(false)
   const [newEmail, setNewEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -87,6 +87,7 @@ function ChangeEmailForm({ currentEmail }: { currentEmail: string }) {
     setIsSubmitting(true)
     try {
       await accountService.changeEmail(password, newEmail)
+      await onSuccess()
       setSuccess(true)
       setNewEmail('')
       setPassword('')
