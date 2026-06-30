@@ -17,7 +17,7 @@ interface TabBarProps {
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
     <div
-      className="flex shrink-0 items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50"
+      className="flex shrink-0 items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:border-white/10 dark:bg-black dark:backdrop-blur-none"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       {TABS.map(({ key, label, icon: Icon }) => {
