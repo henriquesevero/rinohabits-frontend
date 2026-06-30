@@ -13,6 +13,13 @@
     <meta name="apple-mobile-web-app-title" content="RinoHabits" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <title>RinoHabits</title>
+    <script>
+      (function () {
+        var stored = localStorage.getItem('rinohabits_theme')
+        var isDark = stored === 'dark' || (stored !== 'light' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+        document.documentElement.classList.toggle('dark', isDark)
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
