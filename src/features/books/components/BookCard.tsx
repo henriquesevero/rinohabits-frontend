@@ -42,6 +42,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
   const isDone = book.status === 'lido'
   const coverLetter = book.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(book.title)
+  const badge = STATUS_BADGE[book.status]
 
   return (
     <motion.div
@@ -97,7 +98,14 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
       <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{book.title}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{book.title}</p>
+              <span
+                className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badge.classes}`}
+              >
+                {badge.label}
+              </span>
+            </div>
             {book.author && <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>}
           </div>
           <button
@@ -199,6 +207,21 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
       </div>
     </motion.div>
   )
+}
+
+const STATUS_BADGE: Record<BookStatus, { label: string; classes: string }> = {
+  lido: {
+    label: 'Lido',
+    classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400',
+  },
+  lendo: {
+    label: 'Lendo',
+    classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400',
+  },
+  quero_ler: {
+    label: 'Pendente',
+    classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400',
+  },
 }
 
 function stringToColor(str: string): string {

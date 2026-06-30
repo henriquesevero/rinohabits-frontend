@@ -67,7 +67,7 @@ export function TodayHabitsGrid({ habits, onToggle }: TodayHabitsGridProps) {
               >
                 {habit.icon}
               </motion.span>
-              <span className="max-w-[4.5rem] truncate text-[11px] text-black/60 dark:text-white/60">
+              <span className="line-clamp-2 max-w-[5rem] text-center text-[11px] leading-tight break-words text-black/60 dark:text-white/60">
                 {habit.name}
               </span>
             </button>
