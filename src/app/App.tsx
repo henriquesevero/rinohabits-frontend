@@ -1,3 +1,4 @@
+import { SafeAreaFiller } from '../components/layout/SafeAreaFiller'
 import { Wallpaper } from '../components/layout/Wallpaper'
 import { AuthProvider } from '../context/AuthContext'
 import { ThemeProvider } from '../context/ThemeContext'
@@ -10,6 +11,7 @@ export function App() {
         <Wallpaper>
           <AppContent />
         </Wallpaper>
+        <SafeAreaFiller />
       </AuthProvider>
     </ThemeProvider>
   )
