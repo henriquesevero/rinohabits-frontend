@@ -15,7 +15,7 @@ interface TabBarProps {
 
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
-    <div className="flex items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]">
+    <div className="sticky bottom-0 flex items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] md:static">
       {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = active === key
 
