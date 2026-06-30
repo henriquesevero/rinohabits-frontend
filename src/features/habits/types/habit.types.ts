@@ -25,3 +25,11 @@ export interface CreateHabitPayload {
   activeWeekdays: number[]
   monthlyTarget: number | null
 }
+
+export interface UpdateHabitPayload {
+  name: string
+  icon: string
+  color: string
+  activeWeekdays: number[]
+  monthlyTarget: number | null
+}

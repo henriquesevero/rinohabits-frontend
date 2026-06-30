@@ -1,14 +1,15 @@
 import { motion } from 'framer-motion'
-import { Check, Trash2 } from 'lucide-react'
+import { Check, Pencil, Trash2 } from 'lucide-react'
 import type { TodayHabit } from '../types/habit.types'
 
 interface HabitCardProps {
   item: TodayHabit
   onToggle: (habitId: string) => void
+  onEdit: (habitId: string) => void
   onDelete: (habitId: string) => void
 }
 
-export function HabitCard({ item, onToggle, onDelete }: HabitCardProps) {
+export function HabitCard({ item, onToggle, onEdit, onDelete }: HabitCardProps) {
   const { habit, isCompleted } = item
 
   return (
@@ -40,6 +41,15 @@ export function HabitCard({ item, onToggle, onDelete }: HabitCardProps) {
           {isCompleted && <Check className="h-3.5 w-3.5 text-white" />}
         </motion.span>
       </motion.button>
+
+      <button
+        type="button"
+        onClick={() => onEdit(habit.id)}
+        title="Editar hábito"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/25 transition-colors hover:bg-indigo-500/10 hover:text-indigo-500 active:bg-indigo-500/10 active:text-indigo-500 dark:text-white/25"
+      >
+        <Pencil className="h-3.5 w-3.5" />
+      </button>
 
       <button
         type="button"
