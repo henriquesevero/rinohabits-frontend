@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { HabitsCompleteConfetti } from '../components/ui/HabitsCompleteConfetti'
 import { useAuthContext } from '../context/AuthContext'
+import { EditHabitModal } from '../features/habits/components/EditHabitModal'
 import { HabitForm } from '../features/habits/components/HabitForm'
 import { HabitList } from '../features/habits/components/HabitList'
 import { TodayHabitsGrid } from '../features/habits/components/TodayHabitsGrid'
@@ -22,10 +23,11 @@ function markCelebratedToday(date: string): void {
 
 export function HabitsPage() {
   const { user, logout } = useAuthContext()
-  const { dashboard, isLoading, error, toggleHabit, createHabit, deleteHabit } = useHabits()
+  const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
   const { summary } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
+  const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
 
@@ -44,6 +46,10 @@ export function HabitsPage() {
     await toggleHabit(habitId)
   }
 
+  function handleEditRequest(habitId: string) {
+    setHabitToEdit(habitId)
+  }
+
   function handleDeleteRequest(habitId: string) {
     setHabitToDelete(habitId)
   }
@@ -56,10 +62,13 @@ export function HabitsPage() {
   }
 
   const habitToDeleteName = dashboard?.habits.find((h) => h.habit.id === habitToDelete)?.habit.name
+  const editingHabit = dashboard?.habits.find((h) => h.habit.id === habitToEdit)?.habit ?? null
 
   return (
     <>
       <HabitsCompleteConfetti show={showConfetti} />
+
+      <EditHabitModal habit={editingHabit} onSave={updateHabit} onClose={() => setHabitToEdit(null)} />
 
       <ConfirmModal
         isOpen={habitToDelete !== null}
@@ -107,7 +116,12 @@ export function HabitsPage() {
         {isManaging && (
           <div className="flex flex-col gap-3">
             {dashboard && (
-              <HabitList habits={dashboard.habits} onToggle={handleToggle} onDelete={handleDeleteRequest} />
+              <HabitList
+                habits={dashboard.habits}
+                onToggle={handleToggle}
+                onEdit={handleEditRequest}
+                onDelete={handleDeleteRequest}
+              />
             )}
           </div>
         )}

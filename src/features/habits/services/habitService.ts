@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/apiClient'
-import type { CreateHabitPayload, Habit, TodayDashboard, TodayHabit } from '../types/habit.types'
+import type { CreateHabitPayload, Habit, TodayDashboard, TodayHabit, UpdateHabitPayload } from '../types/habit.types'
 
 interface HabitApiDto {
   id: string
@@ -44,6 +44,17 @@ export const habitService = {
 
   async create(payload: CreateHabitPayload): Promise<Habit> {
     const { data } = await apiClient.post<HabitApiDto>('/habits', {
+      name: payload.name,
+      icon: payload.icon,
+      color: payload.color,
+      active_weekdays: payload.activeWeekdays,
+      monthly_target: payload.monthlyTarget,
+    })
+    return mapHabit(data)
+  },
+
+  async update(habitId: string, payload: UpdateHabitPayload): Promise<Habit> {
+    const { data } = await apiClient.patch<HabitApiDto>(`/habits/${habitId}`, {
       name: payload.name,
       icon: payload.icon,
       color: payload.color,

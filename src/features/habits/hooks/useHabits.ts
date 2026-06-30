@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { habitService } from '../services/habitService'
-import type { CreateHabitPayload, TodayDashboard, TodayHabit } from '../types/habit.types'
+import type { CreateHabitPayload, TodayDashboard, TodayHabit, UpdateHabitPayload } from '../types/habit.types'
 
 function isRequiredToday(activeWeekdays: number[]): boolean {
   const day = new Date().getDay()
@@ -70,6 +70,14 @@ export function useHabits() {
     [refresh],
   )
 
+  const updateHabit = useCallback(
+    async (habitId: string, payload: UpdateHabitPayload) => {
+      await habitService.update(habitId, payload)
+      await refresh()
+    },
+    [refresh],
+  )
+
   const deleteHabit = useCallback(
     async (habitId: string) => {
       await habitService.remove(habitId)
@@ -78,7 +86,7 @@ export function useHabits() {
     [refresh],
   )
 
-  return { dashboard, isLoading, error, toggleHabit, createHabit, deleteHabit, refresh }
+  return { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, refresh }
 }
 
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {
