@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { BookCard } from '../features/books/components/BookCard'
+import { BookDetailModal } from '../features/books/components/BookDetailModal'
+import { BookShelfGrid } from '../features/books/components/BookShelfGrid'
 import { CreateBookForm } from '../features/books/components/CreateBookForm'
 import { useBooks } from '../features/books/hooks/useBooks'
 import type { Book, BookStatus } from '../features/books/types/book.types'
@@ -25,6 +27,7 @@ function sortForShelf(books: Book[]): Book[] {
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const {
     books,
     isLoading,
@@ -59,10 +62,12 @@ export function BooksPage() {
     if (bookToDelete) {
       await deleteBook(bookToDelete)
       setBookToDelete(null)
+      setSelectedBookId(null)
     }
   }
 
   const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
+  const selectedBook = books.find((b) => b.id === selectedBookId) ?? null
 
   async function handleRegisterReading(bookId: string, pages: number) {
     await registerReading(bookId, pages)
@@ -74,6 +79,15 @@ export function BooksPage() {
         show={justCompletedBook !== null}
         bookTitle={justCompletedBook?.title ?? null}
         onDismiss={clearJustCompleted}
+      />
+
+      <BookDetailModal
+        book={selectedBook}
+        onRegisterReading={handleRegisterReading}
+        onChangeStatus={changeStatus}
+        onCoverUpdated={updateCover}
+        onRequestDelete={handleDelete}
+        onClose={() => setSelectedBookId(null)}
       />
 
       <ConfirmModal
@@ -124,29 +138,39 @@ export function BooksPage() {
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
 
-      <div className="flex flex-col gap-3">
-        <AnimatePresence mode="popLayout">
-          {filtered.map((book) => (
-            <BookCard
-              key={book.id}
-              book={book}
-              onRegisterReading={handleRegisterReading}
-              onChangeStatus={changeStatus}
-              onDelete={handleDelete}
-              onCoverUpdated={updateCover}
-            />
-          ))}
-        </AnimatePresence>
+      {activeStatus === 'all' ? (
+        <>
+          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} />
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-center text-sm text-black/40 dark:text-white/40">
+              Sua estante está vazia. Adicione um livro para começar.
+            </p>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((book) => (
+              <BookCard
+                key={book.id}
+                book={book}
+                onRegisterReading={handleRegisterReading}
+                onChangeStatus={changeStatus}
+                onDelete={handleDelete}
+                onCoverUpdated={updateCover}
+              />
+            ))}
+          </AnimatePresence>
 
-        {!isLoading && filtered.length === 0 && (
-          <p className="text-center text-sm text-black/40 dark:text-white/40">
-            {activeStatus === 'all' && 'Sua estante está vazia. Adicione um livro para começar.'}
-            {activeStatus === 'lendo' && 'Nenhum livro sendo lido.'}
-            {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
-            {activeStatus === 'lido' && 'Nenhum livro finalizado ainda.'}
-          </p>
-        )}
-      </div>
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-center text-sm text-black/40 dark:text-white/40">
+              {activeStatus === 'lendo' && 'Nenhum livro sendo lido.'}
+              {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
+              {activeStatus === 'lido' && 'Nenhum livro finalizado ainda.'}
+            </p>
+          )}
+        </div>
+      )}
 
       <CreateBookForm onCreate={createBook} />
     </div>
