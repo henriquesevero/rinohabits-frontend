@@ -16,7 +16,7 @@ export function MacWindow({ title, children, footer }: MacWindowProps) {
         <span className="ml-2 text-sm font-medium text-black/60 dark:text-white/60">{title}</span>
       </div>
       <div
-        className="flex-1 overflow-y-auto p-4 md:p-6"
+        className="flex-1 overflow-y-auto p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] md:p-6 md:pt-6"
         style={footer ? { paddingBottom: 'calc(6rem + env(safe-area-inset-bottom, 0px))' } : undefined}
       >
         {children}
