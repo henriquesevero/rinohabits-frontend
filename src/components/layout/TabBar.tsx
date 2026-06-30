@@ -16,7 +16,7 @@ interface TabBarProps {
 
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 flex items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))] md:static md:z-auto">
+    <div className="flex shrink-0 items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]">
       {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = active === key
 
