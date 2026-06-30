@@ -66,7 +66,7 @@ export function CoursesPage() {
     <div className="flex h-full flex-col gap-4">
       <CourseDetailModal
         course={selectedCourse}
-        onRegisterStudy={registerStudy}
+        onRegisterStudy={async (id, hours) => { await registerStudy(id, hours) }}
         onChangeStatus={changeStatus}
         onCoverUpdated={updateCover}
         onRequestDelete={setCourseToDelete}
