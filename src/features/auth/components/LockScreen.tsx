@@ -1,10 +1,10 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, Loader2, Lock, Mail, User } from 'lucide-react'
+import { ArrowRight, KeyRound, Loader2, Lock, Mail, User } from 'lucide-react'
 import type { FormEvent } from 'react'
 import { useAuth } from '../hooks/useAuth'
 
 export function LockScreen() {
-  const { mode, setMode, name, setName, email, setEmail, password, setPassword, error, isSubmitting, submit } =
+  const { mode, setMode, name, setName, email, setEmail, password, setPassword, inviteCode, setInviteCode, error, isSubmitting, submit } =
     useAuth()
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -37,21 +37,33 @@ export function LockScreen() {
         <AnimatePresence initial={false}>
           {mode === 'register' && (
             <motion.div
-              key="name"
+              key="register-fields"
               initial={{ height: 0, opacity: 0 }}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden"
             >
-              <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-md dark:bg-black/30">
-                <User className="h-4 w-4 text-black/40 dark:text-white/40" />
-                <input
-                  value={name}
-                  onChange={(event) => setName(event.target.value)}
-                  placeholder="Nome"
-                  className="w-full bg-transparent text-sm text-black/80 outline-none placeholder:text-black/40 dark:text-white/80 dark:placeholder:text-white/40"
-                  required
-                />
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-md dark:bg-black/30">
+                  <User className="h-4 w-4 text-black/40 dark:text-white/40" />
+                  <input
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="Nome"
+                    className="w-full bg-transparent text-sm text-black/80 outline-none placeholder:text-black/40 dark:text-white/80 dark:placeholder:text-white/40"
+                    required
+                  />
+                </div>
+                <div className="flex items-center gap-2 rounded-xl border border-white/30 bg-white/40 px-4 py-2.5 backdrop-blur-md dark:bg-black/30">
+                  <KeyRound className="h-4 w-4 text-black/40 dark:text-white/40" />
+                  <input
+                    value={inviteCode}
+                    onChange={(event) => setInviteCode(event.target.value)}
+                    placeholder="Código de acesso"
+                    className="w-full bg-transparent text-sm text-black/80 outline-none placeholder:text-black/40 dark:text-white/80 dark:placeholder:text-white/40"
+                    required
+                  />
+                </div>
               </div>
             </motion.div>
           )}
