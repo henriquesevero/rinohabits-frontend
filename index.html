@@ -20,6 +20,26 @@
         document.documentElement.classList.toggle('dark', isDark)
       })()
     </script>
+    <script>
+      (function () {
+        // Safari ignora "user-scalable=no" na meta viewport (decisão deliberada da
+        // Apple por acessibilidade desde iOS 10). Esses listeners bloqueiam o gesto
+        // de pinça diretamente, que é a única forma que funciona lá. O duplo-toque
+        // já é coberto pelo "touch-action: manipulation" no CSS, sem risco de
+        // engolir toques rápidos legítimos em botões diferentes.
+        document.addEventListener('gesturestart', function (e) { e.preventDefault() }, { passive: false })
+        document.addEventListener('gesturechange', function (e) { e.preventDefault() }, { passive: false })
+        document.addEventListener('gestureend', function (e) { e.preventDefault() }, { passive: false })
+
+        document.addEventListener(
+          'touchmove',
+          function (e) {
+            if (e.touches.length > 1) e.preventDefault()
+          },
+          { passive: false },
+        )
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>
