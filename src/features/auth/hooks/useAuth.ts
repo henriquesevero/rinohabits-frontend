@@ -11,11 +11,18 @@ export function useAuth() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   async function submit() {
     setError(null)
+
+    if (mode === 'register' && inviteCode !== '1715') {
+      setError('Código de acesso inválido.')
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -41,6 +48,8 @@ export function useAuth() {
     setEmail,
     password,
     setPassword,
+    inviteCode,
+    setInviteCode,
     error,
     isSubmitting,
     submit,
