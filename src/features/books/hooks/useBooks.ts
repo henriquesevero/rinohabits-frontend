@@ -5,6 +5,7 @@ import type { Book, BookStatus, CreateBookPayload } from '../types/book.types'
 export function useBooks(statusFilter?: BookStatus) {
   const [books, setBooks] = useState<Book[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [justCompletedBook, setJustCompletedBook] = useState<Book | null>(null)
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
@@ -28,10 +29,19 @@ export function useBooks(statusFilter?: BookStatus) {
     [refresh],
   )
 
+  function detectCompletion(previous: Book | undefined, updated: Book) {
+    if (previous && previous.status !== 'lido' && updated.status === 'lido') {
+      setJustCompletedBook(updated)
+    }
+  }
+
   const registerReading = useCallback(
     async (bookId: string, pagesReadNow: number) => {
       const updated = await bookService.registerReading(bookId, pagesReadNow)
-      setBooks((current) => current.map((b) => (b.id === updated.id ? updated : b)))
+      setBooks((current) => {
+        detectCompletion(current.find((b) => b.id === bookId), updated)
+        return current.map((b) => (b.id === updated.id ? updated : b))
+      })
       return updated
     },
     [],
@@ -40,7 +50,10 @@ export function useBooks(statusFilter?: BookStatus) {
   const changeStatus = useCallback(
     async (bookId: string, status: BookStatus) => {
       const updated = await bookService.update(bookId, { status })
-      setBooks((current) => current.map((b) => (b.id === updated.id ? updated : b)))
+      setBooks((current) => {
+        detectCompletion(current.find((b) => b.id === bookId), updated)
+        return current.map((b) => (b.id === updated.id ? updated : b))
+      })
       await refresh()
     },
     [refresh],
@@ -58,5 +71,18 @@ export function useBooks(statusFilter?: BookStatus) {
     setBooks((current) => current.map((b) => (b.id === bookId ? { ...b, coverUrl } : b)))
   }, [])
 
-  return { books, isLoading, createBook, registerReading, changeStatus, deleteBook, updateCover, refresh }
+  const clearJustCompleted = useCallback(() => setJustCompletedBook(null), [])
+
+  return {
+    books,
+    isLoading,
+    createBook,
+    registerReading,
+    changeStatus,
+    deleteBook,
+    updateCover,
+    refresh,
+    justCompletedBook,
+    clearJustCompleted,
+  }
 }

@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { BookCard } from '../features/books/components/BookCard'
 import { CreateBookForm } from '../features/books/components/CreateBookForm'
@@ -15,7 +16,23 @@ const TABS: { status: BookStatus; label: string; emoji: string }[] = [
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<BookStatus>('lendo')
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
-  const { books, isLoading, createBook, registerReading, changeStatus, deleteBook, updateCover } = useBooks()
+  const {
+    books,
+    isLoading,
+    createBook,
+    registerReading,
+    changeStatus,
+    deleteBook,
+    updateCover,
+    justCompletedBook,
+    clearJustCompleted,
+  } = useBooks()
+
+  useEffect(() => {
+    if (!justCompletedBook) return
+    const timeout = setTimeout(clearJustCompleted, 5500)
+    return () => clearTimeout(timeout)
+  }, [justCompletedBook, clearJustCompleted])
 
   const filtered = books.filter((b) => b.status === activeStatus)
   const counts: Record<BookStatus, number> = {
@@ -43,6 +60,12 @@ export function BooksPage() {
 
   return (
     <div className="flex h-full flex-col gap-4">
+      <BookCompleteCelebration
+        show={justCompletedBook !== null}
+        bookTitle={justCompletedBook?.title ?? null}
+        onDismiss={clearJustCompleted}
+      />
+
       <ConfirmModal
         isOpen={bookToDelete !== null}
         title="Excluir livro"
