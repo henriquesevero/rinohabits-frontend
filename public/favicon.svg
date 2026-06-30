@@ -1,29 +1,59 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
   <defs>
+    <!-- Fundo: grafite premium com leve tom roxo/azul-escuro -->
     <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#9b5cff"/>
-      <stop offset="1" stop-color="#6a1fe0"/>
+      <stop offset="0" stop-color="#221b3f"/>
+      <stop offset="0.55" stop-color="#161226"/>
+      <stop offset="1" stop-color="#0a0913"/>
     </linearGradient>
-    <linearGradient id="bolt" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#f1e8ff"/>
+
+    <!-- Símbolo: verde neon vibrante (conclusão / dopamina / progresso) -->
+    <linearGradient id="neon" x1="140" y1="340" x2="380" y2="130" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3CFFB0"/>
+      <stop offset="1" stop-color="#00E08A"/>
     </linearGradient>
-    <radialGradient id="sheen" cx="30%" cy="20%" r="70%">
-      <stop offset="0" stop-color="#ffffff" stop-opacity="0.28"/>
+
+    <!-- Brilho sutil no canto superior esquerdo (toque glassmorphism) -->
+    <radialGradient id="sheen" cx="28%" cy="20%" r="65%">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
       <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
+
+    <!-- Brilho neon (glow) atrás do símbolo central -->
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="14" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
 
-  <rect width="512" height="512" rx="112" fill="url(#bg)"/>
-  <rect width="512" height="512" rx="112" fill="url(#sheen)"/>
-  <rect x="6" y="6" width="500" height="500" rx="106" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="6"/>
+  <!-- Squircle de fundo -->
+  <rect width="512" height="512" rx="124" fill="url(#bg)"/>
+  <rect width="512" height="512" rx="124" fill="url(#sheen)"/>
 
-  <path
-    d="M272 112 L184 288 L242 288 L228 400 L336 216 L274 216 Z"
-    fill="url(#bolt)"
-    stroke="#5b1fc7"
-    stroke-width="6"
-    stroke-linejoin="round"
-    stroke-opacity="0.18"
-  />
+  <!-- Anel interno sutil (acabamento premium) -->
+  <rect x="8" y="8" width="496" height="496" rx="118" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
+
+  <!-- Checkmark fundido com seta de crescimento, em verde neon, com glow -->
+  <g filter="url(#glow)">
+    <path
+      d="M152 272 L218 334 L376 148"
+      fill="none"
+      stroke="url(#neon)"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+    <!-- ponta da seta (reforça a leitura de "crescimento") -->
+    <path
+      d="M376 148 L330 160 M376 148 L364 196"
+      fill="none"
+      stroke="url(#neon)"
+      stroke-width="34"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </g>
 </svg>
