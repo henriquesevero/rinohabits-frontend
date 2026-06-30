@@ -2,23 +2,22 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-:root {
-  --app-h: 100svh; /* fallback before JS sets the real value */
-}
-
-html, body, #root {
+html, body {
   height: 100%;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
-body {
-  overflow: hidden; /* prevent body scroll — content scrolls inside MacWindow */
+/* position:fixed + inset:0 makes #root exactly the viewport dimensions —
+   no dvh bugs, no percentage chain issues, no JS measurements needed.
+   This is the pattern used by Twitter PWA, Instagram PWA, etc. */
+#root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
 }
 
-/* esconde a barra de rolagem em todo o app, mantendo a rolagem funcional,
-   pra parecer um app nativo em vez de uma página web */
 * {
   scrollbar-width: none;
   -ms-overflow-style: none;
