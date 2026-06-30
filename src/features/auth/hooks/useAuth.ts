@@ -19,10 +19,10 @@ export function useAuth() {
     setIsSubmitting(true)
 
     try {
+      const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
       if (mode === 'login') {
-        await login({ email, password })
+        await login({ email, password, timezone })
       } else {
-        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone
         await register({ name, email, password, timezone })
       }
     } catch (err) {

@@ -7,6 +7,7 @@ export interface AuthUser {
 export interface LoginCredentials {
   email: string
   password: string
+  timezone: string
 }
 
 export interface RegisterPayload {
