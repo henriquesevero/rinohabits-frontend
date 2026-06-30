@@ -7,10 +7,16 @@
       <stop offset="1" stop-color="#0a0913"/>
     </linearGradient>
 
-    <!-- Símbolo: verde neon vibrante (conclusão / dopamina / progresso) -->
-    <linearGradient id="neon" x1="140" y1="340" x2="380" y2="130" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#3CFFB0"/>
-      <stop offset="1" stop-color="#00E08A"/>
+    <!-- Chama externa: verde neon vibrante (conclusão / dopamina / progresso) -->
+    <linearGradient id="flameOuter" x1="256" y1="378" x2="256" y2="120" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#00E08A"/>
+      <stop offset="1" stop-color="#3CFFB0"/>
+    </linearGradient>
+
+    <!-- Núcleo interno da chama: tom mais claro, dá profundidade -->
+    <linearGradient id="flameInner" x1="256" y1="346" x2="256" y2="216" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#CFFFE9"/>
+      <stop offset="1" stop-color="#7CFFCB"/>
     </linearGradient>
 
     <!-- Brilho sutil no canto superior esquerdo (toque glassmorphism) -->
@@ -36,24 +42,27 @@
   <!-- Anel interno sutil (acabamento premium) -->
   <rect x="8" y="8" width="496" height="496" rx="118" fill="none" stroke="#ffffff" stroke-opacity="0.08" stroke-width="2"/>
 
-  <!-- Checkmark fundido com seta de crescimento, em verde neon, com glow -->
+  <!-- Chama: símbolo único, verde neon com núcleo claro, glow -->
   <g filter="url(#glow)">
     <path
-      d="M152 272 L218 334 L376 148"
-      fill="none"
-      stroke="url(#neon)"
-      stroke-width="34"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      d="M256 122
+         C214 176 174 220 174 286
+         C174 340 209 380 256 380
+         C303 380 338 340 338 286
+         C338 236 308 210 290 174
+         C287 208 268 222 266 194
+         C264 168 256 146 256 122 Z"
+      fill="url(#flameOuter)"
     />
-    <!-- ponta da seta (reforça a leitura de "crescimento") -->
     <path
-      d="M376 148 L330 160 M376 148 L364 196"
-      fill="none"
-      stroke="url(#neon)"
-      stroke-width="34"
-      stroke-linecap="round"
-      stroke-linejoin="round"
+      d="M256 224
+         C234 254 216 276 216 306
+         C216 332 233 350 256 350
+         C279 350 296 332 296 306
+         C296 282 280 266 270 246
+         C267 264 254 270 253 252
+         C252 238 256 232 256 224 Z"
+      fill="url(#flameInner)"
     />
   </g>
 </svg>
