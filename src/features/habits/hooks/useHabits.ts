@@ -43,7 +43,15 @@ export function useHabits() {
     [refresh],
   )
 
-  return { dashboard, isLoading, error, toggleHabit, createHabit, refresh }
+  const deleteHabit = useCallback(
+    async (habitId: string) => {
+      await habitService.remove(habitId)
+      await refresh()
+    },
+    [refresh],
+  )
+
+  return { dashboard, isLoading, error, toggleHabit, createHabit, deleteHabit, refresh }
 }
 
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {

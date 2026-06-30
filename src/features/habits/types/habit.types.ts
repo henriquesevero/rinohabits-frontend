@@ -4,6 +4,7 @@ export interface Habit {
   icon: string
   color: string
   activeWeekdays: number[]
+  monthlyTarget: number | null
 }
 
 export interface TodayHabit {
@@ -22,4 +23,5 @@ export interface CreateHabitPayload {
   icon: string
   color: string
   activeWeekdays: number[]
+  monthlyTarget: number | null
 }

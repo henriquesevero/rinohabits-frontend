@@ -15,12 +15,20 @@ export function LockScreen() {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-6 px-8">
       <motion.div
-        initial={{ scale: 0.85, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
+        initial={{ scale: 0.85, opacity: 0, y: -10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-        className="flex h-20 w-20 items-center justify-center rounded-full bg-white/30 backdrop-blur-md"
+        className="flex flex-col items-center gap-3"
       >
-        <Lock className="h-9 w-9 text-black/70 dark:text-white/80" />
+        <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-white/90 shadow-lg shadow-purple-500/20 backdrop-blur-md">
+          <img src="/favicon.svg" alt="RinoHabits" className="h-11 w-11" />
+        </div>
+        <div className="text-center">
+          <h1 className="text-2xl font-bold tracking-tight text-black/85 dark:text-white/90">RinoHabits</h1>
+          <p className="mt-0.5 text-xs text-black/45 dark:text-white/45">
+            Construa hábitos. Viva melhor. Sem desculpas.
+          </p>
+        </div>
       </motion.div>
 
       <form onSubmit={handleSubmit} className="flex w-full max-w-sm flex-col gap-3">
