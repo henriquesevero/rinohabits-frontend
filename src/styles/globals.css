@@ -7,4 +7,5 @@ html, body, #root {
   overflow: hidden;
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+  background-color: #0f1024;
 }

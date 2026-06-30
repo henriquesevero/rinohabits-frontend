@@ -8,7 +8,7 @@ interface MacWindowProps {
 
 export function MacWindow({ title, children, footer }: MacWindowProps) {
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-white/70 backdrop-blur-xl dark:bg-black/60 md:h-[95vh] md:max-w-5xl md:rounded-2xl md:border md:border-white/20 md:shadow-2xl">
+    <div className="h-full w-full flex flex-col overflow-hidden bg-white/70 backdrop-blur-xl dark:bg-black/60 md:h-[95vh] md:max-w-5xl md:rounded-2xl md:border md:border-white/20 md:shadow-2xl">
       <div className="hidden items-center gap-2 border-b border-white/20 px-4 py-3 md:flex">
         <span className="h-3 w-3 rounded-full bg-[#FF5F56]" />
         <span className="h-3 w-3 rounded-full bg-[#FFBD2E]" />
