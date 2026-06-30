@@ -22,25 +22,6 @@
     </script>
     <script>
       (function () {
-        // Confirmado por teste real: em modo standalone (PWA instalado), o WebKit do
-        // iOS calcula "position:fixed; inset:0" / 100dvh com altura MENOR que a tela
-        // real, sobrando uma faixa visível embaixo. Medir via window.innerHeight (que
-        // reflete o tamanho real renderizado) e gravar num valor fixo em pixel é a
-        // única forma confiável de contornar esse bug específico do WebKit.
-        function setAppHeight() {
-          var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight
-          document.documentElement.style.setProperty('--app-height', h + 'px')
-        }
-        setAppHeight()
-        window.addEventListener('resize', setAppHeight)
-        window.addEventListener('orientationchange', setAppHeight)
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', setAppHeight)
-        }
-      })()
-    </script>
-    <script>
-      (function () {
         // Safari ignora "user-scalable=no" na meta viewport (decisão deliberada da
         // Apple por acessibilidade desde iOS 10). Esses listeners bloqueiam o gesto
         // de pinça diretamente, que é a única forma que funciona lá. O duplo-toque
