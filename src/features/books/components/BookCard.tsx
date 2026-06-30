@@ -1,0 +1,194 @@
+import { motion } from 'framer-motion'
+import { BookOpen, Camera, CheckCircle, Trash2 } from 'lucide-react'
+import { useRef, useState } from 'react'
+import { bookService } from '../services/bookService'
+import type { Book, BookStatus } from '../types/book.types'
+
+interface BookCardProps {
+  book: Book
+  onRegisterReading: (bookId: string, pages: number) => Promise<void>
+  onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
+  onDelete: (bookId: string) => void
+  onCoverUpdated: (bookId: string, url: string) => void
+}
+
+export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, onCoverUpdated }: BookCardProps) {
+  const [isLogging, setIsLogging] = useState(false)
+  const [pagesInput, setPagesInput] = useState('')
+  const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleRegister() {
+    const pages = Number.parseInt(pagesInput, 10)
+    if (!pages || pages <= 0) return
+    setIsLogging(false)
+    setPagesInput('')
+    await onRegisterReading(book.id, pages)
+  }
+
+  async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploadingCover(true)
+    try {
+      const url = await bookService.uploadCover(book.id, file)
+      onCoverUpdated(book.id, url)
+    } finally {
+      setIsUploadingCover(false)
+      e.target.value = ''
+    }
+  }
+
+  const coverLetter = book.title.charAt(0).toUpperCase()
+  const coverColor = stringToColor(book.title)
+
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -8 }}
+      className="flex gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30"
+    >
+      <div className="relative flex-shrink-0">
+        {book.coverUrl ? (
+          <img
+            src={book.coverUrl}
+            alt={book.title}
+            className="h-20 w-14 rounded-lg object-cover"
+          />
+        ) : (
+          <div
+            className="flex h-20 w-14 items-center justify-center rounded-lg text-2xl font-bold text-white"
+            style={{ backgroundColor: coverColor }}
+          >
+            {coverLetter}
+          </div>
+        )}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploadingCover}
+          className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+          title="Alterar capa"
+        >
+          {isUploadingCover ? (
+            <span className="h-2.5 w-2.5 animate-spin rounded-full border border-white border-t-transparent" />
+          ) : (
+            <Camera className="h-2.5 w-2.5" />
+          )}
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleCoverChange}
+        />
+      </div>
+
+      <div className="flex flex-1 flex-col gap-2 min-w-0">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{book.title}</p>
+            {book.author && (
+              <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => onDelete(book.id)}
+            className="flex-shrink-0 rounded-full p-1 text-black/30 hover:bg-red-400/20 hover:text-red-500 dark:text-white/30"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+
+        {book.totalPages && (
+          <div className="flex items-center gap-2">
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+              <motion.div
+                className="h-full rounded-full bg-indigo-400"
+                animate={{ width: `${book.percentage}%` }}
+                transition={{ duration: 0.4, ease: 'easeOut' }}
+              />
+            </div>
+            <span className="text-[11px] text-black/50 dark:text-white/50">
+              {book.currentPage}/{book.totalPages} pág.
+            </span>
+          </div>
+        )}
+
+        {isLogging ? (
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={1}
+              autoFocus
+              value={pagesInput}
+              onChange={(e) => setPagesInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+              placeholder="Páginas lidas hoje"
+              className="flex-1 rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+            />
+            <button
+              type="button"
+              onClick={handleRegister}
+              className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
+            >
+              Salvar
+            </button>
+            <button
+              type="button"
+              onClick={() => { setIsLogging(false); setPagesInput('') }}
+              className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
+            >
+              ✕
+            </button>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            {book.status !== 'lido' && (
+              <button
+                type="button"
+                onClick={() => setIsLogging(true)}
+                className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
+              >
+                <BookOpen className="h-3.5 w-3.5" />
+                Registrar
+              </button>
+            )}
+            {book.status === 'quero_ler' && (
+              <button
+                type="button"
+                onClick={() => onChangeStatus(book.id, 'lendo')}
+                className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
+              >
+                Ler agora
+              </button>
+            )}
+            {book.status === 'lendo' && (
+              <button
+                type="button"
+                onClick={() => onChangeStatus(book.id, 'lido')}
+                className="flex items-center gap-1 rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
+              >
+                <CheckCircle className="h-3.5 w-3.5" />
+                Marcar lido
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  )
+}
+
+function stringToColor(str: string): string {
+  let hash = 0
+  for (let i = 0; i < str.length; i++) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash)
+  }
+  const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444']
+  return colors[Math.abs(hash) % colors.length]
+}

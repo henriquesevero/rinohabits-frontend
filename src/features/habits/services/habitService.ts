@@ -7,6 +7,7 @@ interface HabitApiDto {
   icon: string
   color: string
   active_weekdays: number[]
+  monthly_target: number | null
 }
 
 interface TodayHabitApiDto {
@@ -21,7 +22,14 @@ interface TodayDashboardApiDto {
 }
 
 function mapHabit(dto: HabitApiDto): Habit {
-  return { id: dto.id, name: dto.name, icon: dto.icon, color: dto.color, activeWeekdays: dto.active_weekdays }
+  return {
+    id: dto.id,
+    name: dto.name,
+    icon: dto.icon,
+    color: dto.color,
+    activeWeekdays: dto.active_weekdays,
+    monthlyTarget: dto.monthly_target,
+  }
 }
 
 function mapTodayHabit(dto: TodayHabitApiDto): TodayHabit {
@@ -40,6 +48,7 @@ export const habitService = {
       icon: payload.icon,
       color: payload.color,
       active_weekdays: payload.activeWeekdays,
+      monthly_target: payload.monthlyTarget,
     })
     return mapHabit(data)
   },
@@ -47,5 +56,9 @@ export const habitService = {
   async toggleLog(habitId: string): Promise<boolean> {
     const { data } = await apiClient.post<{ is_completed: boolean }>(`/habits/${habitId}/toggle`)
     return data.is_completed
+  },
+
+  async remove(habitId: string): Promise<void> {
+    await apiClient.delete(`/habits/${habitId}`)
   },
 }

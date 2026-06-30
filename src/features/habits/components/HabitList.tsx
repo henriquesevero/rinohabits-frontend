@@ -4,9 +4,10 @@ import { HabitCard } from './HabitCard'
 interface HabitListProps {
   habits: TodayHabit[]
   onToggle: (habitId: string) => void
+  onDelete: (habitId: string) => void
 }
 
-export function HabitList({ habits, onToggle }: HabitListProps) {
+export function HabitList({ habits, onToggle, onDelete }: HabitListProps) {
   if (habits.length === 0) {
     return (
       <p className="text-center text-sm text-black/50 dark:text-white/50">
@@ -18,7 +19,7 @@ export function HabitList({ habits, onToggle }: HabitListProps) {
   return (
     <div className="flex w-full flex-col gap-2">
       {habits.map((item) => (
-        <HabitCard key={item.habit.id} item={item} onToggle={onToggle} />
+        <HabitCard key={item.habit.id} item={item} onToggle={onToggle} onDelete={onDelete} />
       ))}
     </div>
   )
