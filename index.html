@@ -22,24 +22,6 @@
     </script>
     <script>
       (function () {
-        // 100dvh/position:fixed com inset:0 sofrem de bugs conhecidos do WebKit em
-        // modo standalone (PWA instalado), onde a altura calculada fica menor que a
-        // tela real. Medir via window.innerHeight (e visualViewport quando disponível)
-        // e fixar num pixel exato é a forma mais confiável de cobrir 100% da tela.
-        function setAppHeight() {
-          var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight
-          document.documentElement.style.setProperty('--app-height', h + 'px')
-        }
-        setAppHeight()
-        window.addEventListener('resize', setAppHeight)
-        window.addEventListener('orientationchange', setAppHeight)
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', setAppHeight)
-        }
-      })()
-    </script>
-    <script>
-      (function () {
         // Safari ignora "user-scalable=no" na meta viewport (decisão deliberada da
         // Apple por acessibilidade desde iOS 10). Esses listeners bloqueiam o gesto
         // de pinça diretamente, que é a única forma que funciona lá. O duplo-toque
