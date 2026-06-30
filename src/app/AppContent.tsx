@@ -6,6 +6,7 @@ import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
 import { AccountPage } from '../pages/AccountPage'
 import { BooksPage } from '../pages/BooksPage'
+import { CoursesPage } from '../pages/CoursesPage'
 import { HabitsPage } from '../pages/HabitsPage'
 import { StatsPage } from '../pages/StatsPage'
 import type { TabKey } from './tabs'
@@ -14,6 +15,7 @@ const PAGES: Record<TabKey, () => ReactElement> = {
   habits: HabitsPage,
   stats: StatsPage,
   books: BooksPage,
+  courses: CoursesPage,
   account: AccountPage,
 }
 

@@ -1,10 +1,11 @@
-import { BarChart3, BookOpen, Flame, User } from 'lucide-react'
+import { BarChart3, BookOpen, Flame, GraduationCap, User } from 'lucide-react'
 import type { TabKey } from '../../app/tabs'
 
 const TABS: { key: TabKey; label: string; icon: typeof Flame }[] = [
   { key: 'habits', label: 'Hábitos', icon: Flame },
   { key: 'stats', label: 'Estatísticas', icon: BarChart3 },
   { key: 'books', label: 'Livros', icon: BookOpen },
+  { key: 'courses', label: 'Cursos', icon: GraduationCap },
   { key: 'account', label: 'Conta', icon: User },
 ]
 
