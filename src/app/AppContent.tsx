@@ -25,7 +25,7 @@ export function AppContent() {
 
   if (isLoading) {
     return (
-      <MacWindow title="RinoHabits">
+      <MacWindow>
         <div className="flex h-full items-center justify-center text-sm text-black/50 dark:text-white/50">
           Carregando…
         </div>
@@ -36,7 +36,7 @@ export function AppContent() {
   const ActivePage = PAGES[activeTab]
 
   return (
-    <MacWindow title="RinoHabits" footer={isAuthenticated ? <TabBar active={activeTab} onChange={setActiveTab} /> : undefined}>
+    <MacWindow footer={isAuthenticated ? <TabBar active={activeTab} onChange={setActiveTab} /> : undefined}>
       <AnimatePresence mode="wait">
         {!isAuthenticated ? (
           <motion.div

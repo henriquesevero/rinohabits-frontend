@@ -3,7 +3,7 @@ import type { TabKey } from '../../app/tabs'
 
 const TABS: { key: TabKey; label: string; icon: typeof Flame }[] = [
   { key: 'habits', label: 'Hábitos', icon: Flame },
-  { key: 'stats', label: 'Estatísticas', icon: BarChart3 },
+  { key: 'stats', label: 'Stats', icon: BarChart3 },
   { key: 'books', label: 'Livros', icon: BookOpen },
   { key: 'courses', label: 'Cursos', icon: GraduationCap },
   { key: 'account', label: 'Conta', icon: User },
@@ -19,7 +19,6 @@ export function TabBar({ active, onChange }: TabBarProps) {
     <div className="flex shrink-0 items-center justify-around border-t border-white/20 bg-white/50 px-2 pt-2 backdrop-blur-lg dark:bg-black/50 [padding-bottom:max(0.5rem,env(safe-area-inset-bottom))]">
       {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = active === key
-
         return (
           <button
             key={key}
