@@ -15,7 +15,7 @@ export function MacWindow({ title, children, footer }: MacWindowProps) {
         <span className="h-3 w-3 rounded-full bg-[#27C93F]" />
         <span className="ml-2 text-sm font-medium text-black/60 dark:text-white/60">{title}</span>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] md:p-6 md:pt-6">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-[calc(1rem+env(safe-area-inset-top,0px))] pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] md:p-6 md:pt-6">
         {children}
       </div>
       {footer}
