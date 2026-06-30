@@ -31,6 +31,9 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,webp,jpg,png}'],
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/www\.gravatar\.com\//,
