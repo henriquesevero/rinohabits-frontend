@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion'
-import { BookOpen, Camera, CheckCircle, Trash2 } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { BookOpen, Camera, CheckCircle, PartyPopper, Trash2 } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
@@ -16,7 +16,17 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
   const [isLogging, setIsLogging] = useState(false)
   const [pagesInput, setPagesInput] = useState('')
   const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const [justCompleted, setJustCompleted] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const prevStatusRef = useRef(book.status)
+
+  useEffect(() => {
+    if (prevStatusRef.current !== 'lido' && book.status === 'lido') {
+      setJustCompleted(true)
+      setTimeout(() => setJustCompleted(false), 2200)
+    }
+    prevStatusRef.current = book.status
+  }, [book.status])
 
   async function handleRegister() {
     const pages = Number.parseInt(pagesInput, 10)
@@ -39,6 +49,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
     }
   }
 
+  const isDone = book.status === 'lido'
   const coverLetter = book.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(book.title)
 
@@ -46,17 +57,44 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{
+        opacity: 1,
+        y: 0,
+        scale: justCompleted ? [1, 1.03, 1] : 1,
+      }}
       exit={{ opacity: 0, y: -8 }}
-      className="flex gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30"
+      transition={{ duration: 0.4 }}
+      className={`relative flex gap-3 overflow-hidden rounded-xl border p-4 backdrop-blur-md transition-colors ${
+        isDone
+          ? 'border-emerald-400/60 bg-emerald-400/10 dark:bg-emerald-400/10'
+          : 'border-white/20 bg-white/40 dark:bg-black/30'
+      }`}
     >
+      <AnimatePresence>
+        {justCompleted && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-emerald-500/15 backdrop-blur-[1px]"
+          >
+            <motion.div
+              initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
+              animate={{ scale: 1, opacity: 1, rotate: 0 }}
+              exit={{ scale: 0.6, opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 18 }}
+              className="flex flex-col items-center gap-1 rounded-xl bg-white/90 px-4 py-3 shadow-lg dark:bg-black/80"
+            >
+              <PartyPopper className="h-6 w-6 text-emerald-500" />
+              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Livro concluído!</span>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="relative flex-shrink-0">
         {book.coverUrl ? (
-          <img
-            src={book.coverUrl}
-            alt={book.title}
-            className="h-20 w-14 rounded-lg object-cover"
-          />
+          <img src={book.coverUrl} alt={book.title} className="h-20 w-14 rounded-lg object-cover" />
         ) : (
           <div
             className="flex h-20 w-14 items-center justify-center rounded-lg text-2xl font-bold text-white"
@@ -64,6 +102,11 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           >
             {coverLetter}
           </div>
+        )}
+        {isDone && (
+          <span className="absolute -top-1.5 -left-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white shadow">
+            <CheckCircle className="h-3.5 w-3.5" />
+          </span>
         )}
         <button
           type="button"
@@ -87,13 +130,11 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
         />
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 min-w-0">
+      <div className="flex min-w-0 flex-1 flex-col gap-2">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{book.title}</p>
-            {book.author && (
-              <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>
-            )}
+            {book.author && <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>}
           </div>
           <button
             type="button"
@@ -108,14 +149,21 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           <div className="flex items-center gap-2">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
               <motion.div
-                className="h-full rounded-full bg-indigo-400"
+                className={`h-full rounded-full ${isDone ? 'bg-emerald-500' : 'bg-indigo-400'}`}
                 animate={{ width: `${book.percentage}%` }}
                 transition={{ duration: 0.4, ease: 'easeOut' }}
               />
             </div>
-            <span className="text-[11px] text-black/50 dark:text-white/50">
-              {book.currentPage}/{book.totalPages} pág.
-            </span>
+            {isDone ? (
+              <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                <CheckCircle className="h-3 w-3" />
+                100% lido
+              </span>
+            ) : (
+              <span className="text-[11px] text-black/50 dark:text-white/50">
+                {book.currentPage}/{book.totalPages} pág.
+              </span>
+            )}
           </div>
         )}
 
@@ -127,7 +175,9 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
               autoFocus
               value={pagesInput}
               onChange={(e) => setPagesInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') handleRegister()
+              }}
               placeholder="Páginas lidas hoje"
               className="flex-1 rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
             />
@@ -140,7 +190,10 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
             </button>
             <button
               type="button"
-              onClick={() => { setIsLogging(false); setPagesInput('') }}
+              onClick={() => {
+                setIsLogging(false)
+                setPagesInput('')
+              }}
               className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
             >
               ✕
@@ -148,7 +201,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           </div>
         ) : (
           <div className="flex gap-2">
-            {book.status !== 'lido' && (
+            {!isDone && (
               <button
                 type="button"
                 onClick={() => setIsLogging(true)}

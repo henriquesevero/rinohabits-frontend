@@ -1,5 +1,6 @@
 import { AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
+import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { BookCard } from '../features/books/components/BookCard'
 import { CreateBookForm } from '../features/books/components/CreateBookForm'
 import { useBooks } from '../features/books/hooks/useBooks'
@@ -13,6 +14,7 @@ const TABS: { status: BookStatus; label: string; emoji: string }[] = [
 
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<BookStatus>('lendo')
+  const [bookToDelete, setBookToDelete] = useState<string | null>(null)
   const { books, isLoading, createBook, registerReading, changeStatus, deleteBook, updateCover } = useBooks()
 
   const filtered = books.filter((b) => b.status === activeStatus)
@@ -23,10 +25,17 @@ export function BooksPage() {
   }
 
   function handleDelete(bookId: string) {
-    if (window.confirm('Excluir este livro?')) {
-      void deleteBook(bookId)
+    setBookToDelete(bookId)
+  }
+
+  async function handleDeleteConfirm() {
+    if (bookToDelete) {
+      await deleteBook(bookToDelete)
+      setBookToDelete(null)
     }
   }
+
+  const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
 
   async function handleRegisterReading(bookId: string, pages: number) {
     await registerReading(bookId, pages)
@@ -34,6 +43,16 @@ export function BooksPage() {
 
   return (
     <div className="flex h-full flex-col gap-4">
+      <ConfirmModal
+        isOpen={bookToDelete !== null}
+        title="Excluir livro"
+        description={`Tem certeza que deseja excluir "${bookToDeleteTitle ?? 'este livro'}"? Todo o histórico de leitura será perdido permanentemente.`}
+        confirmLabel="Excluir"
+        destructive
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setBookToDelete(null)}
+      />
+
       <div className="flex items-baseline justify-between">
         <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Biblioteca</h1>
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
