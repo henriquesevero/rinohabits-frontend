@@ -5,16 +5,25 @@ import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { BookCard } from '../features/books/components/BookCard'
 import { CreateBookForm } from '../features/books/components/CreateBookForm'
 import { useBooks } from '../features/books/hooks/useBooks'
-import type { BookStatus } from '../features/books/types/book.types'
+import type { Book, BookStatus } from '../features/books/types/book.types'
 
-const TABS: { status: BookStatus; label: string; emoji: string }[] = [
+type ShelfFilter = 'all' | BookStatus
+
+const TABS: { status: ShelfFilter; label: string; emoji: string }[] = [
+  { status: 'all', label: 'Estante', emoji: '📚' },
   { status: 'lendo', label: 'Lendo', emoji: '📖' },
   { status: 'quero_ler', label: 'Quero Ler', emoji: '🔖' },
   { status: 'lido', label: 'Lido', emoji: '✅' },
 ]
 
+const SHELF_ORDER: Record<BookStatus, number> = { lendo: 0, quero_ler: 1, lido: 2 }
+
+function sortForShelf(books: Book[]): Book[] {
+  return [...books].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
+}
+
 export function BooksPage() {
-  const [activeStatus, setActiveStatus] = useState<BookStatus>('lendo')
+  const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
   const {
     books,
@@ -34,8 +43,9 @@ export function BooksPage() {
     return () => clearTimeout(timeout)
   }, [justCompletedBook, clearJustCompleted])
 
-  const filtered = books.filter((b) => b.status === activeStatus)
-  const counts: Record<BookStatus, number> = {
+  const filtered = activeStatus === 'all' ? sortForShelf(books) : books.filter((b) => b.status === activeStatus)
+  const counts: Record<ShelfFilter, number> = {
+    all: books.length,
     lendo: books.filter((b) => b.status === 'lendo').length,
     quero_ler: books.filter((b) => b.status === 'quero_ler').length,
     lido: books.filter((b) => b.status === 'lido').length,
@@ -130,6 +140,7 @@ export function BooksPage() {
 
         {!isLoading && filtered.length === 0 && (
           <p className="text-center text-sm text-black/40 dark:text-white/40">
+            {activeStatus === 'all' && 'Sua estante está vazia. Adicione um livro para começar.'}
             {activeStatus === 'lendo' && 'Nenhum livro sendo lido.'}
             {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
             {activeStatus === 'lido' && 'Nenhum livro finalizado ainda.'}

@@ -15,6 +15,8 @@ export function StatsPage() {
       <MonthlyCalendar year={year} month={month} summary={summary} onPrevious={goToPrevious} onNext={goToNext} />
 
       <ReadingStatsCard />
+
+      <div className="h-8 shrink-0" />
     </div>
   )
 }
