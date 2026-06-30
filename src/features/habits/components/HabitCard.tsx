@@ -13,7 +13,7 @@ export function HabitCard({ item, onToggle, onDelete }: HabitCardProps) {
 
   return (
     <div
-      className="group flex w-full items-center gap-2 rounded-xl border border-white/20 bg-white/40 px-4 py-3 backdrop-blur-md transition-colors dark:bg-black/30"
+      className="flex w-full items-center gap-2 rounded-xl border border-white/20 bg-white/40 px-4 py-3 backdrop-blur-md transition-colors dark:bg-black/30"
       style={{ backgroundColor: isCompleted ? `${habit.color}26` : undefined }}
     >
       <motion.button
@@ -45,7 +45,7 @@ export function HabitCard({ item, onToggle, onDelete }: HabitCardProps) {
         type="button"
         onClick={() => onDelete(habit.id)}
         title="Excluir hábito"
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-black/30 opacity-0 transition-opacity hover:bg-red-500/10 hover:text-red-500 group-hover:opacity-100 dark:text-white/30"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/25 transition-colors hover:bg-red-500/10 hover:text-red-500 active:bg-red-500/10 active:text-red-500 dark:text-white/25"
       >
         <Trash2 className="h-3.5 w-3.5" />
       </button>

@@ -1,6 +1,6 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, Camera, CheckCircle, PartyPopper, Trash2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { BookOpen, Camera, CheckCircle, Trash2 } from 'lucide-react'
+import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
@@ -16,17 +16,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
   const [isLogging, setIsLogging] = useState(false)
   const [pagesInput, setPagesInput] = useState('')
   const [isUploadingCover, setIsUploadingCover] = useState(false)
-  const [justCompleted, setJustCompleted] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const prevStatusRef = useRef(book.status)
-
-  useEffect(() => {
-    if (prevStatusRef.current !== 'lido' && book.status === 'lido') {
-      setJustCompleted(true)
-      setTimeout(() => setJustCompleted(false), 2200)
-    }
-    prevStatusRef.current = book.status
-  }, [book.status])
 
   async function handleRegister() {
     const pages = Number.parseInt(pagesInput, 10)
@@ -57,11 +47,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
     <motion.div
       layout
       initial={{ opacity: 0, y: 8 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: justCompleted ? [1, 1.03, 1] : 1,
-      }}
+      animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.4 }}
       className={`relative flex gap-3 overflow-hidden rounded-xl border p-4 backdrop-blur-md transition-colors ${
@@ -70,28 +56,6 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           : 'border-white/20 bg-white/40 dark:bg-black/30'
       }`}
     >
-      <AnimatePresence>
-        {justCompleted && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-emerald-500/15 backdrop-blur-[1px]"
-          >
-            <motion.div
-              initial={{ scale: 0.5, opacity: 0, rotate: -15 }}
-              animate={{ scale: 1, opacity: 1, rotate: 0 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-              className="flex flex-col items-center gap-1 rounded-xl bg-white/90 px-4 py-3 shadow-lg dark:bg-black/80"
-            >
-              <PartyPopper className="h-6 w-6 text-emerald-500" />
-              <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">Livro concluído!</span>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="relative flex-shrink-0">
         {book.coverUrl ? (
           <img src={book.coverUrl} alt={book.title} className="h-20 w-14 rounded-lg object-cover" />

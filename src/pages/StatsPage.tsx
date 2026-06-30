@@ -1,7 +1,6 @@
 import { ReadingStatsCard } from '../features/books/components/ReadingStatsCard'
 import { EvolutionSection } from '../features/stats/components/EvolutionSection'
 import { MonthlyCalendar } from '../features/stats/components/MonthlyCalendar'
-import { TrendChart } from '../features/stats/components/TrendChart'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
 export function StatsPage() {
@@ -14,8 +13,6 @@ export function StatsPage() {
       <EvolutionSection />
 
       <MonthlyCalendar year={year} month={month} summary={summary} onPrevious={goToPrevious} onNext={goToNext} />
-
-      <TrendChart />
 
       <ReadingStatsCard />
     </div>
