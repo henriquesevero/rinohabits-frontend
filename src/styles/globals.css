@@ -3,8 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 html, body, #root {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
