@@ -2,15 +2,19 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+:root {
+  --app-h: 100svh; /* fallback before JS sets the real value */
+}
+
 html, body, #root {
-  min-height: 100%;
+  height: 100%;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
 body {
-  overflow-x: hidden;
+  overflow: hidden; /* prevent body scroll — content scrolls inside MacWindow */
 }
 
 /* esconde a barra de rolagem em todo o app, mantendo a rolagem funcional,
