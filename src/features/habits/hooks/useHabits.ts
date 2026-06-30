@@ -2,6 +2,21 @@ import { useCallback, useEffect, useState } from 'react'
 import { habitService } from '../services/habitService'
 import type { CreateHabitPayload, TodayDashboard, TodayHabit } from '../types/habit.types'
 
+function isRequiredToday(activeWeekdays: number[]): boolean {
+  const day = new Date().getDay()
+  const iso = day === 0 ? 7 : day
+  return activeWeekdays.includes(iso)
+}
+
+async function getTodayWithRetry(): Promise<TodayDashboard> {
+  try {
+    return await habitService.getToday()
+  } catch {
+    await new Promise((resolve) => setTimeout(resolve, 600))
+    return await habitService.getToday()
+  }
+}
+
 export function useHabits() {
   const [dashboard, setDashboard] = useState<TodayDashboard | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -10,11 +25,11 @@ export function useHabits() {
   const refresh = useCallback(async () => {
     setIsLoading(true)
     try {
-      const data = await habitService.getToday()
+      const data = await getTodayWithRetry()
       setDashboard(data)
       setError(null)
     } catch {
-      setError('Não foi possível carregar seus hábitos.')
+      setError('Não foi possível carregar seus hábitos. Tentando novamente…')
     } finally {
       setIsLoading(false)
     }
@@ -37,7 +52,19 @@ export function useHabits() {
 
   const createHabit = useCallback(
     async (payload: CreateHabitPayload) => {
-      await habitService.create(payload)
+      const created = await habitService.create(payload)
+
+      if (isRequiredToday(payload.activeWeekdays)) {
+        setDashboard((current) =>
+          current
+            ? { ...current, habits: [...current.habits, { habit: created, isCompleted: false }] }
+            : current,
+        )
+      }
+
+      // refresh() reconciles with the backend (streak, exact day-boundary) but
+      // never clears dashboard on failure, so the optimistic entry above
+      // stays visible even if this call fails.
       await refresh()
     },
     [refresh],
