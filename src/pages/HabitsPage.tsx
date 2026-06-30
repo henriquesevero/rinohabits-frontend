@@ -103,8 +103,6 @@ export function HabitsPage() {
 
         {dashboard && <TodayHabitsGrid habits={dashboard.habits} onToggle={handleToggle} />}
 
-        <WeeklyHeatmap />
-
         <button
           type="button"
           onClick={() => setIsManaging((current) => !current)}
@@ -129,6 +127,8 @@ export function HabitsPage() {
         <div ref={formRef}>
           <HabitForm onCreate={createHabit} formRef={formRef} />
         </div>
+
+        <WeeklyHeatmap />
       </div>
     </>
   )
