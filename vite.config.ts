@@ -48,11 +48,23 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,webp,jpg,png}'],
+        // Exclude html from precache — navigation requests must always be
+        // network-first so the browser reads the latest meta tags (viewport-fit=cover)
+        globPatterns: ['**/*.{js,css,svg,webp,jpg,png}'],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         runtimeCaching: [
+          {
+            // Navigation requests: NetworkFirst so iOS always reads fresh meta tags
+            urlPattern: ({ request }: { request: Request }) => request.mode === 'navigate',
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'html-cache',
+              networkTimeoutSeconds: 3,
+              expiration: { maxEntries: 5 },
+            },
+          },
           {
             urlPattern: /^https:\/\/www\.gravatar\.com\//,
             handler: 'CacheFirst',
