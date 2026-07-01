@@ -16,8 +16,16 @@ interface TabBarProps {
 
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
+    /*
+     * position:fixed + bottom:0 lets this element anchor to the visual viewport.
+     * On iOS standalone PWA, the visual viewport may extend to the full 852 px
+     * physical height (including home-indicator strip), whereas window.innerHeight
+     * reports only 793 px. This is only possible because TabBar is NOT a descendant
+     * of any backdrop-filter element — the WebKit bug that traps fixed children
+     * inside a backdrop-blur containing block doesn't apply here.
+     */
     <div
-      className="flex shrink-0 items-center justify-around border-t border-white/10 bg-white/80 px-2 pt-2 backdrop-blur-md dark:border-white/[0.08] dark:bg-[#000000] dark:[backdrop-filter:none]"
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-white/10 bg-white/80 px-2 pt-2 backdrop-blur-md dark:bg-black/80"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       {TABS.map(({ key, label, icon: Icon }) => {
