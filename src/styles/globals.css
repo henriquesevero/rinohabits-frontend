@@ -2,23 +2,34 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-html, body {
+html {
   height: 100%;
-  background-color: #000;
-  overscroll-behavior-y: none;
-  touch-action: manipulation;
+  height: -webkit-fill-available;
+  background-color: #0f1024;
 }
 
-/* position:fixed + inset:0 makes #root exactly the viewport dimensions —
-   no dvh bugs, no percentage chain issues, no JS measurements needed.
-   This is the pattern used by Twitter PWA, Instagram PWA, etc. */
+body {
+  height: 100%;
+  min-height: -webkit-fill-available;
+  background-color: #0f1024;
+  overscroll-behavior-y: none;
+  touch-action: manipulation;
+  overflow-x: hidden;
+}
+
+/*
+ * height:-webkit-fill-available tells WebKit to fill the real rendered area of
+ * the WebView. In iOS standalone PWA mode this may include the home-indicator
+ * strip (852 px on iPhone 14 Pro) while window.innerHeight still reports 793 px.
+ * overflow:hidden prevents body scroll — all scrolling happens inside the
+ * overflow-y-auto div inside MacWindow, keeping the fixed gradient in place.
+ */
 #root {
-  position: fixed;
-  inset: 0;
+  height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  height: 100%;
 }
 
 * {
