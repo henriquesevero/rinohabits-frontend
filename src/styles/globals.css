@@ -2,31 +2,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-html {
+html, body {
   height: 100%;
-  height: -webkit-fill-available;
-  background-color: #0f1024;
-}
-
-body {
-  height: 100%;
-  min-height: -webkit-fill-available;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
-  overflow-x: hidden;
 }
 
 /*
- * height:-webkit-fill-available tells WebKit to fill the real rendered area of
- * the WebView. In iOS standalone PWA mode this may include the home-indicator
- * strip (852 px on iPhone 14 Pro) while window.innerHeight still reports 793 px.
- * overflow:hidden prevents body scroll — all scrolling happens inside the
- * overflow-y-auto div inside MacWindow, keeping the fixed gradient in place.
+ * position:fixed + inset:0 + overflow:hidden is the only reliable way to
+ * prevent body-level scroll and rubber-band on iOS PWA. All scrolling happens
+ * inside the overflow-y-auto content div, never on the body.
+ * height:100% keeps #root exactly the CSS viewport (793 px on this device).
  */
 #root {
+  position: fixed;
+  inset: 0;
   height: 100%;
-  height: -webkit-fill-available;
   overflow: hidden;
   display: flex;
   flex-direction: column;
