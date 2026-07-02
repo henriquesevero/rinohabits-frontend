@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState, type ReactElement } from 'react'
+import { FloatingNav } from '../components/layout/FloatingNav'
 import { MacWindow } from '../components/layout/MacWindow'
-import { TabBar } from '../components/layout/TabBar'
 import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
 import { AccountPage } from '../pages/AccountPage'
@@ -36,7 +36,7 @@ export function AppContent() {
   const ActivePage = PAGES[activeTab]
 
   return (
-    <MacWindow footer={isAuthenticated ? <TabBar active={activeTab} onChange={setActiveTab} /> : undefined}>
+    <MacWindow footer={isAuthenticated ? <FloatingNav active={activeTab} onChange={setActiveTab} /> : undefined}>
       <AnimatePresence mode="wait">
         {!isAuthenticated ? (
           <motion.div
