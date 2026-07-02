@@ -18,18 +18,14 @@ interface FloatingNavProps {
 export function FloatingNav({ active, onChange }: FloatingNavProps) {
   return (
     /*
-     * Floating pill — anchored to the visual-viewport bottom via position:fixed.
-     * Sitting 20 px above the viewport edge means the home-indicator strip is
-     * always visible below it (gradient fading to dark), which looks intentional
-     * and premium instead of a "thick stuck bar".
-     *
-     * No backdrop-filter on this element so there is no containing-block trap.
-     * It is a sibling of MacWindow (not a descendant), so the MacWindow's
-     * backdrop-blur-xl does not affect its fixed positioning.
+     * shrink-0 in the flex chain — sits below the scrollable content div,
+     * never overlaps it. The container is transparent so the Wallpaper gradient
+     * shows through; the body bg (#0f1024 = gradient end) makes the home-
+     * indicator strip below the viewport seamlessly invisible.
      */
     <div
-      className="fixed left-1/2 z-50 -translate-x-1/2"
-      style={{ bottom: 'max(20px, env(safe-area-inset-bottom, 20px))' }}
+      className="flex shrink-0 justify-center px-4 pt-2"
+      style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom, 0.75rem))' }}
     >
       <motion.div
         layout
