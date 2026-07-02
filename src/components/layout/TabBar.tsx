@@ -17,22 +17,21 @@ interface TabBarProps {
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
     /*
-     * position:fixed + bottom:0 anchors the bar to the CSS viewport bottom.
-     * It is a sibling of MacWindow in the DOM — NOT a descendant of the
-     * backdrop-blur-xl element — so the WebKit containing-block bug does not
-     * apply and the bar anchors to the viewport correctly.
+     * shrink-0 keeps this in the normal flex flow — the content div (flex-1
+     * above) fills all remaining space, and this bar takes only what it needs.
+     * Content can never overlap or scroll behind it.
      *
-     * #root has no overflow:hidden (see globals.css), which prevents the
-     * other WebKit quirk where overflow:hidden on a fixed element clips its
-     * fixed children.
+     * bg-[#1c1d3e] is intentionally different from the body background-color
+     * (#0f1024). The ~35 px iOS home-indicator strip below the viewport renders
+     * in the body colour, producing a thin darker line — identical to how native
+     * iOS apps look (white tab bar → dark home-indicator line in the reference).
      *
-     * Compact height ~44 px: icon (18) + gap (2) + label (13) + py (4+4) + pb (4) = 45 px.
-     * bg-[#0f1024] matches body background-color so the iOS home-indicator
-     * strip below the viewport renders the same colour — the strip is invisible.
+     * paddingBottom: max(6px, env(safe-area-inset-bottom)) — when viewport-fit=cover
+     * activates after a reinstall, this absorbs the safe area automatically.
      */
     <div
-      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-white/[0.08] bg-white/95 px-2 dark:bg-[#0f1024]"
-      style={{ paddingBottom: 'max(4px, env(safe-area-inset-bottom, 0px))' }}
+      className="flex shrink-0 items-end justify-around border-t border-white/[0.08] bg-white px-1 dark:bg-[#1c1d3e]"
+      style={{ paddingBottom: 'max(6px, env(safe-area-inset-bottom, 0px))' }}
     >
       {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = active === key
@@ -41,12 +40,33 @@ export function TabBar({ active, onChange }: TabBarProps) {
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className={`flex flex-1 flex-col items-center gap-px rounded-lg py-1 text-[10px] font-medium transition-colors ${
-              isActive ? 'text-black/90 dark:text-white/90' : 'text-black/40 dark:text-white/40'
-            }`}
+            className="flex flex-1 flex-col items-center gap-0.5 py-2"
           >
-            <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.4 : 2} />
-            {label}
+            <span
+              className={`flex flex-col items-center gap-0.5 rounded-xl px-3 py-1 transition-colors ${
+                isActive
+                  ? 'bg-white/15 dark:bg-white/10'
+                  : ''
+              }`}
+            >
+              <Icon
+                className={`h-[22px] w-[22px] transition-colors ${
+                  isActive
+                    ? 'text-violet-600 dark:text-violet-400'
+                    : 'text-black/35 dark:text-white/35'
+                }`}
+                strokeWidth={isActive ? 2.5 : 1.8}
+              />
+              <span
+                className={`text-[10px] font-semibold leading-none transition-colors ${
+                  isActive
+                    ? 'text-violet-600 dark:text-violet-400'
+                    : 'text-black/35 dark:text-white/35'
+                }`}
+              >
+                {label}
+              </span>
+            </span>
           </button>
         )
       })}

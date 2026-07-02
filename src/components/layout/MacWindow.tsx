@@ -2,21 +2,25 @@ import type { ReactNode } from 'react'
 
 interface MacWindowProps {
   children: ReactNode
+  footer?: ReactNode
 }
 
-export function MacWindow({ children }: MacWindowProps) {
+export function MacWindow({ children, footer }: MacWindowProps) {
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col bg-white/70 backdrop-blur-xl dark:bg-black/60">
+    /*
+     * min-h-0 is required on this outer div. Without it, a flex-1 child's
+     * minimum height resolves to "auto" (its content height), which lets
+     * MacWindow expand beyond its parent and pushes the tab bar out of view.
+     * With min-h-0 the flex chain compresses correctly at every level.
+     */
+    <div className="flex min-h-0 w-full flex-1 flex-col">
       <div
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 md:px-8"
-        style={{
-          paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))',
-          /* 5rem ≈ 80 px clears the floating pill (≈ 54 px) + 20 px gap + breathing room */
-          paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))',
-        }}
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 md:px-6"
+        style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
       >
         {children}
       </div>
+      {footer}
     </div>
   )
 }
