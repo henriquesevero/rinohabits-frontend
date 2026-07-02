@@ -5,7 +5,12 @@
 html,
 body {
   height: 100%;
-  background-color: #0f1024;
+  /*
+   * #1c1d3e matches the dark-mode tab bar background exactly.
+   * The ~35 px iOS home-indicator strip below the CSS viewport renders in this
+   * colour, so it blends seamlessly with the tab bar — no visible dark band.
+   */
+  background-color: #1c1d3e;
   overscroll-behavior-y: none;
   touch-action: manipulation;
 }

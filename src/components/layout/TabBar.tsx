@@ -21,10 +21,9 @@ export function TabBar({ active, onChange }: TabBarProps) {
      * above) fills all remaining space, and this bar takes only what it needs.
      * Content can never overlap or scroll behind it.
      *
-     * bg-[#1c1d3e] is intentionally different from the body background-color
-     * (#0f1024). The ~35 px iOS home-indicator strip below the viewport renders
-     * in the body colour, producing a thin darker line — identical to how native
-     * iOS apps look (white tab bar → dark home-indicator line in the reference).
+     * bg-[#1c1d3e] matches body background-color exactly.
+     * The ~35 px iOS home-indicator strip below the CSS viewport renders in the
+     * body colour, so it blends seamlessly with the tab bar — no visible strip.
      *
      * paddingBottom: max(6px, env(safe-area-inset-bottom)) — when viewport-fit=cover
      * activates after a reinstall, this absorbs the safe area automatically.
