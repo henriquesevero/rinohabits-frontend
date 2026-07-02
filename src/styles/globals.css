@@ -5,20 +5,22 @@
 html,
 body {
   height: 100%;
-  overflow: hidden;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
 /*
- * overflow:hidden lives on html+body (above), NOT on #root.
- * Adding overflow:hidden to a position:fixed element in WebKit causes it to
- * clip its own position:fixed descendants — which would cut the floating nav.
+ * position:fixed + inset:0 + overflow:hidden locks the layout to exactly the
+ * CSS viewport (793 px on this device). All scrolling happens inside the
+ * overflow-y-auto content div. Body never scrolls, rubber-band is impossible.
+ * The tab bar is shrink-0 in the flex chain — never position:fixed — so
+ * overflow:hidden here does NOT clip it (no WebKit fixed-child bug).
  */
 #root {
   position: fixed;
   inset: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
