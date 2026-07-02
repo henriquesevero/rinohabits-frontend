@@ -1,5 +1,5 @@
 import { BarChart3, BookOpen, Flame, GraduationCap, User } from 'lucide-react'
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import type { TabKey } from '../../app/tabs'
 
 const MAIN_TABS = [
@@ -14,16 +14,28 @@ interface AppShellProps {
   activeTab: TabKey
   onTabChange: (tab: TabKey) => void
   showNav: boolean
+  onSwipe?: (dir: -1 | 1) => void
 }
 
-export function AppShell({ children, activeTab, onTabChange, showNav }: AppShellProps) {
+export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }: AppShellProps) {
+  const touchStart = useRef<{ x: number; y: number } | null>(null)
+
+  function handleTouchStart(e: React.TouchEvent) {
+    touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  }
+
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (!touchStart.current || !onSwipe) return
+    const dx = e.changedTouches[0].clientX - touchStart.current.x
+    const dy = e.changedTouches[0].clientY - touchStart.current.y
+    touchStart.current = null
+    // only trigger when gesture is clearly horizontal (2:1 ratio + 50 px minimum)
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 2) return
+    onSwipe(dx < 0 ? 1 : -1)
+  }
+
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
-      {/*
-       * Safe-area spacer: max(12px, env(safe-area-inset-top)) gives comfortable
-       * breathing room below the status bar now, and adapts automatically when
-       * viewport-fit=cover activates after a clean reinstall.
-       */}
       <div
         className="shrink-0"
         style={{ height: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))' }}
@@ -82,12 +94,15 @@ export function AppShell({ children, activeTab, onTabChange, showNav }: AppShell
         </>
       )}
 
-      {/* ── Scrollable content ── */}
-      <div className="relative min-h-0 flex-1">
+      {/* ── Scrollable content with swipe detection ── */}
+      <div
+        className="relative min-h-0 flex-1"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10">
           {children}
         </div>
-        {/* fade-out at the bottom so content dissolves instead of hard-clipping */}
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
           style={{ background: 'linear-gradient(to bottom, transparent, #0f1024)' }}
