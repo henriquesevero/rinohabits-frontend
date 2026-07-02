@@ -25,7 +25,7 @@ export function TabBar({ active, onChange }: TabBarProps) {
      * renders the same colour — the strip is invisible.
      */
     <div
-      className="flex shrink-0 items-center justify-around border-t border-white/[0.08] bg-white/95 px-2 pt-2 dark:bg-[#0f1024]"
+      className="flex shrink-0 items-center justify-around border-t border-white/[0.08] bg-white/95 px-2 dark:bg-[#0f1024]"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
     >
       {TABS.map(({ key, label, icon: Icon }) => {
@@ -35,7 +35,7 @@ export function TabBar({ active, onChange }: TabBarProps) {
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1.5 text-[11px] font-medium transition-colors ${
+            className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-[11px] font-medium transition-colors ${
               isActive ? 'text-black/90 dark:text-white/90' : 'text-black/40 dark:text-white/40'
             }`}
           >
