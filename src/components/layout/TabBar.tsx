@@ -17,16 +17,22 @@ interface TabBarProps {
 export function TabBar({ active, onChange }: TabBarProps) {
   return (
     /*
-     * shrink-0 keeps this in the normal flex flow at the bottom of MacWindow.
-     * No position:fixed needed — the parent flex chain (with min-h-0 at every
-     * level) guarantees the tab bar is always fully visible and never clipped.
-     * bg-[#0f1024] matches both the gradient's bottom colour stop and the body
-     * background-color, so the iOS home-indicator strip below the CSS viewport
-     * renders the same colour — the strip is invisible.
+     * position:fixed + bottom:0 anchors the bar to the CSS viewport bottom.
+     * It is a sibling of MacWindow in the DOM — NOT a descendant of the
+     * backdrop-blur-xl element — so the WebKit containing-block bug does not
+     * apply and the bar anchors to the viewport correctly.
+     *
+     * #root has no overflow:hidden (see globals.css), which prevents the
+     * other WebKit quirk where overflow:hidden on a fixed element clips its
+     * fixed children.
+     *
+     * Compact height ~44 px: icon (18) + gap (2) + label (13) + py (4+4) + pb (4) = 45 px.
+     * bg-[#0f1024] matches body background-color so the iOS home-indicator
+     * strip below the viewport renders the same colour — the strip is invisible.
      */
     <div
-      className="flex shrink-0 items-center justify-around border-t border-white/[0.08] bg-white/95 px-2 dark:bg-[#0f1024]"
-      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom, 0px))' }}
+      className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-white/[0.08] bg-white/95 px-2 dark:bg-[#0f1024]"
+      style={{ paddingBottom: 'max(4px, env(safe-area-inset-bottom, 0px))' }}
     >
       {TABS.map(({ key, label, icon: Icon }) => {
         const isActive = active === key
@@ -35,11 +41,11 @@ export function TabBar({ active, onChange }: TabBarProps) {
             key={key}
             type="button"
             onClick={() => onChange(key)}
-            className={`flex flex-1 flex-col items-center gap-0.5 rounded-lg py-1 text-[11px] font-medium transition-colors ${
+            className={`flex flex-1 flex-col items-center gap-px rounded-lg py-1 text-[10px] font-medium transition-colors ${
               isActive ? 'text-black/90 dark:text-white/90' : 'text-black/40 dark:text-white/40'
             }`}
           >
-            <Icon className="h-5 w-5" strokeWidth={isActive ? 2.4 : 2} />
+            <Icon className="h-[18px] w-[18px]" strokeWidth={isActive ? 2.4 : 2} />
             {label}
           </button>
         )

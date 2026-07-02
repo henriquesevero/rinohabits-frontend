@@ -2,24 +2,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
-html, body {
+html,
+body {
   height: 100%;
+  overflow: hidden;
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
 }
 
 /*
- * position:fixed + inset:0 + overflow:hidden is the only reliable way to
- * prevent body-level scroll and rubber-band on iOS PWA. All scrolling happens
- * inside the overflow-y-auto content div, never on the body.
- * height:100% keeps #root exactly the CSS viewport (793 px on this device).
+ * overflow:hidden lives on html+body (above), NOT on #root.
+ * Adding overflow:hidden to a position:fixed element in WebKit causes it to
+ * clip its own position:fixed descendants — which would cut the floating nav.
  */
 #root {
   position: fixed;
   inset: 0;
-  height: 100%;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
