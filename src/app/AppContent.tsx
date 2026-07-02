@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useState, type ReactElement } from 'react'
-import { FloatingNav } from '../components/layout/FloatingNav'
-import { MacWindow } from '../components/layout/MacWindow'
+import { AppShell } from '../components/layout/AppShell'
 import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
 import { AccountPage } from '../pages/AccountPage'
@@ -23,24 +22,29 @@ export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
 
-  if (isLoading) {
-    return (
-      <MacWindow>
-        <div className="flex h-full items-center justify-center text-sm text-white/50">
-          Carregando…
-        </div>
-      </MacWindow>
-    )
-  }
-
   const ActivePage = PAGES[activeTab]
 
   return (
-    <MacWindow footer={isAuthenticated ? <FloatingNav active={activeTab} onChange={setActiveTab} /> : undefined}>
+    <AppShell
+      activeTab={activeTab}
+      onTabChange={setActiveTab}
+      showNav={isAuthenticated && !isLoading}
+    >
       <AnimatePresence mode="wait">
-        {!isAuthenticated ? (
+        {isLoading ? (
+          <motion.div
+            key="loading"
+            className="flex h-full items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <p className="text-sm text-white/40">Carregando…</p>
+          </motion.div>
+        ) : !isAuthenticated ? (
           <motion.div
             key="lock-screen"
+            className="h-full"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, scale: 1.08, filter: 'blur(12px)' }}
@@ -51,17 +55,17 @@ export function AppContent() {
         ) : (
           <motion.div
             key="authenticated"
-            initial={{ opacity: 0, scale: 0.96, filter: 'blur(8px)' }}
+            initial={{ opacity: 0, scale: 0.97, filter: 'blur(6px)' }}
             animate={{ opacity: 1, scale: 1, filter: 'blur(0px)' }}
-            transition={{ duration: 0.5, ease: 'easeOut' }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
           >
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeTab}
-                initial={{ opacity: 0, y: 6 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -6 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
               >
                 <ActivePage />
               </motion.div>
@@ -69,6 +73,6 @@ export function AppContent() {
           </motion.div>
         )}
       </AnimatePresence>
-    </MacWindow>
+    </AppShell>
   )
 }

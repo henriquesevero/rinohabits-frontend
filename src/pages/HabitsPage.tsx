@@ -22,7 +22,7 @@ function markCelebratedToday(date: string): void {
 }
 
 export function HabitsPage() {
-  const { user, logout } = useAuthContext()
+  const { user } = useAuthContext()
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
   const { summary } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
@@ -81,15 +81,7 @@ export function HabitsPage() {
       />
 
       <div className="flex h-full flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Olá, {user?.name}</h1>
-          <button
-            onClick={logout}
-            className="rounded-lg border border-white/30 px-3 py-1.5 text-xs text-black/60 hover:bg-white/20 dark:text-white/60"
-          >
-            Sair
-          </button>
-        </div>
+        <p className="text-sm text-white/50">Olá, {user?.name} 👋</p>
 
         <StreakCard
           streak={dashboard?.streak ?? 0}
