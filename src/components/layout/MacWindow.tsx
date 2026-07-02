@@ -16,7 +16,7 @@ export function MacWindow({ children, footer }: MacWindowProps) {
     <div className="flex min-h-0 w-full flex-1 flex-col">
       <div
         className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-4 md:px-6"
-        style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
+        style={{ paddingTop: 'max(3.5rem, env(safe-area-inset-top, 3.5rem))' }}
       >
         {children}
       </div>
