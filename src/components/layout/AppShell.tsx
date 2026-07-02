@@ -83,8 +83,15 @@ export function AppShell({ children, activeTab, onTabChange, showNav }: AppShell
       )}
 
       {/* ── Scrollable content ── */}
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 pb-8">
-        {children}
+      <div className="relative min-h-0 flex-1">
+        <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10">
+          {children}
+        </div>
+        {/* fade-out at the bottom so content dissolves instead of hard-clipping */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
+          style={{ background: 'linear-gradient(to bottom, transparent, #0f1024)' }}
+        />
       </div>
     </div>
   )
