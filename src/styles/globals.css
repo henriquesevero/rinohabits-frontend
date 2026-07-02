@@ -5,11 +5,7 @@
 html,
 body {
   height: 100%;
-  /*
-   * #0f1024 matches the radial-gradient 100% stop in Wallpaper.tsx.
-   * The iOS home-indicator strip (below the CSS viewport) renders in this colour
-   * and blends seamlessly with the transparent area below the floating pill.
-   */
+  overflow: hidden; /* belt-and-suspenders: prevents body scroll on iOS WebKit */
   background-color: #0f1024;
   overscroll-behavior-y: none;
   touch-action: manipulation;
