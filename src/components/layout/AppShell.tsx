@@ -49,12 +49,9 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
         <>
           {/* ── Header ── */}
           <div className="flex shrink-0 items-center justify-between px-5 py-2">
-            <div className="flex items-center gap-2.5">
-              <img src="/favicon.svg" alt="" className="h-7 w-7 drop-shadow-lg" />
-              <span className="text-[17px] font-bold tracking-tight text-black/85 dark:text-white">
-                {firstName ? `Olá, ${firstName}` : 'RinoHabits'}
-              </span>
-            </div>
+            <span className="text-[17px] font-bold tracking-tight text-black/85 dark:text-white">
+              {firstName ? `Olá, ${firstName}` : 'RinoHabits'}
+            </span>
 
             <button
               type="button"
