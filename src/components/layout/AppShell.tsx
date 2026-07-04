@@ -1,6 +1,7 @@
 import { BarChart3, BookOpen, Flame, GraduationCap, User } from 'lucide-react'
 import { useRef, type ReactNode } from 'react'
 import type { TabKey } from '../../app/tabs'
+import { useAuthContext } from '../../context/AuthContext'
 
 const MAIN_TABS = [
   { key: 'habits' as TabKey, label: 'Hábitos', icon: Flame },
@@ -18,7 +19,9 @@ interface AppShellProps {
 }
 
 export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }: AppShellProps) {
+  const { user } = useAuthContext()
   const touchStart = useRef<{ x: number; y: number } | null>(null)
+  const firstName = user?.name?.split(' ')[0] ?? ''
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
@@ -47,7 +50,7 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
             <div className="flex items-center gap-2.5">
               <img src="/favicon.svg" alt="" className="h-7 w-7 drop-shadow-lg" />
               <span className="text-[17px] font-bold tracking-tight text-black/85 dark:text-white">
-                RinoHabits
+                {firstName ? `Olá, ${firstName}` : 'RinoHabits'}
               </span>
             </div>
 

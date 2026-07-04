@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { HabitsCompleteConfetti } from '../components/ui/HabitsCompleteConfetti'
-import { useAuthContext } from '../context/AuthContext'
 import { EditHabitModal } from '../features/habits/components/EditHabitModal'
 import { HabitForm } from '../features/habits/components/HabitForm'
 import { HabitList } from '../features/habits/components/HabitList'
@@ -12,7 +11,6 @@ import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
 export function HabitsPage() {
-  const { user } = useAuthContext()
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
   const { summary } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
@@ -73,8 +71,6 @@ export function HabitsPage() {
       />
 
       <div className="flex flex-col gap-4">
-        <p className="text-sm text-white/50">Olá, {user?.name} 👋</p>
-
         <StreakCard
           streak={dashboard?.streak ?? 0}
           activeDays={summary?.activeDays ?? 0}
