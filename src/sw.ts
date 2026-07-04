@@ -36,7 +36,6 @@ self.addEventListener('push', (event) => {
     self.registration.showNotification(title, {
       body,
       icon: '/icon-192.png',
-      badge: '/favicon.svg',
       tag: 'habit-reminder',
     }),
   )
