@@ -19,7 +19,6 @@ export interface HabitFormValue {
   icon: string
   color: string
   activeWeekdays: number[]
-  monthlyTarget: string
 }
 
 interface HabitFormFieldsProps {
@@ -74,16 +73,7 @@ export function HabitFormFields({ value, onChange }: HabitFormFieldsProps) {
         ))}
       </div>
 
-      <input
-        type="number"
-        min={1}
-        value={value.monthlyTarget}
-        onChange={(event) => onChange({ ...value, monthlyTarget: event.target.value })}
-        placeholder="Meta no mês (opcional, ex: 12)"
-        className="w-full rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
-      />
-
-      <div className="flex flex-wrap gap-2">
+<div className="flex flex-wrap gap-2">
         {COLOR_PRESETS.map((preset) => (
           <button
             key={preset}

@@ -9,7 +9,6 @@ const EMPTY_VALUE: HabitFormValue = {
   icon: '✅',
   color: COLOR_PRESETS[0],
   activeWeekdays: [],
-  monthlyTarget: '',
 }
 
 interface HabitFormProps {
@@ -35,8 +34,6 @@ export function HabitForm({ onCreate, formRef }: HabitFormProps) {
     event.preventDefault()
     if (!value.name || value.activeWeekdays.length === 0) return
 
-    const parsedTarget = Number.parseInt(value.monthlyTarget, 10)
-
     setIsSubmitting(true)
     try {
       await onCreate({
@@ -44,7 +41,7 @@ export function HabitForm({ onCreate, formRef }: HabitFormProps) {
         icon: value.icon,
         color: value.color,
         activeWeekdays: value.activeWeekdays,
-        monthlyTarget: Number.isFinite(parsedTarget) && parsedTarget > 0 ? parsedTarget : null,
+        monthlyTarget: null,
       })
       setValue(EMPTY_VALUE)
       setIsOpen(false)

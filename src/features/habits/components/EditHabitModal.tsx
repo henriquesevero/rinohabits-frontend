@@ -15,7 +15,6 @@ function toFormValue(habit: Habit): HabitFormValue {
     icon: habit.icon,
     color: habit.color,
     activeWeekdays: habit.activeWeekdays,
-    monthlyTarget: habit.monthlyTarget ? String(habit.monthlyTarget) : '',
   }
 }
 
@@ -31,8 +30,6 @@ export function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) 
     event.preventDefault()
     if (!habit || !value || !value.name || value.activeWeekdays.length === 0) return
 
-    const parsedTarget = Number.parseInt(value.monthlyTarget, 10)
-
     setIsSubmitting(true)
     try {
       await onSave(habit.id, {
@@ -40,7 +37,7 @@ export function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) 
         icon: value.icon,
         color: value.color,
         activeWeekdays: value.activeWeekdays,
-        monthlyTarget: Number.isFinite(parsedTarget) && parsedTarget > 0 ? parsedTarget : null,
+        monthlyTarget: null,
       })
       onClose()
     } finally {
