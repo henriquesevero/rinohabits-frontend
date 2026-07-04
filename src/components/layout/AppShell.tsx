@@ -1,4 +1,5 @@
 import { BarChart3, BookOpen, Flame, GraduationCap, User } from 'lucide-react'
+import md5 from 'blueimp-md5'
 import { useRef, type ReactNode } from 'react'
 import type { TabKey } from '../../app/tabs'
 import { useAuthContext } from '../../context/AuthContext'
@@ -22,6 +23,7 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
   const { user } = useAuthContext()
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const firstName = user?.name?.split(' ')[0] ?? ''
+  const avatarUrl = user ? `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mp&s=80` : null
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
@@ -59,11 +61,15 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
               onClick={() => onTabChange('account')}
               className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
                 activeTab === 'account'
-                  ? 'border-[#00E08A]/40 bg-[#00E08A]/20 text-[#007a4c] dark:border-[#3CFFB0]/30 dark:bg-[#3CFFB0]/15 dark:text-[#3CFFB0]'
-                  : 'border-black/15 bg-black/[0.06] text-black/50 dark:border-white/20 dark:bg-white/10 dark:text-white/60 active:bg-black/10 dark:active:bg-white/20'
+                  ? 'border-[#00E08A]/60 ring-2 ring-[#00E08A]/40 dark:border-[#3CFFB0]/50 dark:ring-[#3CFFB0]/30'
+                  : 'border-black/15 dark:border-white/20'
               }`}
             >
-              <User className="h-[18px] w-[18px]" strokeWidth={activeTab === 'account' ? 2.5 : 1.8} />
+              {avatarUrl ? (
+                <img src={avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
+              ) : (
+                <User className="h-[18px] w-[18px] text-black/50 dark:text-white/60" strokeWidth={activeTab === 'account' ? 2.5 : 1.8} />
+              )}
             </button>
           </div>
 
