@@ -16,13 +16,20 @@ export async function subscribeToPush(reminderHour: number, reminderMinute: numb
     applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
   })
 
+  // Convert local time to UTC — backend scheduler runs in UTC (Railway)
+  const offsetMinutes = new Date().getTimezoneOffset()
+  const localTotal = reminderHour * 60 + reminderMinute
+  const utcTotal = (localTotal + offsetMinutes + 1440) % 1440
+  const utcHour = Math.floor(utcTotal / 60)
+  const utcMinute = utcTotal % 60
+
   const json = sub.toJSON()
   await apiClient.post('/notifications/subscribe', {
     endpoint: sub.endpoint,
     p256dh: json.keys?.p256dh ?? '',
     auth: json.keys?.auth ?? '',
-    reminder_hour: reminderHour,
-    reminder_minute: reminderMinute,
+    reminder_hour: utcHour,
+    reminder_minute: utcMinute,
   })
 
   return sub

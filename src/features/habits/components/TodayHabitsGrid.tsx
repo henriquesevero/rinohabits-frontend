@@ -51,7 +51,6 @@ export function TodayHabitsGrid({ habits, onToggle }: TodayHabitsGridProps) {
 
   function handleTap(habitId: string, isCompleted: boolean) {
     if (!isCompleted) {
-      navigator.vibrate?.([12, 40, 18])
       setBurstId(habitId)
       setTimeout(() => setBurstId(null), 550)
     }
