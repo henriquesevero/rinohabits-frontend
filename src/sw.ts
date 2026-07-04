@@ -3,8 +3,8 @@ import { registerRoute } from 'workbox-routing'
 import { CacheFirst, NetworkFirst } from 'workbox-strategies'
 import { ExpirationPlugin } from 'workbox-expiration'
 
-declare let self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: { url: string; revision: string | null }[]
+declare var self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<{ url: string; revision: string | null }>
 }
 
 cleanupOutdatedCaches()
@@ -28,9 +28,9 @@ registerRoute(
 )
 
 self.addEventListener('push', (event) => {
-  const data = (event as PushEvent).data?.json() ?? {}
-  const title: string = data.title ?? 'RinoHabits'
-  const body: string = data.body ?? 'Você tem hábitos para completar hoje!'
+  const data = event.data?.json() as { title?: string; body?: string } ?? {}
+  const title = data.title ?? 'RinoHabits'
+  const body = data.body ?? 'Você tem hábitos para completar hoje!'
 
   event.waitUntil(
     self.registration.showNotification(title, {
@@ -38,13 +38,12 @@ self.addEventListener('push', (event) => {
       icon: '/icon-192.png',
       badge: '/favicon.svg',
       tag: 'habit-reminder',
-      renotify: true,
     }),
   )
 })
 
 self.addEventListener('notificationclick', (event) => {
-  ;(event as NotificationEvent).notification.close()
+  event.notification.close()
   event.waitUntil(
     self.clients.matchAll({ type: 'window' }).then((clients) => {
       const existing = clients.find((c) => 'focus' in c)
