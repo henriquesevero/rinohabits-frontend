@@ -1,6 +1,17 @@
 import { apiClient } from '../../../services/apiClient'
 import type { AuthResponse, AuthUser, LoginCredentials, RegisterPayload } from '../types/auth.types'
 
+interface MeApiDto {
+  id: string
+  name: string
+  email: string
+  avatar_url: string | null
+}
+
+function mapUser(dto: MeApiDto): AuthUser {
+  return { id: dto.id, name: dto.name, email: dto.email, avatarUrl: dto.avatar_url ?? null }
+}
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const { data } = await apiClient.post<AuthResponse>('/auth/login', credentials)
@@ -13,7 +24,16 @@ export const authService = {
   },
 
   async me(): Promise<AuthUser> {
-    const { data } = await apiClient.get<AuthUser>('/me')
-    return data
+    const { data } = await apiClient.get<MeApiDto>('/me')
+    return mapUser(data)
+  },
+
+  async uploadAvatar(file: File): Promise<string> {
+    const form = new FormData()
+    form.append('avatar', file)
+    const { data } = await apiClient.post<{ avatar_url: string }>('/me/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return data.avatar_url
   },
 }

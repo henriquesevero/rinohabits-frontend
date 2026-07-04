@@ -1,7 +1,8 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
-import { Bell, BellOff, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Bell, BellOff, Camera, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
+import { useRef, useState, type FormEvent } from 'react'
+import { authService } from '../features/auth/services/authService'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
 import { useThemeContext } from '../context/ThemeContext'
@@ -12,7 +13,26 @@ export function AccountPage() {
   const { user, logout, refreshUser } = useAuthContext()
   const { theme, setTheme } = useThemeContext()
   const emailHash = user ? md5(user.email.trim().toLowerCase()) : ''
-  const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=128`
+  const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=128`
+  const avatarUrl = user?.avatarUrl ?? gravatarUrl
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false)
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsUploadingAvatar(true)
+    try {
+      await authService.uploadAvatar(file)
+      await refreshUser()
+    } catch {
+      // silently ignore
+    } finally {
+      setIsUploadingAvatar(false)
+      e.target.value = ''
+    }
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -20,10 +40,32 @@ export function AccountPage() {
 
       {/* Avatar */}
       <div className="flex flex-col items-center gap-3 rounded-xl border border-white/20 bg-white/40 p-6 backdrop-blur-md dark:bg-black/30">
-        <img src={avatarUrl} alt={user?.name} className="h-20 w-20 rounded-full border border-white/30" />
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={isUploadingAvatar}
+          className="relative h-20 w-20 shrink-0"
+        >
+          <img src={avatarUrl} alt={user?.name} className="h-20 w-20 rounded-full border border-white/30 object-cover" />
+          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity hover:opacity-100">
+            {isUploadingAvatar ? (
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : (
+              <Camera className="h-5 w-5 text-white" />
+            )}
+          </span>
+        </button>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          className="hidden"
+          onChange={handleAvatarChange}
+        />
         <div className="text-center">
           <p className="text-sm font-semibold text-black/80 dark:text-white/80">{user?.name}</p>
           <p className="text-xs text-black/50 dark:text-white/50">{user?.email}</p>
+          <p className="mt-1 text-[11px] text-black/35 dark:text-white/35">Toque na foto para alterar</p>
         </div>
       </div>
 

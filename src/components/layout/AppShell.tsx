@@ -23,7 +23,8 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
   const { user } = useAuthContext()
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const firstName = user?.name?.split(' ')[0] ?? ''
-  const avatarUrl = user ? `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mp&s=80` : null
+  const gravatarUrl = user ? `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mp&s=80` : null
+  const avatarUrl = user?.avatarUrl ?? gravatarUrl
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
