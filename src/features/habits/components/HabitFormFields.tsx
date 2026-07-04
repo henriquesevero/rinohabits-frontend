@@ -42,9 +42,11 @@ export function HabitFormFields({ value, onChange }: HabitFormFieldsProps) {
       <div className="flex gap-2">
         <input
           value={value.icon}
-          onChange={(event) => onChange({ ...value, icon: event.target.value })}
+          onChange={(event) => {
+            const segments = [...new Intl.Segmenter().segment(event.target.value)]
+            onChange({ ...value, icon: segments[0]?.segment ?? '' })
+          }}
           className="w-12 rounded-lg border border-white/30 bg-white/40 px-2 py-2 text-center text-lg outline-none dark:bg-black/30"
-          maxLength={2}
         />
         <input
           value={value.name}
