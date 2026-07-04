@@ -1,6 +1,6 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
-import { Bell, BellOff, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
+import { Bell, BellOff, Clock, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
@@ -120,25 +120,30 @@ function NotificationSection() {
       )}
 
       {isSubscribed && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
-          <input
-            type="time"
-            value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
-            onChange={(e) => {
-              const [h, m] = e.target.value.split(':').map(Number)
-              if (!Number.isNaN(h) && !Number.isNaN(m)) {
-                setLocalHour(h)
-                setLocalMinute(m)
-              }
-            }}
-            onBlur={(e) => {
-              const [h, m] = e.target.value.split(':').map(Number)
-              if (!Number.isNaN(h) && !Number.isNaN(m)) subscribe(h, m)
-            }}
-            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-          />
-        </div>
+        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#00E08A]/35 bg-[#00E08A]/10 px-4 py-3 dark:border-[#3CFFB0]/20 dark:bg-[#3CFFB0]/8">
+          <Clock className="h-4 w-4 shrink-0 text-[#007a4c] dark:text-[#3CFFB0]" />
+          <div className="flex flex-1 flex-col gap-0.5">
+            <span className="text-[10px] font-medium uppercase tracking-wide text-[#005c35]/60 dark:text-[#3CFFB0]/50">
+              Lembrar às
+            </span>
+            <input
+              type="time"
+              value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
+              onChange={(e) => {
+                const [h, m] = e.target.value.split(':').map(Number)
+                if (!Number.isNaN(h) && !Number.isNaN(m)) {
+                  setLocalHour(h)
+                  setLocalMinute(m)
+                }
+              }}
+              onBlur={(e) => {
+                const [h, m] = e.target.value.split(':').map(Number)
+                if (!Number.isNaN(h) && !Number.isNaN(m)) subscribe(h, m)
+              }}
+              className="w-full bg-transparent text-lg font-bold text-[#004d2e] outline-none dark:text-[#3CFFB0] [color-scheme:light] dark:[color-scheme:dark]"
+            />
+          </div>
+        </label>
       )}
 
       {!isSubscribed && status !== 'denied' && (
