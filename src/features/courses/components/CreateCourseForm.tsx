@@ -67,7 +67,7 @@ export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         placeholder="Nome do curso*"
-        className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+        className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
         required
       />
       <textarea
@@ -75,14 +75,14 @@ export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
         onChange={(e) => setDescription(e.target.value)}
         placeholder="Descrição"
         rows={2}
-        className="resize-none rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+        className="resize-none rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
       <input
         type="url"
         value={link}
         onChange={(e) => setLink(e.target.value)}
         placeholder="Link de acesso (https://...)"
-        className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+        className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
       <input
         type="number"
@@ -91,7 +91,7 @@ export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
         value={totalHours}
         onChange={(e) => setTotalHours(e.target.value)}
         placeholder="Total de horas"
-        className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+        className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
       <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
         {STATUS_OPTIONS.map((opt) => (

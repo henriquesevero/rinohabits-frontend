@@ -220,7 +220,7 @@ function ChangeEmailForm({ currentEmail, onSuccess }: { currentEmail: string; on
             onChange={(e) => setNewEmail(e.target.value)}
             placeholder="Novo e-mail"
             required
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           <input
             type="password"
@@ -228,7 +228,7 @@ function ChangeEmailForm({ currentEmail, onSuccess }: { currentEmail: string; on
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Senha atual para confirmar"
             required
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           {error && <p className="text-xs text-red-500">{error}</p>}
           {success && <p className="text-xs text-emerald-600 dark:text-emerald-400">E-mail atualizado!</p>}
@@ -294,7 +294,7 @@ function ChangePasswordForm() {
             onChange={(e) => setCurrentPassword(e.target.value)}
             placeholder="Senha atual"
             required
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           <input
             type="password"
@@ -302,7 +302,7 @@ function ChangePasswordForm() {
             onChange={(e) => setNewPassword(e.target.value)}
             placeholder="Nova senha (mín. 8 caracteres)"
             required
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           {error && <p className="text-xs text-red-500">{error}</p>}
           {success && <p className="text-xs text-emerald-600 dark:text-emerald-400">Senha atualizada!</p>}
@@ -362,7 +362,7 @@ function DeleteAccountSection({ onDeleted }: { onDeleted: () => void }) {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Confirme sua senha"
-            className="rounded-lg border border-red-300/40 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-red-300/40 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-red-400/30 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           {error && <p className="text-xs text-red-500">{error}</p>}
           <div className="flex gap-2">

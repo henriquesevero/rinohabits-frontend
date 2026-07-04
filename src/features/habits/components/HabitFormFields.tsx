@@ -51,7 +51,7 @@ export function HabitFormFields({ value, onChange }: HabitFormFieldsProps) {
           value={value.name}
           onChange={(event) => onChange({ ...value, name: event.target.value })}
           placeholder="Nome do hábito"
-          className="flex-1 rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+          className="flex-1 rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           required
         />
       </div>

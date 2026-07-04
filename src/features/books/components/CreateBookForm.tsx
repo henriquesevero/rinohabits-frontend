@@ -117,7 +117,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Título ou autor..."
-              className="flex-1 rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+              className="flex-1 rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
             />
             <button
               type="submit"
@@ -210,13 +210,13 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             onChange={(e) => setTitle(e.target.value)}
             placeholder="Título do livro*"
             required
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           <input
             value={author}
             onChange={(e) => setAuthor(e.target.value)}
             placeholder="Autor"
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
           <input
             type="number"
@@ -224,7 +224,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             value={totalPages}
             onChange={(e) => setTotalPages(e.target.value)}
             placeholder="Total de páginas"
-            className="rounded-lg border border-white/30 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:bg-black/30 dark:text-white/80"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
 
           <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
