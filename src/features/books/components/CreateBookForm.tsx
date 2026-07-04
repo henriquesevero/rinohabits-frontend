@@ -22,6 +22,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const [results, setResults] = useState<GoogleBook[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [hasSearched, setHasSearched] = useState(false)
+  const [searchError, setSearchError] = useState(false)
 
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -47,11 +48,13 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     if (!query.trim()) return
     setIsSearching(true)
     setHasSearched(true)
+    setSearchError(false)
     try {
       const data = await bookService.searchGoogle(query.trim())
       setResults(data)
     } catch {
       setResults([])
+      setSearchError(true)
     } finally {
       setIsSearching(false)
     }
@@ -132,7 +135,13 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             </button>
           </form>
 
-          {hasSearched && !isSearching && results.length === 0 && (
+          {hasSearched && !isSearching && searchError && (
+            <p className="text-center text-xs text-red-500 dark:text-red-400">
+              Erro ao buscar. Verifique sua conexão e tente novamente.
+            </p>
+          )}
+
+          {hasSearched && !isSearching && !searchError && results.length === 0 && (
             <p className="text-center text-xs text-black/40 dark:text-white/40">
               Nenhum resultado encontrado.
             </p>
