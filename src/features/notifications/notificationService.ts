@@ -39,3 +39,7 @@ export async function getExistingSubscription(): Promise<PushSubscription | null
   const registration = await navigator.serviceWorker.ready
   return registration.pushManager.getSubscription()
 }
+
+export async function sendTestNotification(): Promise<void> {
+  await apiClient.post('/notifications/test', {})
+}

@@ -5,6 +5,7 @@ import { useState, type FormEvent } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
 import { useThemeContext } from '../context/ThemeContext'
+import { sendTestNotification } from '../features/notifications/notificationService'
 import { usePushNotifications } from '../features/notifications/usePushNotifications'
 import { accountService } from '../features/profile/services/accountService'
 
@@ -84,11 +85,27 @@ function NotificationSection() {
   const { status, reminderHour, reminderMinute, subscribe, unsubscribe } = usePushNotifications()
   const [localHour, setLocalHour] = useState(reminderHour)
   const [localMinute, setLocalMinute] = useState(reminderMinute)
+  const [testing, setTesting] = useState(false)
+  const [testResult, setTestResult] = useState<'ok' | 'err' | null>(null)
 
   if (status === 'unsupported') return null
 
   const isSubscribed = status === 'subscribed'
   const isLoading = status === 'loading'
+
+  async function handleTest() {
+    setTesting(true)
+    setTestResult(null)
+    try {
+      await sendTestNotification()
+      setTestResult('ok')
+    } catch {
+      setTestResult('err')
+    } finally {
+      setTesting(false)
+      setTimeout(() => setTestResult(null), 4000)
+    }
+  }
 
   function applyTime(h: number, m: number) {
     setLocalHour(h)
@@ -128,26 +145,40 @@ function NotificationSection() {
       )}
 
       {isSubscribed && (
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
-          <select
-            value={localHour}
-            onChange={(e) => applyTime(Number(e.target.value), localMinute)}
-            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-          >
-            {HOURS.map((h) => (
-              <option key={h} value={h}>{String(h).padStart(2, '0')}h</option>
-            ))}
-          </select>
-          <select
-            value={localMinute}
-            onChange={(e) => applyTime(localHour, Number(e.target.value))}
-            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-          >
-            {MINUTES.map((m) => (
-              <option key={m} value={m}>{String(m).padStart(2, '0')}min</option>
-            ))}
-          </select>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
+            <select
+              value={localHour}
+              onChange={(e) => applyTime(Number(e.target.value), localMinute)}
+              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+            >
+              {HOURS.map((h) => (
+                <option key={h} value={h}>{String(h).padStart(2, '0')}h</option>
+              ))}
+            </select>
+            <select
+              value={localMinute}
+              onChange={(e) => applyTime(localHour, Number(e.target.value))}
+              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+            >
+              {MINUTES.map((m) => (
+                <option key={m} value={m}>{String(m).padStart(2, '0')}min</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleTest}
+              disabled={testing}
+              className="rounded-lg border border-white/30 px-3 py-1 text-xs text-black/60 hover:bg-black/5 disabled:opacity-50 dark:text-white/60 dark:hover:bg-white/10"
+            >
+              {testing ? 'Enviando…' : 'Testar notificação'}
+            </button>
+            {testResult === 'ok' && <span className="text-xs text-[#007a4c] dark:text-[#3CFFB0]">Enviado!</span>}
+            {testResult === 'err' && <span className="text-xs text-red-500">Falhou. Veja os logs.</span>}
+          </div>
         </div>
       )}
 
