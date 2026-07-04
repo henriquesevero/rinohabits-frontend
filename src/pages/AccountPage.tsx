@@ -78,8 +78,6 @@ export function AccountPage() {
   )
 }
 
-const HOURS = Array.from({ length: 18 }, (_, i) => i + 6) // 06–23
-const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 function NotificationSection() {
   const { status, reminderHour, reminderMinute, subscribe, unsubscribe } = usePushNotifications()
@@ -148,24 +146,15 @@ function NotificationSection() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
-            <select
-              value={localHour}
-              onChange={(e) => applyTime(Number(e.target.value), localMinute)}
-              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-            >
-              {HOURS.map((h) => (
-                <option key={h} value={h}>{String(h).padStart(2, '0')}h</option>
-              ))}
-            </select>
-            <select
-              value={localMinute}
-              onChange={(e) => applyTime(localHour, Number(e.target.value))}
-              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-            >
-              {MINUTES.map((m) => (
-                <option key={m} value={m}>{String(m).padStart(2, '0')}min</option>
-              ))}
-            </select>
+            <input
+              type="time"
+              value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
+              onChange={(e) => {
+                const [h, m] = e.target.value.split(':').map(Number)
+                if (!Number.isNaN(h) && !Number.isNaN(m)) applyTime(h, m)
+              }}
+              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+            />
           </div>
           <div className="flex items-center gap-2">
             <button
