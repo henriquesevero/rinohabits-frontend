@@ -18,6 +18,16 @@ export interface CreateBookPayload {
   author: string
   totalPages: number | null
   status: BookStatus
+  coverUrl?: string | null
+}
+
+export interface GoogleBook {
+  google_id: string
+  title: string
+  author: string
+  page_count: number
+  description: string
+  cover_url: string
 }
 
 export interface UpdateBookPayload {

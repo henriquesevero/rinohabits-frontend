@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/apiClient'
-import type { Book, BookStatus, CreateBookPayload, ReadingStats, UpdateBookPayload } from '../types/book.types'
+import type { Book, BookStatus, CreateBookPayload, GoogleBook, ReadingStats, UpdateBookPayload } from '../types/book.types'
 
 interface BookApiDto {
   id: string
@@ -52,8 +52,14 @@ export const bookService = {
       author: payload.author,
       total_pages: payload.totalPages,
       status: payload.status,
+      cover_url: payload.coverUrl ?? null,
     })
     return mapBook(data)
+  },
+
+  async searchGoogle(q: string): Promise<GoogleBook[]> {
+    const { data } = await apiClient.get<GoogleBook[]>('/books/google-search', { params: { q } })
+    return data
   },
 
   async update(bookId: string, payload: UpdateBookPayload): Promise<Book> {
