@@ -9,7 +9,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)))
 }
 
-export async function subscribeToPush(reminderHour: number, reminderMinute: number): Promise<PushSubscription> {
+export async function subscribeToPush(): Promise<PushSubscription> {
   const registration = await navigator.serviceWorker.ready
   const sub = await registration.pushManager.subscribe({
     userVisibleOnly: true,
@@ -21,8 +21,6 @@ export async function subscribeToPush(reminderHour: number, reminderMinute: numb
     endpoint: sub.endpoint,
     p256dh: json.keys?.p256dh ?? '',
     auth: json.keys?.auth ?? '',
-    reminder_hour: reminderHour,
-    reminder_minute: reminderMinute,
   })
 
   return sub
@@ -38,8 +36,4 @@ export async function unsubscribeFromPush(sub: PushSubscription): Promise<void> 
 export async function getExistingSubscription(): Promise<PushSubscription | null> {
   const registration = await navigator.serviceWorker.ready
   return registration.pushManager.getSubscription()
-}
-
-export async function sendTestNotification(): Promise<void> {
-  await apiClient.post('/notifications/test', {})
 }

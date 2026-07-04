@@ -1,6 +1,6 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
-import { Bell, BellOff, Clock, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
+import { Bell, BellOff, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
@@ -79,9 +79,7 @@ export function AccountPage() {
 
 
 function NotificationSection() {
-  const { status, reminderHour, reminderMinute, subscribe, unsubscribe } = usePushNotifications()
-  const [localHour, setLocalHour] = useState(reminderHour)
-  const [localMinute, setLocalMinute] = useState(reminderMinute)
+  const { status, subscribe, unsubscribe } = usePushNotifications()
 
   if (status === 'unsupported') return null
 
@@ -100,7 +98,7 @@ function NotificationSection() {
         <button
           type="button"
           disabled={isLoading || status === 'denied'}
-          onClick={() => (isSubscribed ? unsubscribe() : subscribe(localHour, localMinute))}
+          onClick={() => (isSubscribed ? unsubscribe() : subscribe())}
           className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
             isSubscribed ? 'bg-[#00E08A]' : 'bg-black/20 dark:bg-white/20'
           }`}
@@ -120,35 +118,14 @@ function NotificationSection() {
       )}
 
       {isSubscribed && (
-        <label className="flex cursor-pointer items-center gap-3 rounded-xl border border-[#00E08A]/35 bg-[#00E08A]/10 px-4 py-3 dark:border-[#3CFFB0]/20 dark:bg-[#3CFFB0]/8">
-          <Clock className="h-4 w-4 shrink-0 text-[#007a4c] dark:text-[#3CFFB0]" />
-          <div className="flex flex-1 flex-col gap-0.5">
-            <span className="text-[10px] font-medium uppercase tracking-wide text-[#005c35]/60 dark:text-[#3CFFB0]/50">
-              Lembrar às
-            </span>
-            <input
-              type="time"
-              value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
-              onChange={(e) => {
-                const [h, m] = e.target.value.split(':').map(Number)
-                if (!Number.isNaN(h) && !Number.isNaN(m)) {
-                  setLocalHour(h)
-                  setLocalMinute(m)
-                }
-              }}
-              onBlur={(e) => {
-                const [h, m] = e.target.value.split(':').map(Number)
-                if (!Number.isNaN(h) && !Number.isNaN(m)) subscribe(h, m)
-              }}
-              className="w-full bg-transparent text-lg font-bold text-[#004d2e] outline-none dark:text-[#3CFFB0] [color-scheme:light] dark:[color-scheme:dark]"
-            />
-          </div>
-        </label>
+        <p className="text-xs text-[#005c35]/70 dark:text-[#3CFFB0]/60">
+          Você receberá lembretes às 09h, 15h e 21h quando houver hábitos pendentes.
+        </p>
       )}
 
       {!isSubscribed && status !== 'denied' && (
         <p className="text-xs text-black/40 dark:text-white/40">
-          Ative para receber um aviso quando ainda houver hábitos pendentes no dia.
+          Ative para receber lembretes automáticos ao longo do dia.
         </p>
       )}
     </div>
