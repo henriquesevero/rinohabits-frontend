@@ -6,7 +6,7 @@ import { useAuthContext } from '../../context/AuthContext'
 
 const MAIN_TABS = [
   { key: 'habits' as TabKey, label: 'Hábitos', icon: Flame },
-  { key: 'stats' as TabKey, label: 'Stats', icon: BarChart3 },
+  { key: 'stats' as TabKey, label: 'Status', icon: BarChart3 },
   { key: 'books' as TabKey, label: 'Livros', icon: BookOpen },
   { key: 'courses' as TabKey, label: 'Cursos', icon: GraduationCap },
 ]
