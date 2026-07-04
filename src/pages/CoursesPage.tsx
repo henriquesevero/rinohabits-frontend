@@ -1,3 +1,4 @@
+import { BadgeCheck, CirclePlay, LayoutGrid, Pin, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { CourseDetailModal } from '../features/courses/components/CourseDetailModal'
@@ -8,11 +9,11 @@ import type { CourseStatus } from '../features/courses/types/course.types'
 
 type ShelfFilter = 'all' | CourseStatus
 
-const TABS: { status: ShelfFilter; label: string; emoji: string }[] = [
-  { status: 'all', label: 'Todos', emoji: '🎓' },
-  { status: 'fazendo', label: 'Fazendo', emoji: '▶️' },
-  { status: 'quero_fazer', label: 'Quero Fazer', emoji: '📌' },
-  { status: 'concluido', label: 'Concluído', emoji: '✅' },
+const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
+  { status: 'all',         label: 'Todos',       icon: LayoutGrid },
+  { status: 'fazendo',     label: 'Fazendo',     icon: CirclePlay },
+  { status: 'quero_fazer', label: 'Quero Fazer', icon: Pin        },
+  { status: 'concluido',   label: 'Concluído',   icon: BadgeCheck },
 ]
 
 const SHELF_ORDER: Record<CourseStatus, number> = { fazendo: 0, quero_fazer: 1, concluido: 2 }
@@ -94,13 +95,13 @@ export function CoursesPage() {
             key={tab.status}
             type="button"
             onClick={() => setActiveStatus(tab.status)}
-            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors ${
+            className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors ${
               activeStatus === tab.status
                 ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
                 : 'text-black/50 dark:text-white/50'
             }`}
           >
-            <span className="text-sm">{tab.emoji}</span>
+            <tab.icon className="h-4 w-4 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
             <span>{tab.label}</span>
             {counts[tab.status] > 0 && (
               <span

@@ -1,4 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
+import { BookCheck, BookOpen, Bookmark, Library, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -11,11 +12,11 @@ import type { Book, BookStatus } from '../features/books/types/book.types'
 
 type ShelfFilter = 'all' | BookStatus
 
-const TABS: { status: ShelfFilter; label: string; emoji: string }[] = [
-  { status: 'all', label: 'Estante', emoji: '📚' },
-  { status: 'lendo', label: 'Lendo', emoji: '📖' },
-  { status: 'quero_ler', label: 'Quero Ler', emoji: '🔖' },
-  { status: 'lido', label: 'Lido', emoji: '✅' },
+const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
+  { status: 'all',       label: 'Estante',    icon: Library   },
+  { status: 'lendo',     label: 'Lendo',      icon: BookOpen  },
+  { status: 'quero_ler', label: 'Quero Ler',  icon: Bookmark  },
+  { status: 'lido',      label: 'Lido',       icon: BookCheck },
 ]
 
 const SHELF_ORDER: Record<BookStatus, number> = { lendo: 0, quero_ler: 1, lido: 2 }
@@ -117,7 +118,7 @@ export function BooksPage() {
                 : 'text-black/50 dark:text-white/50'
             }`}
           >
-            <span>{tab.emoji}</span>
+            <tab.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
             {tab.label}
             {counts[tab.status] > 0 && (
               <span
