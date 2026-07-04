@@ -57,10 +57,12 @@ export function usePushNotifications() {
   const subscribe = useCallback(async (hour: number, minute: number) => {
     setStatus('loading')
     try {
-      const permission = await Notification.requestPermission()
-      if (permission !== 'granted') {
-        setStatus('denied')
-        return
+      if (Notification.permission !== 'granted') {
+        const permission = await Notification.requestPermission()
+        if (permission !== 'granted') {
+          setStatus('denied')
+          return
+        }
       }
       subRef.current = await subscribeToPush(hour, minute)
       setReminderHour(hour)
