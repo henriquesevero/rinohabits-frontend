@@ -153,7 +153,7 @@ export function CourseDetailModal({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="flex items-center gap-1 text-[11px] text-indigo-500 hover:underline dark:text-indigo-400"
+                    className="flex items-center gap-1 text-[11px] text-[#007a4c] hover:underline dark:text-[#00E08A]"
                   >
                     <ExternalLink className="h-3 w-3" />
                     Acessar curso
@@ -166,7 +166,7 @@ export function CourseDetailModal({
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                   <motion.div
-                    className={`h-full rounded-full ${isDone ? 'bg-emerald-500' : 'bg-indigo-400'}`}
+                    className={`h-full rounded-full ${isDone ? 'bg-emerald-500' : 'bg-[#00E08A]'}`}
                     animate={{ width: `${Math.min(course.percentage, 100)}%` }}
                     transition={{ duration: 0.4, ease: 'easeOut' }}
                   />

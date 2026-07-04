@@ -46,7 +46,7 @@ export function HabitCard({ item, onToggle, onEdit, onDelete }: HabitCardProps) 
         type="button"
         onClick={() => onEdit(habit.id)}
         title="Editar hábito"
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/25 transition-colors hover:bg-indigo-500/10 hover:text-indigo-500 active:bg-indigo-500/10 active:text-indigo-500 dark:text-white/25"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-black/25 transition-colors hover:bg-[#00E08A]/10 hover:text-[#007a4c] active:bg-[#00E08A]/10 active:text-[#007a4c] dark:hover:text-[#3CFFB0] dark:active:text-[#3CFFB0] dark:text-white/25"
       >
         <Pencil className="h-3.5 w-3.5" />
       </button>

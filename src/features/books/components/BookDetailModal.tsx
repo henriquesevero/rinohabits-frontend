@@ -147,7 +147,7 @@ export function BookDetailModal({
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                   <motion.div
-                    className={`h-full rounded-full ${isDone ? 'bg-emerald-500' : 'bg-indigo-400'}`}
+                    className={`h-full rounded-full ${isDone ? 'bg-emerald-500' : 'bg-[#00E08A]'}`}
                     animate={{ width: `${book.percentage}%` }}
                     transition={{ duration: 0.4, ease: 'easeOut' }}
                   />

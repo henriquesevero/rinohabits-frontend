@@ -40,7 +40,7 @@ export function ReadingStatsCard() {
       ) : (
         <div className="grid grid-cols-2 divide-x divide-black/10 dark:divide-white/10">
           <div className="flex flex-col items-center gap-0.5 pr-4">
-            <p className="text-3xl font-bold text-indigo-500">{stats?.pagesRead ?? 0}</p>
+            <p className="text-3xl font-bold text-[#007a4c] dark:text-[#00E08A]">{stats?.pagesRead ?? 0}</p>
             <p className="text-xs text-black/50 dark:text-white/50">Páginas lidas</p>
           </div>
           <div className="flex flex-col items-center gap-0.5 pl-4">

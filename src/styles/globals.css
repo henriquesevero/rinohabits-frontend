@@ -5,10 +5,15 @@
 html,
 body {
   height: 100%;
-  overflow: hidden; /* belt-and-suspenders: prevents body scroll on iOS WebKit */
-  background-color: #0f1024;
+  overflow: hidden;
+  background-color: #ffffff; /* light — matches gradient end */
   overscroll-behavior-y: none;
   touch-action: manipulation;
+}
+
+html.dark,
+html.dark body {
+  background-color: #050a07; /* dark — matches gradient end, hides home-indicator strip */
 }
 
 /*

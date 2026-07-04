@@ -106,7 +106,7 @@ export function CoursesPage() {
               <span
                 className={`rounded-full px-1 py-0.5 text-[10px] font-bold ${
                   activeStatus === tab.status
-                    ? 'bg-indigo-500 text-white'
+                    ? 'bg-[#007a4c] text-white dark:bg-[#00E08A] dark:text-black'
                     : 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50'
                 }`}
               >
