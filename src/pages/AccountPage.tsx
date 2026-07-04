@@ -5,7 +5,6 @@ import { useState, type FormEvent } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
 import { useThemeContext } from '../context/ThemeContext'
-import { sendTestNotification } from '../features/notifications/notificationService'
 import { usePushNotifications } from '../features/notifications/usePushNotifications'
 import { accountService } from '../features/profile/services/accountService'
 
@@ -83,33 +82,11 @@ function NotificationSection() {
   const { status, reminderHour, reminderMinute, subscribe, unsubscribe } = usePushNotifications()
   const [localHour, setLocalHour] = useState(reminderHour)
   const [localMinute, setLocalMinute] = useState(reminderMinute)
-  const [testing, setTesting] = useState(false)
-  const [testResult, setTestResult] = useState<'ok' | 'err' | null>(null)
 
   if (status === 'unsupported') return null
 
   const isSubscribed = status === 'subscribed'
   const isLoading = status === 'loading'
-
-  async function handleTest() {
-    setTesting(true)
-    setTestResult(null)
-    try {
-      await sendTestNotification()
-      setTestResult('ok')
-    } catch {
-      setTestResult('err')
-    } finally {
-      setTesting(false)
-      setTimeout(() => setTestResult(null), 4000)
-    }
-  }
-
-  function applyTime(h: number, m: number) {
-    setLocalHour(h)
-    setLocalMinute(m)
-    subscribe(h, m)
-  }
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
@@ -143,31 +120,24 @@ function NotificationSection() {
       )}
 
       {isSubscribed && (
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
-            <input
-              type="time"
-              value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
-              onChange={(e) => {
-                const [h, m] = e.target.value.split(':').map(Number)
-                if (!Number.isNaN(h) && !Number.isNaN(m)) applyTime(h, m)
-              }}
-              className="rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={handleTest}
-              disabled={testing}
-              className="rounded-lg border border-white/30 px-3 py-1 text-xs text-black/60 hover:bg-black/5 disabled:opacity-50 dark:text-white/60 dark:hover:bg-white/10"
-            >
-              {testing ? 'Enviando…' : 'Testar notificação'}
-            </button>
-            {testResult === 'ok' && <span className="text-xs text-[#007a4c] dark:text-[#3CFFB0]">Enviado!</span>}
-            {testResult === 'err' && <span className="text-xs text-red-500">Falhou. Veja os logs.</span>}
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
+          <input
+            type="time"
+            value={`${String(localHour).padStart(2, '0')}:${String(localMinute).padStart(2, '0')}`}
+            onChange={(e) => {
+              const [h, m] = e.target.value.split(':').map(Number)
+              if (!Number.isNaN(h) && !Number.isNaN(m)) {
+                setLocalHour(h)
+                setLocalMinute(m)
+              }
+            }}
+            onBlur={(e) => {
+              const [h, m] = e.target.value.split(':').map(Number)
+              if (!Number.isNaN(h) && !Number.isNaN(m)) subscribe(h, m)
+            }}
+            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+          />
         </div>
       )}
 
