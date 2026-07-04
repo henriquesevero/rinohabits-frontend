@@ -63,7 +63,7 @@ export function CoursesPage() {
   const selectedCourse = courses.find((c) => c.id === selectedCourseId) ?? null
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <CourseDetailModal
         course={selectedCourse}
         onRegisterStudy={async (id, hours) => { await registerStudy(id, hours) }}
@@ -94,14 +94,14 @@ export function CoursesPage() {
             key={tab.status}
             type="button"
             onClick={() => setActiveStatus(tab.status)}
-            className={`relative flex flex-1 items-center justify-center gap-1 rounded-lg px-1.5 py-1.5 text-[11px] font-medium transition-colors ${
+            className={`relative flex flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-1.5 text-[10px] font-medium transition-colors ${
               activeStatus === tab.status
                 ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
                 : 'text-black/50 dark:text-white/50'
             }`}
           >
-            <span>{tab.emoji}</span>
-            <span className="hidden sm:inline">{tab.label}</span>
+            <span className="text-sm">{tab.emoji}</span>
+            <span>{tab.label}</span>
             {counts[tab.status] > 0 && (
               <span
                 className={`rounded-full px-1 py-0.5 text-[10px] font-bold ${

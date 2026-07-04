@@ -14,7 +14,7 @@ export function AccountPage() {
   const avatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=128`
 
   return (
-    <div className="flex h-full flex-col gap-4">
+    <div className="flex flex-col gap-4">
       <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Minha Conta</h1>
 
       {/* Avatar */}

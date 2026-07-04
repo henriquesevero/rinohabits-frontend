@@ -80,7 +80,7 @@ export function HabitsPage() {
         onCancel={() => setHabitToDelete(null)}
       />
 
-      <div className="flex h-full flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <p className="text-sm text-white/50">Olá, {user?.name} 👋</p>
 
         <StreakCard

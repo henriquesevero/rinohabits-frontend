@@ -29,13 +29,14 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
     const dx = e.changedTouches[0].clientX - touchStart.current.x
     const dy = e.changedTouches[0].clientY - touchStart.current.y
     touchStart.current = null
-    // only trigger when gesture is clearly horizontal (2:1 ratio + 50 px minimum)
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 2) return
+    // require 70 px + clearly 2.5:1 horizontal ratio to avoid false triggers
+    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 2.5) return
     onSwipe(dx < 0 ? 1 : -1)
   }
 
   return (
     <div className="flex min-h-0 w-full flex-1 flex-col">
+      {/* top safe-area spacer */}
       <div
         className="shrink-0"
         style={{ height: 'max(0.75rem, env(safe-area-inset-top, 0.75rem))' }}
@@ -47,9 +48,7 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
           <div className="flex shrink-0 items-center justify-between px-5 py-2">
             <div className="flex items-center gap-2.5">
               <img src="/favicon.svg" alt="" className="h-7 w-7 drop-shadow-lg" />
-              <span className="text-[17px] font-bold tracking-tight text-white/90">
-                RinoHabits
-              </span>
+              <span className="text-[17px] font-bold tracking-tight text-white">RinoHabits</span>
             </div>
 
             <button
@@ -57,19 +56,16 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
               onClick={() => onTabChange('account')}
               className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors ${
                 activeTab === 'account'
-                  ? 'border-violet-400/40 bg-violet-500/30 text-violet-300'
-                  : 'border-white/[0.12] bg-white/[0.07] text-white/55 active:bg-white/[0.14]'
+                  ? 'border-violet-400/50 bg-violet-500/30 text-violet-300'
+                  : 'border-white/20 bg-white/10 text-white/60 active:bg-white/20'
               }`}
             >
-              <User
-                className="h-[18px] w-[18px]"
-                strokeWidth={activeTab === 'account' ? 2.5 : 1.8}
-              />
+              <User className="h-[18px] w-[18px]" strokeWidth={activeTab === 'account' ? 2.5 : 1.8} />
             </button>
           </div>
 
           {/* ── Tab pills ── */}
-          <div className="shrink-0 overflow-x-auto px-5 pb-3 pt-0.5">
+          <div className="shrink-0 overflow-x-auto px-5 pb-4 pt-1">
             <div className="flex gap-2">
               {MAIN_TABS.map(({ key, label, icon: Icon }) => {
                 const isActive = activeTab === key
@@ -80,8 +76,8 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
                     onClick={() => onTabChange(key)}
                     className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all ${
                       isActive
-                        ? 'bg-violet-500 text-white shadow-[0_2px_14px_rgba(109,40,217,0.55)]'
-                        : 'bg-white/[0.09] text-white/55 active:bg-white/[0.15] active:text-white/80'
+                        ? 'bg-violet-500 text-white shadow-[0_2px_16px_rgba(109,40,217,0.6)]'
+                        : 'bg-white/15 text-white/60 active:bg-white/25 active:text-white/90'
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" strokeWidth={isActive ? 2.5 : 1.8} />
@@ -94,18 +90,27 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
         </>
       )}
 
-      {/* ── Scrollable content with swipe detection ── */}
+      {/*
+       * Glass content panel — rounded top creates the "sheet" feel.
+       * bg-black/35 + backdrop-blur-xl restores the premium glass look that
+       * was previously provided by MacWindow's glass panel.
+       */}
       <div
-        className="relative min-h-0 flex-1"
+        className="relative min-h-0 flex-1 rounded-t-3xl bg-white/60 backdrop-blur-xl dark:bg-black/35"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
-        <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10">
+        {/* subtle top border to frame the glass panel */}
+        <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-white/20" />
+
+        <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10 pt-4">
           {children}
         </div>
+
+        {/* fade at bottom so content dissolves rather than hard-clips */}
         <div
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-10"
-          style={{ background: 'linear-gradient(to bottom, transparent, #0f1024)' }}
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-12 rounded-b-3xl"
+          style={{ background: 'linear-gradient(to bottom, transparent, rgba(10,8,28,0.6))' }}
         />
       </div>
     </div>
