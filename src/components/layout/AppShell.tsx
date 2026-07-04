@@ -76,8 +76,8 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
                     onClick={() => onTabChange(key)}
                     className={`flex shrink-0 items-center gap-1.5 rounded-full px-4 py-1.5 text-[13px] font-semibold transition-all ${
                       isActive
-                        ? 'bg-violet-500 text-white shadow-[0_2px_16px_rgba(109,40,217,0.6)]'
-                        : 'bg-white/15 text-white/60 active:bg-white/25 active:text-white/90'
+                        ? 'bg-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.25)]'
+                        : 'bg-white/10 text-white/55 active:bg-white/20 active:text-white/90'
                     }`}
                   >
                     <Icon className="h-3.5 w-3.5" strokeWidth={isActive ? 2.5 : 1.8} />
