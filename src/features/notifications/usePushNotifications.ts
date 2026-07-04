@@ -3,10 +3,31 @@ import { getExistingSubscription, subscribeToPush, unsubscribeFromPush } from '.
 
 export type NotificationStatus = 'unsupported' | 'denied' | 'subscribed' | 'unsubscribed' | 'loading'
 
+const LS_HOUR = 'rinohabits:reminder_hour'
+const LS_MINUTE = 'rinohabits:reminder_minute'
+
+function loadSavedTime() {
+  return {
+    hour: Number(localStorage.getItem(LS_HOUR) ?? 20),
+    minute: Number(localStorage.getItem(LS_MINUTE) ?? 0),
+  }
+}
+
+function saveTime(hour: number, minute: number) {
+  localStorage.setItem(LS_HOUR, String(hour))
+  localStorage.setItem(LS_MINUTE, String(minute))
+}
+
+function clearSavedTime() {
+  localStorage.removeItem(LS_HOUR)
+  localStorage.removeItem(LS_MINUTE)
+}
+
 export function usePushNotifications() {
+  const saved = loadSavedTime()
   const [status, setStatus] = useState<NotificationStatus>('loading')
-  const [reminderHour, setReminderHour] = useState(20)
-  const [reminderMinute, setReminderMinute] = useState(0)
+  const [reminderHour, setReminderHour] = useState(saved.hour)
+  const [reminderMinute, setReminderMinute] = useState(saved.minute)
   const subRef = useRef<PushSubscription | null>(null)
 
   const isSupported =
@@ -44,6 +65,7 @@ export function usePushNotifications() {
       subRef.current = await subscribeToPush(hour, minute)
       setReminderHour(hour)
       setReminderMinute(minute)
+      saveTime(hour, minute)
       setStatus('subscribed')
     } catch {
       setStatus('unsubscribed')
@@ -56,6 +78,7 @@ export function usePushNotifications() {
     try {
       await unsubscribeFromPush(subRef.current)
       subRef.current = null
+      clearSavedTime()
       setStatus('unsubscribed')
     } catch {
       setStatus('subscribed')
