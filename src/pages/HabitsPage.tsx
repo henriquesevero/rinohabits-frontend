@@ -11,16 +11,6 @@ import { StreakCard } from '../features/stats/components/StreakCard'
 import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
-const CELEBRATION_KEY_PREFIX = 'rinohabits:celebrated:'
-
-function hasCelebratedToday(date: string): boolean {
-  return localStorage.getItem(CELEBRATION_KEY_PREFIX + date) === '1'
-}
-
-function markCelebratedToday(date: string): void {
-  localStorage.setItem(CELEBRATION_KEY_PREFIX + date, '1')
-}
-
 export function HabitsPage() {
   const { user } = useAuthContext()
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
@@ -30,16 +20,18 @@ export function HabitsPage() {
   const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
+  const wasAllComplete = useRef(false)
 
   useEffect(() => {
     if (!dashboard) return
     const total = dashboard.habits.length
     const completed = dashboard.habits.filter((h) => h.isCompleted).length
-    if (completed === total && total > 0 && !hasCelebratedToday(dashboard.date)) {
+    const isAllComplete = total > 0 && completed === total
+    if (isAllComplete && !wasAllComplete.current) {
       setShowConfetti(true)
-      markCelebratedToday(dashboard.date)
       setTimeout(() => setShowConfetti(false), 3500)
     }
+    wasAllComplete.current = isAllComplete
   }, [dashboard])
 
   async function handleToggle(habitId: string) {
