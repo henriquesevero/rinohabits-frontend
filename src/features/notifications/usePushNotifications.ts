@@ -6,6 +6,7 @@ export type NotificationStatus = 'unsupported' | 'denied' | 'subscribed' | 'unsu
 export function usePushNotifications() {
   const [status, setStatus] = useState<NotificationStatus>('loading')
   const [reminderHour, setReminderHour] = useState(20)
+  const [reminderMinute, setReminderMinute] = useState(0)
   const subRef = useRef<PushSubscription | null>(null)
 
   const isSupported =
@@ -32,7 +33,7 @@ export function usePushNotifications() {
       .catch(() => setStatus('unsubscribed'))
   }, [isSupported])
 
-  const subscribe = useCallback(async (hour: number) => {
+  const subscribe = useCallback(async (hour: number, minute: number) => {
     setStatus('loading')
     try {
       const permission = await Notification.requestPermission()
@@ -40,8 +41,9 @@ export function usePushNotifications() {
         setStatus('denied')
         return
       }
-      subRef.current = await subscribeToPush(hour)
+      subRef.current = await subscribeToPush(hour, minute)
       setReminderHour(hour)
+      setReminderMinute(minute)
       setStatus('subscribed')
     } catch {
       setStatus('unsubscribed')
@@ -60,5 +62,5 @@ export function usePushNotifications() {
     }
   }, [])
 
-  return { status, reminderHour, setReminderHour, subscribe, unsubscribe }
+  return { status, reminderHour, setReminderHour, reminderMinute, setReminderMinute, subscribe, unsubscribe }
 }

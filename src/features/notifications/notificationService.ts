@@ -9,7 +9,7 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)))
 }
 
-export async function subscribeToPush(reminderHour: number): Promise<PushSubscription> {
+export async function subscribeToPush(reminderHour: number, reminderMinute: number): Promise<PushSubscription> {
   const registration = await navigator.serviceWorker.ready
   const sub = await registration.pushManager.subscribe({
     userVisibleOnly: true,
@@ -22,6 +22,7 @@ export async function subscribeToPush(reminderHour: number): Promise<PushSubscri
     p256dh: json.keys?.p256dh ?? '',
     auth: json.keys?.auth ?? '',
     reminder_hour: reminderHour,
+    reminder_minute: reminderMinute,
   })
 
   return sub

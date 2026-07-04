@@ -77,16 +77,24 @@ export function AccountPage() {
   )
 }
 
-const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+const HOURS = Array.from({ length: 18 }, (_, i) => i + 6) // 06–23
+const MINUTES = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]
 
 function NotificationSection() {
-  const { status, reminderHour, setReminderHour, subscribe, unsubscribe } = usePushNotifications()
+  const { status, reminderHour, reminderMinute, subscribe, unsubscribe } = usePushNotifications()
   const [localHour, setLocalHour] = useState(reminderHour)
+  const [localMinute, setLocalMinute] = useState(reminderMinute)
 
   if (status === 'unsupported') return null
 
   const isSubscribed = status === 'subscribed'
   const isLoading = status === 'loading'
+
+  function applyTime(h: number, m: number) {
+    setLocalHour(h)
+    setLocalMinute(m)
+    subscribe(h, m)
+  }
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
@@ -100,7 +108,7 @@ function NotificationSection() {
         <button
           type="button"
           disabled={isLoading || status === 'denied'}
-          onClick={() => (isSubscribed ? unsubscribe() : subscribe(localHour))}
+          onClick={() => (isSubscribed ? unsubscribe() : subscribe(localHour, localMinute))}
           className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
             isSubscribed ? 'bg-[#00E08A]' : 'bg-black/20 dark:bg-white/20'
           }`}
@@ -124,18 +132,20 @@ function NotificationSection() {
           <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
           <select
             value={localHour}
-            onChange={(e) => {
-              const h = Number(e.target.value)
-              setLocalHour(h)
-              setReminderHour(h)
-              subscribe(h)
-            }}
+            onChange={(e) => applyTime(Number(e.target.value), localMinute)}
             className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
           >
             {HOURS.map((h) => (
-              <option key={h} value={h}>
-                {String(h).padStart(2, '0')}:00
-              </option>
+              <option key={h} value={h}>{String(h).padStart(2, '0')}h</option>
+            ))}
+          </select>
+          <select
+            value={localMinute}
+            onChange={(e) => applyTime(localHour, Number(e.target.value))}
+            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+          >
+            {MINUTES.map((m) => (
+              <option key={m} value={m}>{String(m).padStart(2, '0')}min</option>
             ))}
           </select>
         </div>
