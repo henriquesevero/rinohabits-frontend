@@ -1,10 +1,11 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
-import { KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
+import { Bell, BellOff, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { useAuthContext } from '../context/AuthContext'
 import { useThemeContext } from '../context/ThemeContext'
+import { usePushNotifications } from '../features/notifications/usePushNotifications'
 import { accountService } from '../features/profile/services/accountService'
 
 export function AccountPage() {
@@ -53,6 +54,9 @@ export function AccountPage() {
         </div>
       </div>
 
+      {/* Notificações */}
+      <NotificationSection />
+
       {/* Alterar e-mail */}
       <ChangeEmailForm currentEmail={user?.email ?? ''} onSuccess={refreshUser} />
 
@@ -69,6 +73,79 @@ export function AccountPage() {
       >
         Sair
       </button>
+    </div>
+  )
+}
+
+const HOURS = [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22]
+
+function NotificationSection() {
+  const { status, reminderHour, setReminderHour, subscribe, unsubscribe } = usePushNotifications()
+  const [localHour, setLocalHour] = useState(reminderHour)
+
+  if (status === 'unsupported') return null
+
+  const isSubscribed = status === 'subscribed'
+  const isLoading = status === 'loading'
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
+      <div className="flex items-center gap-2">
+        {isSubscribed ? (
+          <Bell className="h-4 w-4 text-[#007a4c] dark:text-[#3CFFB0]" />
+        ) : (
+          <BellOff className="h-4 w-4 text-black/50 dark:text-white/50" />
+        )}
+        <span className="flex-1 text-sm font-semibold text-black/80 dark:text-white/80">Lembretes de hábitos</span>
+        <button
+          type="button"
+          disabled={isLoading || status === 'denied'}
+          onClick={() => (isSubscribed ? unsubscribe() : subscribe(localHour))}
+          className={`relative h-6 w-11 rounded-full transition-colors disabled:opacity-50 ${
+            isSubscribed ? 'bg-[#00E08A]' : 'bg-black/20 dark:bg-white/20'
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+              isSubscribed ? 'left-[22px]' : 'left-0.5'
+            }`}
+          />
+        </button>
+      </div>
+
+      {status === 'denied' && (
+        <p className="text-xs text-red-500">
+          Permissão negada. Ative as notificações nas configurações do seu celular.
+        </p>
+      )}
+
+      {isSubscribed && (
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-black/50 dark:text-white/50">Lembrar às</span>
+          <select
+            value={localHour}
+            onChange={(e) => {
+              const h = Number(e.target.value)
+              setLocalHour(h)
+              setReminderHour(h)
+              subscribe(h)
+            }}
+            className="rounded-lg border border-white/30 bg-white/40 px-2 py-1 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+          >
+            {HOURS.map((h) => (
+              <option key={h} value={h}>
+                {String(h).padStart(2, '0')}:00
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {!isSubscribed && status !== 'denied' && (
+        <p className="text-xs text-black/40 dark:text-white/40">
+          Ative para receber um aviso quando ainda houver hábitos pendentes no dia.
+        </p>
+      )}
     </div>
   )
 }
