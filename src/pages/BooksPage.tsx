@@ -106,13 +106,13 @@ export function BooksPage() {
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
       </div>
 
-      <div className="flex gap-1 rounded-xl bg-black/5 p-1 dark:bg-white/10">
+      <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
             key={tab.status}
             type="button"
             onClick={() => setActiveStatus(tab.status)}
-            className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               activeStatus === tab.status
                 ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
                 : 'text-black/50 dark:text-white/50'
@@ -122,7 +122,7 @@ export function BooksPage() {
             {tab.label}
             {counts[tab.status] > 0 && (
               <span
-                className={`ml-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                   activeStatus === tab.status
                     ? 'bg-[#007a4c] text-white dark:bg-[#00E08A] dark:text-black'
                     : 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50'

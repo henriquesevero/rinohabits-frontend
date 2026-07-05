@@ -89,23 +89,23 @@ export function CoursesPage() {
         <span className="text-xs text-black/50 dark:text-white/50">{courses.length} cursos</span>
       </div>
 
-      <div className="flex gap-1 rounded-xl bg-black/5 p-1 dark:bg-white/10">
+      <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
           <button
             key={tab.status}
             type="button"
             onClick={() => setActiveStatus(tab.status)}
-            className={`relative flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-colors ${
+            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
               activeStatus === tab.status
                 ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
                 : 'text-black/50 dark:text-white/50'
             }`}
           >
-            <tab.icon className="h-4 w-4 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
-            <span>{tab.label}</span>
+            <tab.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
+            {tab.label}
             {counts[tab.status] > 0 && (
               <span
-                className={`rounded-full px-1 py-0.5 text-[10px] font-bold ${
+                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
                   activeStatus === tab.status
                     ? 'bg-[#007a4c] text-white dark:bg-[#00E08A] dark:text-black'
                     : 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50'
