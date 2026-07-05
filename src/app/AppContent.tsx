@@ -13,6 +13,7 @@ import type { TabKey } from './tabs'
 
 type NoPropsPage = () => ReactElement
 const PAGES: Partial<Record<TabKey, NoPropsPage>> = {
+  habits:  HabitsPage,
   stats:   StatsPage,
   books:   BooksPage,
   courses: CoursesPage,
@@ -56,9 +57,8 @@ export function AppContent() {
   }
 
   function renderPage() {
-    if (activeTab === 'habits') return <HabitsPage onNavigateToRanking={() => changeTab('ranking')} />
     const Page = PAGES[activeTab]
-    return Page ? <Page /> : null
+    return Page ? <Page /> : <HabitsPage />
   }
 
   return (

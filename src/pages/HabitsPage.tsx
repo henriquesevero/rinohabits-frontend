@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { HabitsCompleteConfetti } from '../components/ui/HabitsCompleteConfetti'
-import { GamificationCard } from '../features/gamification/components/GamificationCard'
 import { XPGainToast } from '../features/gamification/components/XPGainToast'
-import { useGamification } from '../features/gamification/hooks/useGamification'
 import { EditHabitModal } from '../features/habits/components/EditHabitModal'
 import { HabitForm } from '../features/habits/components/HabitForm'
 import { HabitList } from '../features/habits/components/HabitList'
@@ -13,14 +11,9 @@ import { StreakCard } from '../features/stats/components/StreakCard'
 import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
-interface HabitsPageProps {
-  onNavigateToRanking?: () => void
-}
-
-export function HabitsPage({ onNavigateToRanking }: HabitsPageProps) {
+export function HabitsPage() {
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
   const { summary, refetch: refetchCalendar } = useCalendar()
-  const { stats: gamification, refetch: refetchGamification } = useGamification()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
   const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
@@ -46,7 +39,6 @@ export function HabitsPage({ onNavigateToRanking }: HabitsPageProps) {
   async function handleToggle(habitId: string) {
     await toggleHabit(habitId)
     refetchCalendar()
-    refetchGamification()
   }
 
   function handleEditRequest(habitId: string) {
@@ -85,10 +77,6 @@ export function HabitsPage({ onNavigateToRanking }: HabitsPageProps) {
       />
 
       <div className="flex flex-col gap-4">
-        {gamification && (
-          <GamificationCard stats={gamification} onNavigateToRanking={onNavigateToRanking} />
-        )}
-
         <StreakCard
           streak={dashboard?.streak ?? 0}
           activeDays={summary?.activeDays ?? 0}
