@@ -57,8 +57,8 @@ export const bookService = {
     return mapBook(data)
   },
 
-  async searchGoogle(q: string): Promise<GoogleBook[]> {
-    const { data } = await apiClient.get<GoogleBook[]>('/books/google-search', { params: { q } })
+  async searchGoogle(q: string, signal?: AbortSignal): Promise<GoogleBook[]> {
+    const { data } = await apiClient.get<GoogleBook[]>('/books/google-search', { params: { q }, signal })
     return data
   },
 
