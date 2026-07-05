@@ -1,6 +1,6 @@
 import {
   DndContext,
-  PointerSensor,
+  MouseSensor,
   TouchSensor,
   closestCenter,
   useSensor,
@@ -208,8 +208,9 @@ function SortableBookList({
   activeStatus,
 }: SortableBookListProps) {
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 5 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    // Drag handle is the activation area, so a short delay is fine
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
   )
 
   function handleDragEnd({ active, over }: DragEndEvent) {
@@ -220,6 +221,8 @@ function SortableBookList({
   }
 
   return (
+    // data-no-swipe prevents AppShell swipe-tab from firing over this list
+    <div data-no-swipe>
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
       <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-3">
@@ -246,6 +249,7 @@ function SortableBookList({
         </div>
       </SortableContext>
     </DndContext>
+    </div>
   )
 }
 
