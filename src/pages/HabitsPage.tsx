@@ -18,14 +18,14 @@ export function HabitsPage() {
   const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
-  const wasAllComplete = useRef(false)
+  const wasAllComplete = useRef<boolean | null>(null)
 
   useEffect(() => {
     if (!dashboard) return
     const total = dashboard.habits.length
     const completed = dashboard.habits.filter((h) => h.isCompleted).length
     const isAllComplete = total > 0 && completed === total
-    if (isAllComplete && !wasAllComplete.current) {
+    if (wasAllComplete.current === false && isAllComplete) {
       setShowConfetti(true)
       setTimeout(() => setShowConfetti(false), 3500)
     }
