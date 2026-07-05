@@ -35,6 +35,7 @@ export interface UpdateBookPayload {
   author?: string
   totalPages?: number | null
   status?: BookStatus
+  currentPage?: number
 }
 
 export interface ReadingStats {

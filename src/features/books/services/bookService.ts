@@ -68,6 +68,7 @@ export const bookService = {
       author: payload.author,
       total_pages: payload.totalPages,
       status: payload.status,
+      current_page: payload.currentPage,
     })
     return mapBook(data)
   },

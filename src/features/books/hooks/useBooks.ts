@@ -48,8 +48,8 @@ export function useBooks(statusFilter?: BookStatus) {
   )
 
   const changeStatus = useCallback(
-    async (bookId: string, status: BookStatus) => {
-      const updated = await bookService.update(bookId, { status })
+    async (bookId: string, status: BookStatus, currentPage?: number) => {
+      const updated = await bookService.update(bookId, { status, currentPage })
       setBooks((current) => {
         detectCompletion(current.find((b) => b.id === bookId), updated)
         return current.map((b) => (b.id === updated.id ? updated : b))
