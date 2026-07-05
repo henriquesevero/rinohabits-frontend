@@ -15,13 +15,14 @@ import { HabitCard } from './HabitCard'
 
 interface HabitListProps {
   habits: TodayHabit[]
+  todayHabitIds: Set<string>
   onToggle: (habitId: string) => void
   onEdit: (habitId: string) => void
   onDelete: (habitId: string) => void
   onReorder: (reorderedIds: string[]) => void
 }
 
-export function HabitList({ habits, onToggle, onEdit, onDelete, onReorder }: HabitListProps) {
+export function HabitList({ habits, todayHabitIds, onToggle, onEdit, onDelete, onReorder }: HabitListProps) {
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
@@ -51,6 +52,7 @@ export function HabitList({ habits, onToggle, onEdit, onDelete, onReorder }: Hab
               <SortableHabitRow
                 key={item.habit.id}
                 item={item}
+                isScheduledToday={todayHabitIds.has(item.habit.id)}
                 onToggle={onToggle}
                 onEdit={onEdit}
                 onDelete={onDelete}
@@ -65,11 +67,13 @@ export function HabitList({ habits, onToggle, onEdit, onDelete, onReorder }: Hab
 
 function SortableHabitRow({
   item,
+  isScheduledToday,
   onToggle,
   onEdit,
   onDelete,
 }: {
   item: TodayHabit
+  isScheduledToday: boolean
   onToggle: (id: string) => void
   onEdit: (id: string) => void
   onDelete: (id: string) => void
@@ -98,7 +102,7 @@ function SortableHabitRow({
         <GripVertical className="h-4 w-4 text-black/20 dark:text-white/20" />
       </button>
       <div className="min-w-0 flex-1">
-        <HabitCard item={item} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
+        <HabitCard item={item} isScheduledToday={isScheduledToday} onToggle={onToggle} onEdit={onEdit} onDelete={onDelete} />
       </div>
     </div>
   )

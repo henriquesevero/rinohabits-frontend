@@ -2,14 +2,19 @@ import { motion } from 'framer-motion'
 import { Check, Pencil, Trash2 } from 'lucide-react'
 import type { TodayHabit } from '../types/habit.types'
 
+const WEEKDAY_LABELS: Record<number, string> = {
+  1: 'Seg', 2: 'Ter', 3: 'Qua', 4: 'Qui', 5: 'Sex', 6: 'Sáb', 7: 'Dom',
+}
+
 interface HabitCardProps {
   item: TodayHabit
   onToggle: (habitId: string) => void
   onEdit: (habitId: string) => void
   onDelete: (habitId: string) => void
+  isScheduledToday?: boolean
 }
 
-export function HabitCard({ item, onToggle, onEdit, onDelete }: HabitCardProps) {
+export function HabitCard({ item, onToggle, onEdit, onDelete, isScheduledToday = true }: HabitCardProps) {
   const { habit, isCompleted } = item
 
   return (
@@ -26,8 +31,17 @@ export function HabitCard({ item, onToggle, onEdit, onDelete }: HabitCardProps) 
         className="flex flex-1 items-center justify-between gap-3 text-left"
       >
         <div className="flex items-center gap-3">
-          <span className="text-lg">{habit.icon}</span>
-          <span className="text-sm font-medium text-black/80 dark:text-white/80">{habit.name}</span>
+          <span className={`text-lg ${!isScheduledToday ? 'opacity-50' : ''}`}>{habit.icon}</span>
+          <div className="flex flex-col">
+            <span className={`text-sm font-medium ${isScheduledToday ? 'text-black/80 dark:text-white/80' : 'text-black/40 dark:text-white/40'}`}>
+              {habit.name}
+            </span>
+            {!isScheduledToday && (
+              <span className="text-[10px] text-black/35 dark:text-white/35">
+                {habit.activeWeekdays.map((d) => WEEKDAY_LABELS[d]).join(' · ')}
+              </span>
+            )}
+          </div>
         </div>
 
         <motion.span

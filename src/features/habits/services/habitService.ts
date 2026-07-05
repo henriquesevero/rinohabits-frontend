@@ -42,6 +42,11 @@ export const habitService = {
     return { date: data.date, streak: data.streak, habits: data.habits.map(mapTodayHabit) }
   },
 
+  async listAll(): Promise<Habit[]> {
+    const { data } = await apiClient.get<HabitApiDto[]>('/habits')
+    return data.map(mapHabit)
+  },
+
   async create(payload: CreateHabitPayload): Promise<Habit> {
     const { data } = await apiClient.post<HabitApiDto>('/habits', {
       name: payload.name,

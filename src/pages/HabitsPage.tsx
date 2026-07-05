@@ -12,7 +12,7 @@ import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
 export function HabitsPage() {
-  const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits } = useHabits()
+  const { dashboard, allHabits, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits } = useHabits()
   const { summary, refetch: refetchCalendar } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
@@ -56,8 +56,18 @@ export function HabitsPage() {
     }
   }
 
-  const habitToDeleteName = dashboard?.habits.find((h) => h.habit.id === habitToDelete)?.habit.name
-  const editingHabit = dashboard?.habits.find((h) => h.habit.id === habitToEdit)?.habit ?? null
+  const todayHabitIds = new Set(dashboard?.habits.map((h) => h.habit.id) ?? [])
+
+  const allHabitsAsTodayHabits = allHabits.map((habit) => {
+    const todayEntry = dashboard?.habits.find((h) => h.habit.id === habit.id)
+    return todayEntry ?? { habit, isCompleted: false }
+  })
+
+  const habitToDeleteName = allHabits.find((h) => h.id === habitToDelete)?.name
+    ?? dashboard?.habits.find((h) => h.habit.id === habitToDelete)?.habit.name
+  const editingHabit = allHabits.find((h) => h.id === habitToEdit)
+    ?? dashboard?.habits.find((h) => h.habit.id === habitToEdit)?.habit
+    ?? null
 
   return (
     <>
@@ -99,15 +109,14 @@ export function HabitsPage() {
 
         {isManaging && (
           <div className="flex flex-col gap-3">
-            {dashboard && (
-              <HabitList
-                habits={dashboard.habits}
-                onToggle={handleToggle}
-                onEdit={handleEditRequest}
-                onDelete={handleDeleteRequest}
-                onReorder={reorderHabits}
-              />
-            )}
+            <HabitList
+              habits={allHabitsAsTodayHabits}
+              todayHabitIds={todayHabitIds}
+              onToggle={handleToggle}
+              onEdit={handleEditRequest}
+              onDelete={handleDeleteRequest}
+              onReorder={reorderHabits}
+            />
           </div>
         )}
 

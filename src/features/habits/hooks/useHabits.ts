@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { habitService } from '../services/habitService'
-import type { CreateHabitPayload, TodayDashboard, TodayHabit, UpdateHabitPayload } from '../types/habit.types'
+import type { CreateHabitPayload, Habit, TodayDashboard, TodayHabit, UpdateHabitPayload } from '../types/habit.types'
 
 function isRequiredToday(activeWeekdays: number[]): boolean {
   const day = new Date().getDay()
@@ -19,14 +19,16 @@ async function getTodayWithRetry(): Promise<TodayDashboard> {
 
 export function useHabits() {
   const [dashboard, setDashboard] = useState<TodayDashboard | null>(null)
+  const [allHabits, setAllHabits] = useState<Habit[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refresh = useCallback(async () => {
     setIsLoading(true)
     try {
-      const data = await getTodayWithRetry()
+      const [data, all] = await Promise.all([getTodayWithRetry(), habitService.listAll()])
       setDashboard(data)
+      setAllHabits(all)
       setError(null)
     } catch {
       setError('Não foi possível carregar seus hábitos. Tentando novamente…')
@@ -100,7 +102,7 @@ export function useHabits() {
     await habitService.reorder(reorderedIds)
   }, [])
 
-  return { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits, refresh }
+  return { dashboard, allHabits, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits, refresh }
 }
 
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {
