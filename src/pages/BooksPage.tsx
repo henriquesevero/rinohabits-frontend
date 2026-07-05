@@ -13,13 +13,13 @@ import type { Book, BookStatus } from '../features/books/types/book.types'
 type ShelfFilter = 'all' | BookStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',       label: 'Estante',    icon: Library   },
-  { status: 'lendo',     label: 'Lendo',      icon: BookOpen  },
-  { status: 'quero_ler', label: 'Quero Ler',  icon: Bookmark  },
-  { status: 'lido',      label: 'Lido',       icon: BookCheck },
+  { status: 'all',       label: 'Estante',   icon: Library   },
+  { status: 'quero_ler', label: 'Quero Ler', icon: Bookmark  },
+  { status: 'lendo',     label: 'Lendo',     icon: BookOpen  },
+  { status: 'lido',      label: 'Lido',      icon: BookCheck },
 ]
 
-const SHELF_ORDER: Record<BookStatus, number> = { lendo: 0, quero_ler: 1, lido: 2 }
+const SHELF_ORDER: Record<BookStatus, number> = { quero_ler: 0, lendo: 1, lido: 2 }
 
 function sortForShelf(books: Book[]): Book[] {
   return [...books].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
