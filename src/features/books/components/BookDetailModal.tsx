@@ -5,9 +5,10 @@ import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
 const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
-  { value: 'quero_ler', label: 'Quero Ler' },
-  { value: 'lendo',     label: 'Lendo'     },
-  { value: 'lido',      label: 'Lido'      },
+  { value: 'na_estante', label: 'Estante'   },
+  { value: 'quero_ler',  label: 'Quero Ler' },
+  { value: 'lendo',      label: 'Lendo'     },
+  { value: 'lido',       label: 'Lido'      },
 ]
 
 interface BookDetailModalProps {
@@ -191,14 +192,14 @@ export function BookDetailModal({
                     key={opt.value}
                     type="button"
                     onClick={() => onChangeStatus(book.id, opt.value)}
-                    className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                    className={`flex flex-1 items-center justify-center gap-0.5 rounded-md px-1 py-1.5 text-[10px] font-medium transition-colors ${
                       book.status === opt.value
                         ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
                         : 'text-black/50 dark:text-white/50'
                     }`}
                   >
                     {opt.value === 'lido' && book.status === 'lido' && (
-                      <CheckCircle className="h-3 w-3 text-emerald-500" />
+                      <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
                     )}
                     {opt.label}
                   </button>

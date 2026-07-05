@@ -5,9 +5,10 @@ import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
 const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
-  { value: 'quero_ler', label: 'Quero Ler' },
-  { value: 'lendo',     label: 'Lendo'     },
-  { value: 'lido',      label: 'Lido'      },
+  { value: 'na_estante', label: 'Estante'   },
+  { value: 'quero_ler',  label: 'Quero Ler' },
+  { value: 'lendo',      label: 'Lendo'     },
+  { value: 'lido',       label: 'Lido'      },
 ]
 
 interface BookCardProps {
