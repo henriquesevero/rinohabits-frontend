@@ -1,14 +1,15 @@
-import { BarChart3, BookOpen, Flame, GraduationCap, User } from 'lucide-react'
+import { BarChart3, BookOpen, Flame, GraduationCap, Trophy, User } from 'lucide-react'
 import md5 from 'blueimp-md5'
 import { useRef, type ReactNode } from 'react'
 import type { TabKey } from '../../app/tabs'
 import { useAuthContext } from '../../context/AuthContext'
 
 const MAIN_TABS = [
-  { key: 'habits' as TabKey, label: 'Hábitos', icon: Flame },
-  { key: 'stats' as TabKey, label: 'Status', icon: BarChart3 },
-  { key: 'books' as TabKey, label: 'Livros', icon: BookOpen },
-  { key: 'courses' as TabKey, label: 'Cursos', icon: GraduationCap },
+  { key: 'habits'  as TabKey, label: 'Hábitos', icon: Flame },
+  { key: 'stats'   as TabKey, label: 'Status',  icon: BarChart3 },
+  { key: 'books'   as TabKey, label: 'Livros',  icon: BookOpen },
+  { key: 'courses' as TabKey, label: 'Cursos',  icon: GraduationCap },
+  { key: 'ranking' as TabKey, label: 'Ranking', icon: Trophy },
 ]
 
 interface AppShellProps {
