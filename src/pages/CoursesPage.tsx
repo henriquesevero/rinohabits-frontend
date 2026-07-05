@@ -1,22 +1,28 @@
+import { AnimatePresence } from 'framer-motion'
 import { BadgeCheck, CirclePlay, LayoutGrid, Pin, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
+import { CourseCard } from '../features/courses/components/CourseCard'
 import { CourseDetailModal } from '../features/courses/components/CourseDetailModal'
 import { CourseShelfGrid } from '../features/courses/components/CourseShelfGrid'
 import { CreateCourseForm } from '../features/courses/components/CreateCourseForm'
 import { useCourses } from '../features/courses/hooks/useCourses'
-import type { CourseStatus } from '../features/courses/types/course.types'
+import type { Course, CourseStatus } from '../features/courses/types/course.types'
 
 type ShelfFilter = 'all' | CourseStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
   { status: 'all',         label: 'Todos',       icon: LayoutGrid },
-  { status: 'fazendo',     label: 'Fazendo',     icon: CirclePlay },
   { status: 'quero_fazer', label: 'Quero Fazer', icon: Pin        },
-  { status: 'concluido',   label: 'Concluído',   icon: BadgeCheck },
+  { status: 'fazendo',     label: 'Fazendo',     icon: CirclePlay },
+  { status: 'concluido',   label: 'Feito',       icon: BadgeCheck },
 ]
 
-const SHELF_ORDER: Record<CourseStatus, number> = { fazendo: 0, quero_fazer: 1, concluido: 2 }
+const SHELF_ORDER: Record<CourseStatus, number> = { quero_fazer: 0, fazendo: 1, concluido: 2 }
+
+function sortForShelf(courses: Course[]): Course[] {
+  return [...courses].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
+}
 
 export function CoursesPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
@@ -40,16 +46,13 @@ export function CoursesPage() {
     return () => clearTimeout(timeout)
   }, [justCompletedCourse, clearJustCompleted])
 
-  const filtered =
-    activeStatus === 'all'
-      ? [...courses].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
-      : courses.filter((c) => c.status === activeStatus)
+  const filtered = activeStatus === 'all' ? sortForShelf(courses) : courses.filter((c) => c.status === activeStatus)
 
   const counts: Record<ShelfFilter, number> = {
-    all: courses.length,
-    fazendo: courses.filter((c) => c.status === 'fazendo').length,
+    all:         courses.length,
     quero_fazer: courses.filter((c) => c.status === 'quero_fazer').length,
-    concluido: courses.filter((c) => c.status === 'concluido').length,
+    fazendo:     courses.filter((c) => c.status === 'fazendo').length,
+    concluido:   courses.filter((c) => c.status === 'concluido').length,
   }
 
   async function handleDeleteConfirm() {
@@ -122,15 +125,38 @@ export function CoursesPage() {
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
 
-      <CourseShelfGrid courses={filtered} onSelect={setSelectedCourseId} />
+      {activeStatus === 'all' ? (
+        <>
+          <CourseShelfGrid courses={filtered} onSelect={setSelectedCourseId} />
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-center text-sm text-black/40 dark:text-white/40">
+              Nenhum curso cadastrado. Adicione um para começar.
+            </p>
+          )}
+        </>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <AnimatePresence mode="popLayout">
+            {filtered.map((course) => (
+              <CourseCard
+                key={course.id}
+                course={course}
+                onRegisterStudy={registerStudy}
+                onChangeStatus={changeStatus}
+                onDelete={setCourseToDelete}
+                onCoverUpdated={updateCover}
+              />
+            ))}
+          </AnimatePresence>
 
-      {!isLoading && filtered.length === 0 && (
-        <p className="text-center text-sm text-black/40 dark:text-white/40">
-          {activeStatus === 'all' && 'Nenhum curso cadastrado. Adicione um para começar.'}
-          {activeStatus === 'fazendo' && 'Nenhum curso em andamento.'}
-          {activeStatus === 'quero_fazer' && 'Nenhum curso na lista de desejo.'}
-          {activeStatus === 'concluido' && 'Nenhum curso concluído ainda.'}
-        </p>
+          {!isLoading && filtered.length === 0 && (
+            <p className="text-center text-sm text-black/40 dark:text-white/40">
+              {activeStatus === 'fazendo' && 'Nenhum curso em andamento.'}
+              {activeStatus === 'quero_fazer' && 'Nenhum curso na lista de desejo.'}
+              {activeStatus === 'concluido' && 'Nenhum curso concluído ainda.'}
+            </p>
+          )}
+        </div>
       )}
 
       <CreateCourseForm onCreate={createCourse} />
