@@ -17,10 +17,9 @@ interface AppShellProps {
   onTabChange: (tab: TabKey) => void
   showNav: boolean
   onSwipe?: (dir: -1 | 1) => void
-  scrollRef?: React.RefObject<HTMLDivElement | null>
 }
 
-export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe, scrollRef }: AppShellProps) {
+export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }: AppShellProps) {
   const { user } = useAuthContext()
   const touchStart = useRef<{ x: number; y: number } | null>(null)
   const firstName = user?.name?.split(' ')[0] ?? ''
@@ -113,7 +112,7 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe, s
       >
         <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-black/10 dark:bg-white/15" />
 
-        <div ref={scrollRef} className="h-full overflow-y-auto overscroll-contain px-4 pb-10 pt-4">
+        <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10 pt-4">
           {children}
         </div>
 

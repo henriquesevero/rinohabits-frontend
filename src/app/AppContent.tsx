@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useRef, useState, type ReactElement } from 'react'
+import { useState, type ReactElement } from 'react'
 import { AppShell } from '../components/layout/AppShell'
 import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
@@ -23,34 +23,24 @@ const MAIN_TABS: TabKey[] = ['habits', 'stats', 'books', 'courses']
 export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
-  // Lazy-mount: pages are only created the first time they're visited.
-  // Once mounted, they stay in the DOM — switching tabs is just a CSS class toggle.
-  const [mountedTabs, setMountedTabs] = useState<Set<TabKey>>(new Set(['habits']))
-  const scrollRef = useRef<HTMLDivElement>(null)
-
-  function changeTab(next: TabKey) {
-    // Reset scroll before React re-renders so there's never a flash of wrong position
-    if (scrollRef.current) scrollRef.current.scrollTop = 0
-    setMountedTabs(prev => { const s = new Set(prev); s.add(next); return s })
-    setActiveTab(next)
-  }
 
   function handleSwipe(dir: -1 | 1) {
     const currIdx = MAIN_TABS.indexOf(activeTab)
     if (currIdx === -1) return
     const nextIdx = currIdx + dir
     if (nextIdx >= 0 && nextIdx < MAIN_TABS.length) {
-      changeTab(MAIN_TABS[nextIdx])
+      setActiveTab(MAIN_TABS[nextIdx])
     }
   }
+
+  const Page = PAGES[activeTab]
 
   return (
     <AppShell
       activeTab={activeTab}
-      onTabChange={changeTab}
+      onTabChange={setActiveTab}
       showNav={isAuthenticated && !isLoading}
       onSwipe={isAuthenticated && !isLoading ? handleSwipe : undefined}
-      scrollRef={scrollRef}
     >
       <AnimatePresence mode="wait">
         {isLoading ? (
@@ -83,15 +73,7 @@ export function AppContent() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.2 }}
           >
-            {(Object.keys(PAGES) as TabKey[]).map((tab) => {
-              if (!mountedTabs.has(tab)) return null
-              const Page = PAGES[tab]
-              return (
-                <div key={tab} className={tab !== activeTab ? 'hidden' : ''}>
-                  <Page />
-                </div>
-              )
-            })}
+            <Page />
           </motion.div>
         )}
       </AnimatePresence>
