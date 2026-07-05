@@ -10,12 +10,13 @@ import {
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence } from 'framer-motion'
-import { BookCheck, BookOpen, Bookmark, GripVertical, Library, type LucideIcon } from 'lucide-react'
+import { BookCheck, BookOpen, Bookmark, ArrowUpDown, GripVertical, Library, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { BookCard } from '../features/books/components/BookCard'
 import { BookDetailModal } from '../features/books/components/BookDetailModal'
+import { BookReorderPanel } from '../features/books/components/BookReorderPanel'
 import { BookShelfGrid } from '../features/books/components/BookShelfGrid'
 import { CreateBookForm } from '../features/books/components/CreateBookForm'
 import { useBooks } from '../features/books/hooks/useBooks'
@@ -24,14 +25,15 @@ import type { Book, BookStatus } from '../features/books/types/book.types'
 type ShelfFilter = 'all' | BookStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',       label: 'Estante',  icon: Library  },
-  { status: 'quero_ler', label: 'Quero Ler', icon: Bookmark },
-  { status: 'lendo',     label: 'Lendo',     icon: BookOpen },
+  { status: 'all',       label: 'Estante',   icon: Library   },
+  { status: 'quero_ler', label: 'Quero Ler', icon: Bookmark  },
+  { status: 'lendo',     label: 'Lendo',     icon: BookOpen  },
   { status: 'lido',      label: 'Lido',      icon: BookCheck },
 ]
 
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
+  const [isReordering, setIsReordering] = useState(false)
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
   const {
@@ -46,6 +48,11 @@ export function BooksPage() {
     justCompletedBook,
     clearJustCompleted,
   } = useBooks()
+
+  // Exit reorder mode if tab changes
+  useEffect(() => {
+    if (activeStatus !== 'all') setIsReordering(false)
+  }, [activeStatus])
 
   useEffect(() => {
     if (!justCompletedBook) return
@@ -77,9 +84,6 @@ export function BooksPage() {
     }
   }
 
-  const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
-  const selectedBook = books.find((b) => b.id === selectedBookId) ?? null
-
   async function handleRegisterReading(bookId: string, pages: number) {
     await registerReading(bookId, pages)
   }
@@ -93,6 +97,14 @@ export function BooksPage() {
     }
     await changeStatus(bookId, status)
   }
+
+  async function handleReorderConfirm(orderedIds: string[]) {
+    await reorderBooks(orderedIds)
+    setIsReordering(false)
+  }
+
+  const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
+  const selectedBook = books.find((b) => b.id === selectedBookId) ?? null
 
   return (
     <div className="flex flex-col gap-4">
@@ -126,51 +138,78 @@ export function BooksPage() {
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
       </div>
 
-      {activeStatus === 'all' && <CreateBookForm onCreate={createBook} />}
+      {/* Add form — only in Estante, only when not reordering */}
+      {activeStatus === 'all' && !isReordering && <CreateBookForm onCreate={createBook} />}
 
-      <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {TABS.map((tab) => (
-          <button
-            key={tab.status}
-            type="button"
-            onClick={() => setActiveStatus(tab.status)}
-            className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
-              activeStatus === tab.status
-                ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
-                : 'text-black/50 dark:text-white/50'
-            }`}
-          >
-            <tab.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
-            {tab.label}
-            {counts[tab.status] > 0 && (
-              <span
-                className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  activeStatus === tab.status
-                    ? 'bg-[#007a4c] text-white dark:bg-[#00E08A] dark:text-black'
-                    : 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50'
-                }`}
-              >
-                {counts[tab.status]}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+      {/* Tab bar — hidden while reordering */}
+      {!isReordering && (
+        <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {TABS.map((tab) => (
+            <button
+              key={tab.status}
+              type="button"
+              onClick={() => setActiveStatus(tab.status)}
+              className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+                activeStatus === tab.status
+                  ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                  : 'text-black/50 dark:text-white/50'
+              }`}
+            >
+              <tab.icon className="h-3.5 w-3.5 shrink-0" strokeWidth={activeStatus === tab.status ? 2.5 : 1.8} />
+              {tab.label}
+              {counts[tab.status] > 0 && (
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                    activeStatus === tab.status
+                      ? 'bg-[#007a4c] text-white dark:bg-[#00E08A] dark:text-black'
+                      : 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50'
+                  }`}
+                >
+                  {counts[tab.status]}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
 
       {isLoading && (
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
 
-      {activeStatus === 'all' ? (
+      {/* ── Estante (all) ── */}
+      {activeStatus === 'all' && !isReordering && (
         <>
-          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} onReorder={reorderBooks} />
+          {books.length > 1 && (
+            <button
+              type="button"
+              onClick={() => setIsReordering(true)}
+              className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/20 py-2 text-xs font-medium text-black/50 hover:bg-black/5 dark:border-white/20 dark:text-white/50 dark:hover:bg-white/5"
+            >
+              <ArrowUpDown className="h-3.5 w-3.5" />
+              Reordenar estante
+            </button>
+          )}
+          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} />
           {!isLoading && filtered.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
               Sua estante está vazia. Adicione um livro para começar.
             </p>
           )}
         </>
-      ) : (
+      )}
+
+      {/* ── Reorder panel ── */}
+      {activeStatus === 'all' && isReordering && (
+        <BookReorderPanel
+          books={books}
+          onConfirm={handleReorderConfirm}
+          onCancel={() => setIsReordering(false)}
+        />
+      )}
+
+      {/* ── Status tabs list ── */}
+      {activeStatus !== 'all' && (
         <SortableBookList
           books={filtered}
           onRegisterReading={handleRegisterReading}
@@ -185,6 +224,10 @@ export function BooksPage() {
     </div>
   )
 }
+
+// ─────────────────────────────────────────────
+// Sortable list used by the individual status tabs
+// ─────────────────────────────────────────────
 
 interface SortableBookListProps {
   books: Book[]
@@ -209,7 +252,6 @@ function SortableBookList({
 }: SortableBookListProps) {
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    // Drag handle is the activation area, so a short delay is fine
     useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 6 } }),
   )
 
@@ -221,44 +263,35 @@ function SortableBookList({
   }
 
   return (
-    // data-no-swipe prevents AppShell swipe-tab from firing over this list
     <div data-no-swipe>
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
-        <div className="flex flex-col gap-3">
-          <AnimatePresence mode="popLayout">
-            {books.map((book) => (
-              <SortableBookCardRow
-                key={book.id}
-                book={book}
-                onRegisterReading={onRegisterReading}
-                onChangeStatus={onChangeStatus}
-                onDelete={onDelete}
-                onCoverUpdated={onCoverUpdated}
-              />
-            ))}
-          </AnimatePresence>
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
+          <div className="flex flex-col gap-3">
+            <AnimatePresence mode="popLayout">
+              {books.map((book) => (
+                <SortableBookCardRow
+                  key={book.id}
+                  book={book}
+                  onRegisterReading={onRegisterReading}
+                  onChangeStatus={onChangeStatus}
+                  onDelete={onDelete}
+                  onCoverUpdated={onCoverUpdated}
+                />
+              ))}
+            </AnimatePresence>
 
-          {!isLoading && books.length === 0 && (
-            <p className="text-center text-sm text-black/40 dark:text-white/40">
-              {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
-              {activeStatus === 'lendo'     && 'Nenhum livro sendo lido.'}
-              {activeStatus === 'lido'      && 'Nenhum livro finalizado ainda.'}
-            </p>
-          )}
-        </div>
-      </SortableContext>
-    </DndContext>
+            {!isLoading && books.length === 0 && (
+              <p className="text-center text-sm text-black/40 dark:text-white/40">
+                {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
+                {activeStatus === 'lendo'     && 'Nenhum livro sendo lido.'}
+                {activeStatus === 'lido'      && 'Nenhum livro finalizado ainda.'}
+              </p>
+            )}
+          </div>
+        </SortableContext>
+      </DndContext>
     </div>
   )
-}
-
-interface SortableBookCardRowProps {
-  book: Book
-  onRegisterReading: (bookId: string, pages: number) => Promise<void>
-  onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
-  onDelete: (bookId: string) => void
-  onCoverUpdated: (bookId: string, url: string) => void
 }
 
 function SortableBookCardRow({
@@ -267,17 +300,25 @@ function SortableBookCardRow({
   onChangeStatus,
   onDelete,
   onCoverUpdated,
-}: SortableBookCardRowProps) {
+}: {
+  book: Book
+  onRegisterReading: (bookId: string, pages: number) => Promise<void>
+  onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
+  onDelete: (bookId: string) => void
+  onCoverUpdated: (bookId: string, url: string) => void
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: book.id })
 
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    opacity: isDragging ? 0.4 : 1,
-  }
-
   return (
-    <div ref={setNodeRef} style={style} className="flex items-stretch gap-1">
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition: transition ?? undefined,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      className="flex items-stretch gap-1"
+    >
       <button
         type="button"
         {...attributes}
