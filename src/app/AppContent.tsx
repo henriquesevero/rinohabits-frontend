@@ -11,8 +11,8 @@ import { RankingPage } from '../pages/RankingPage'
 import { StatsPage } from '../pages/StatsPage'
 import type { TabKey } from './tabs'
 
-const PAGES: Record<TabKey, () => ReactElement> = {
-  habits:  HabitsPage,
+type NoPropsPage = () => ReactElement
+const PAGES: Partial<Record<TabKey, NoPropsPage>> = {
   stats:   StatsPage,
   books:   BooksPage,
   courses: CoursesPage,
@@ -58,7 +58,7 @@ export function AppContent() {
   function renderPage() {
     if (activeTab === 'habits') return <HabitsPage onNavigateToRanking={() => changeTab('ranking')} />
     const Page = PAGES[activeTab]
-    return <Page />
+    return Page ? <Page /> : null
   }
 
   return (
