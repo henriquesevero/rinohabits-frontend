@@ -35,5 +35,9 @@ export function useCalendar() {
     }
   }
 
-  return { year, month, summary, isLoading, goToPrevious, goToNext }
+  function refetch() {
+    statsService.getCalendar(year, month).then(setSummary)
+  }
+
+  return { year, month, summary, isLoading, goToPrevious, goToNext, refetch }
 }

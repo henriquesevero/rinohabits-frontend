@@ -12,7 +12,7 @@ import { useCalendar } from '../features/stats/hooks/useCalendar'
 
 export function HabitsPage() {
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
-  const { summary } = useCalendar()
+  const { summary, refetch: refetchCalendar } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
   const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
@@ -34,6 +34,7 @@ export function HabitsPage() {
 
   async function handleToggle(habitId: string) {
     await toggleHabit(habitId)
+    refetchCalendar()
   }
 
   function handleEditRequest(habitId: string) {
