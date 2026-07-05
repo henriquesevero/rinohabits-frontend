@@ -6,10 +6,10 @@ interface CourseShelfGridProps {
   onSelect: (courseId: string) => void
 }
 
-const STATUS_SEAL: Record<CourseStatus, string> = {
-  concluido: 'bg-emerald-500',
-  fazendo: 'bg-amber-500',
-  quero_fazer: 'bg-blue-500',
+const STATUS_TAG: Record<CourseStatus, { label: string; className: string }> = {
+  fazendo:     { label: 'Fazendo',    className: 'bg-amber-500/90 text-white' },
+  quero_fazer: { label: 'Quero Fazer', className: 'bg-blue-500/90 text-white' },
+  concluido:   { label: 'Concluído',  className: 'bg-emerald-500/90 text-white' },
 }
 
 export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
@@ -25,6 +25,7 @@ export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
 function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseId: string) => void }) {
   const coverLetter = course.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(course.title)
+  const tag = STATUS_TAG[course.status]
 
   return (
     <motion.button
@@ -35,7 +36,7 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseI
       whileTap={{ scale: 0.96 }}
       type="button"
       onClick={() => onSelect(course.id)}
-      className="flex flex-col gap-1.5 text-left"
+      className="flex flex-col text-left"
     >
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md">
         {course.coverUrl ? (
@@ -48,13 +49,13 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseI
             {coverLetter}
           </div>
         )}
-        <span
-          className={`absolute right-1 top-1 h-2.5 w-2.5 rounded-full border-2 border-white/90 shadow ${STATUS_SEAL[course.status]}`}
-        />
+        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1.5">
+          <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm ${tag.className}`}>
+            {tag.label}
+          </span>
+        </div>
       </div>
-      <span className="line-clamp-2 px-0.5 text-[11px] leading-tight text-black/70 dark:text-white/70">
-        {course.title}
-      </span>
+
     </motion.button>
   )
 }
