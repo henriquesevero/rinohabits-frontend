@@ -116,7 +116,7 @@ export function BooksPage() {
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
       </div>
 
-      <CreateBookForm onCreate={createBook} />
+      {activeStatus === 'all' && <CreateBookForm onCreate={createBook} />}
 
       <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {TABS.map((tab) => (
