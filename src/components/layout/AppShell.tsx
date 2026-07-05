@@ -106,7 +106,7 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
 
       {/* ── Glass content panel ── */}
       <div
-        className="relative min-h-0 flex-1 rounded-t-3xl bg-white/75 backdrop-blur-xl dark:bg-[#050a07]/60"
+        className="relative min-h-0 flex-1 overflow-hidden rounded-t-3xl bg-white/75 backdrop-blur-xl dark:bg-[#050a07]/60"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
