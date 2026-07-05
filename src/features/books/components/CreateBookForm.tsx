@@ -97,15 +97,25 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     setSearchError(false)
 
     try {
-      const data = await bookService.searchGoogle(q, ctrl.signal)
+      let data: GoogleBook[]
+      try {
+        data = await bookService.searchGoogle(q, ctrl.signal)
+      } catch (firstErr) {
+        if (axios.isCancel(firstErr)) return
+        if (seq !== seqRef.current) return
+        // Retry once — backend may be cold-starting
+        await new Promise((r) => setTimeout(r, 700))
+        if (seq !== seqRef.current) return
+        data = await bookService.searchGoogle(q, ctrl.signal)
+      }
 
-      if (seq !== seqRef.current) return // stale response — a newer query is in flight
+      if (seq !== seqRef.current) return
 
       setCached(q, data)
       setResults(data)
     } catch (err) {
       if (seq !== seqRef.current) return
-      if (axios.isCancel(err)) return // intentionally cancelled
+      if (axios.isCancel(err)) return
 
       setResults([])
       setSearchError(true)

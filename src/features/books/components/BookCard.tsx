@@ -20,17 +20,19 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   async function handleRegister() {
-    const pages = Number.parseInt(pagesInput, 10)
-    if (!pages || pages <= 0) return
-    const remaining = book.totalPages ? book.totalPages - book.currentPage : null
-    if (remaining !== null && pages > remaining) {
+    const currentPageInput = Number.parseInt(pagesInput, 10)
+    if (!currentPageInput || currentPageInput <= book.currentPage) {
+      setPagesError(true)
+      return
+    }
+    if (book.totalPages && currentPageInput > book.totalPages) {
       setPagesError(true)
       return
     }
     setPagesError(false)
     setIsLogging(false)
     setPagesInput('')
-    await onRegisterReading(book.id, pages)
+    await onRegisterReading(book.id, currentPageInput - book.currentPage)
   }
 
   async function handleCoverChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -150,20 +152,22 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           <div className="flex gap-2">
             {pagesError && (
               <p className="w-full text-[11px] text-red-500 dark:text-red-400">
-                Máximo {book.totalPages! - book.currentPage} páginas restantes.
+                {book.totalPages
+                  ? `Entre ${book.currentPage + 1} e ${book.totalPages}.`
+                  : `Deve ser maior que ${book.currentPage}.`}
               </p>
             )}
             <input
               type="number"
-              min={1}
-              max={book.totalPages ? book.totalPages - book.currentPage : undefined}
+              min={book.currentPage + 1}
+              max={book.totalPages ?? undefined}
               autoFocus
               value={pagesInput}
               onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleRegister()
               }}
-              placeholder="Páginas lidas hoje"
+              placeholder={`Parei na pág. ${book.currentPage}`}
               className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
             />
             <button
