@@ -28,6 +28,13 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe, s
   const avatarUrl = user?.avatarUrl ?? gravatarUrl
 
   function handleTouchStart(e: React.TouchEvent) {
+    // Skip swipe tracking if the touch originated inside a horizontally scrollable element
+    let el = e.target as HTMLElement | null
+    const boundary = e.currentTarget as HTMLElement
+    while (el && el !== boundary) {
+      if (el.scrollWidth > el.clientWidth) return
+      el = el.parentElement
+    }
     touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
   }
 
