@@ -50,10 +50,27 @@ export function BookReorderPanel({ books: initialBooks, onConfirm, onCancel }: B
 
   return (
     <div className="flex flex-col gap-3">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header + Actions */}
+      <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-black/70 dark:text-white/70">Reordenar estante</p>
-        <p className="text-xs text-black/40 dark:text-white/40">Segure e arraste</p>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex items-center gap-1 rounded-xl border border-black/15 px-3 py-1.5 text-sm font-medium text-black/60 dark:border-white/20 dark:text-white/60"
+          >
+            <X className="h-3.5 w-3.5" />
+            Cancelar
+          </button>
+          <button
+            type="button"
+            onClick={() => onConfirm(order.map((b) => b.id))}
+            className="flex items-center gap-1 rounded-xl bg-[#007a4c] px-3 py-1.5 text-sm font-semibold text-white dark:bg-[#00E08A] dark:text-black"
+          >
+            <Check className="h-3.5 w-3.5" />
+            Concluído
+          </button>
+        </div>
       </div>
 
       {/* Sortable list */}
@@ -67,26 +84,6 @@ export function BookReorderPanel({ books: initialBooks, onConfirm, onCancel }: B
             </div>
           </SortableContext>
         </DndContext>
-      </div>
-
-      {/* Actions */}
-      <div className="flex gap-2 pt-1">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-black/15 px-4 py-2.5 text-sm font-medium text-black/60 dark:border-white/20 dark:text-white/60"
-        >
-          <X className="h-4 w-4" />
-          Cancelar
-        </button>
-        <button
-          type="button"
-          onClick={() => onConfirm(order.map((b) => b.id))}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#007a4c] px-4 py-2.5 text-sm font-semibold text-white dark:bg-[#00E08A] dark:text-black"
-        >
-          <Check className="h-4 w-4" />
-          Concluído
-        </button>
       </div>
     </div>
   )
