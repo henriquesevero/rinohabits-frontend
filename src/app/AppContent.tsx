@@ -18,26 +18,21 @@ const PAGES: Record<TabKey, () => ReactElement> = {
   account: AccountPage,
 }
 
-// ordered list used for swipe direction calculation
 const MAIN_TABS: TabKey[] = ['habits', 'stats', 'books', 'courses']
-
-const slideVariants = {
-  enter: (dir: number) => ({ x: dir * 80, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: -dir * 80, opacity: 0 }),
-}
 
 export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
-  const direction = useRef(0)
+  // Lazy-mount: pages are only created the first time they're visited.
+  // Once mounted, they stay in the DOM — switching tabs is just a CSS class toggle.
+  const [mountedTabs, setMountedTabs] = useState<Set<TabKey>>(new Set(['habits']))
+  const scrollRef = useRef<HTMLDivElement>(null)
 
-  function changeTab(tab: TabKey) {
-    const currIdx = MAIN_TABS.indexOf(activeTab)
-    const nextIdx = MAIN_TABS.indexOf(tab)
-    // account tab fades (dir=0); moving right in list slides left, moving left slides right
-    direction.current = nextIdx === -1 || currIdx === -1 ? 0 : nextIdx > currIdx ? 1 : -1
-    setActiveTab(tab)
+  function changeTab(next: TabKey) {
+    // Reset scroll before React re-renders so there's never a flash of wrong position
+    if (scrollRef.current) scrollRef.current.scrollTop = 0
+    setMountedTabs(prev => { const s = new Set(prev); s.add(next); return s })
+    setActiveTab(next)
   }
 
   function handleSwipe(dir: -1 | 1) {
@@ -45,12 +40,9 @@ export function AppContent() {
     if (currIdx === -1) return
     const nextIdx = currIdx + dir
     if (nextIdx >= 0 && nextIdx < MAIN_TABS.length) {
-      direction.current = dir
-      setActiveTab(MAIN_TABS[nextIdx])
+      changeTab(MAIN_TABS[nextIdx])
     }
   }
-
-  const ActivePage = PAGES[activeTab]
 
   return (
     <AppShell
@@ -58,8 +50,9 @@ export function AppContent() {
       onTabChange={changeTab}
       showNav={isAuthenticated && !isLoading}
       onSwipe={isAuthenticated && !isLoading ? handleSwipe : undefined}
+      scrollRef={scrollRef}
     >
-      <AnimatePresence mode="wait" custom={direction.current}>
+      <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
             key="loading"
@@ -67,31 +60,38 @@ export function AppContent() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
           >
             <p className="text-sm text-white/40">Carregando…</p>
           </motion.div>
         ) : !isAuthenticated ? (
           <motion.div
-            key="lock-screen"
+            key="lock"
             className="h-full"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0, scale: 1.08, filter: 'blur(12px)' }}
-            transition={{ duration: 0.45, ease: 'easeInOut' }}
+            exit={{ opacity: 0, scale: 1.06, filter: 'blur(10px)' }}
+            transition={{ duration: 0.35, ease: 'easeInOut' }}
           >
             <LockScreen />
           </motion.div>
         ) : (
           <motion.div
-            key={activeTab}
-            custom={direction.current}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.22, ease: [0.25, 0.1, 0.25, 1] }}
+            key="app"
+            className="h-full"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.2 }}
           >
-            <ActivePage />
+            {(Object.keys(PAGES) as TabKey[]).map((tab) => {
+              if (!mountedTabs.has(tab)) return null
+              const Page = PAGES[tab]
+              return (
+                <div key={tab} className={tab !== activeTab ? 'hidden' : ''}>
+                  <Page />
+                </div>
+              )
+            })}
           </motion.div>
         )}
       </AnimatePresence>
