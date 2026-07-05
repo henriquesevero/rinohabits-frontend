@@ -14,7 +14,7 @@ const STATUS_SEAL: Record<BookStatus, string> = {
 
 export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
   return (
-    <div className="grid grid-cols-4 gap-2.5 sm:grid-cols-6">
+    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
       {books.map((book) => (
         <BookPoster key={book.id} book={book} onSelect={onSelect} />
       ))}
