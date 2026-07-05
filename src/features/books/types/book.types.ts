@@ -21,12 +21,11 @@ export interface CreateBookPayload {
   coverUrl?: string | null
 }
 
-export interface GoogleBook {
-  google_id: string
+export interface BookSearchResult {
+  id: string
   title: string
   author: string
   page_count: number
-  description: string
   cover_url: string
 }
 
