@@ -1,5 +1,16 @@
+import {
+  DndContext,
+  PointerSensor,
+  TouchSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from '@dnd-kit/core'
+import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence } from 'framer-motion'
-import { BookCheck, BookOpen, Bookmark, Library, PackageOpen, type LucideIcon } from 'lucide-react'
+import { BookCheck, BookOpen, Bookmark, GripVertical, Library, PackageOpen, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -20,12 +31,6 @@ const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
   { status: 'lido',       label: 'Lido',       icon: BookCheck   },
 ]
 
-const SHELF_ORDER: Record<BookStatus, number> = { na_estante: 0, quero_ler: 1, lendo: 2, lido: 3 }
-
-function sortForShelf(books: Book[]): Book[] {
-  return [...books].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
-}
-
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
@@ -38,6 +43,7 @@ export function BooksPage() {
     changeStatus,
     deleteBook,
     updateCover,
+    reorderBooks,
     justCompletedBook,
     clearJustCompleted,
   } = useBooks()
@@ -48,7 +54,7 @@ export function BooksPage() {
     return () => clearTimeout(timeout)
   }, [justCompletedBook, clearJustCompleted])
 
-  const filtered = activeStatus === 'all' ? sortForShelf(books) : books.filter((b) => b.status === activeStatus)
+  const filtered = activeStatus === 'all' ? books : books.filter((b) => b.status === activeStatus)
   const counts: Record<ShelfFilter, number> = {
     all:        books.length,
     na_estante: books.filter((b) => b.status === 'na_estante').length,
@@ -155,7 +161,7 @@ export function BooksPage() {
 
       {activeStatus === 'all' ? (
         <>
-          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} />
+          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} onReorder={reorderBooks} />
           {!isLoading && filtered.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
               Sua estante está vazia. Adicione um livro para começar.
@@ -163,21 +169,72 @@ export function BooksPage() {
           )}
         </>
       ) : (
+        <SortableBookList
+          books={filtered}
+          onRegisterReading={handleRegisterReading}
+          onChangeStatus={handleChangeStatus}
+          onDelete={handleDelete}
+          onCoverUpdated={updateCover}
+          onReorder={reorderBooks}
+          isLoading={isLoading}
+          activeStatus={activeStatus}
+        />
+      )}
+    </div>
+  )
+}
+
+interface SortableBookListProps {
+  books: Book[]
+  onRegisterReading: (bookId: string, pages: number) => Promise<void>
+  onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
+  onDelete: (bookId: string) => void
+  onCoverUpdated: (bookId: string, url: string) => void
+  onReorder: (reorderedIds: string[]) => void
+  isLoading: boolean
+  activeStatus: ShelfFilter
+}
+
+function SortableBookList({
+  books,
+  onRegisterReading,
+  onChangeStatus,
+  onDelete,
+  onCoverUpdated,
+  onReorder,
+  isLoading,
+  activeStatus,
+}: SortableBookListProps) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 220, tolerance: 5 } }),
+  )
+
+  function handleDragEnd({ active, over }: DragEndEvent) {
+    if (!over || active.id === over.id) return
+    const oldIndex = books.findIndex((b) => b.id === active.id)
+    const newIndex = books.findIndex((b) => b.id === over.id)
+    onReorder(arrayMove(books, oldIndex, newIndex).map((b) => b.id))
+  }
+
+  return (
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={books.map((b) => b.id)} strategy={verticalListSortingStrategy}>
         <div className="flex flex-col gap-3">
           <AnimatePresence mode="popLayout">
-            {filtered.map((book) => (
-              <BookCard
+            {books.map((book) => (
+              <SortableBookCardRow
                 key={book.id}
                 book={book}
-                onRegisterReading={handleRegisterReading}
-                onChangeStatus={handleChangeStatus}
-                onDelete={handleDelete}
-                onCoverUpdated={updateCover}
+                onRegisterReading={onRegisterReading}
+                onChangeStatus={onChangeStatus}
+                onDelete={onDelete}
+                onCoverUpdated={onCoverUpdated}
               />
             ))}
           </AnimatePresence>
 
-          {!isLoading && filtered.length === 0 && (
+          {!isLoading && books.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
               {activeStatus === 'na_estante' && 'Nenhum livro só na estante.'}
               {activeStatus === 'quero_ler'  && 'Nenhum livro na lista de desejo.'}
@@ -186,8 +243,54 @@ export function BooksPage() {
             </p>
           )}
         </div>
-      )}
+      </SortableContext>
+    </DndContext>
+  )
+}
 
+interface SortableBookCardRowProps {
+  book: Book
+  onRegisterReading: (bookId: string, pages: number) => Promise<void>
+  onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
+  onDelete: (bookId: string) => void
+  onCoverUpdated: (bookId: string, url: string) => void
+}
+
+function SortableBookCardRow({
+  book,
+  onRegisterReading,
+  onChangeStatus,
+  onDelete,
+  onCoverUpdated,
+}: SortableBookCardRowProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: book.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className="flex items-stretch gap-1">
+      <button
+        type="button"
+        {...attributes}
+        {...listeners}
+        className="flex touch-none cursor-grab items-center px-1 active:cursor-grabbing"
+        aria-label="Arraste para reordenar"
+      >
+        <GripVertical className="h-4 w-4 text-black/20 dark:text-white/20" />
+      </button>
+      <div className="min-w-0 flex-1">
+        <BookCard
+          book={book}
+          onRegisterReading={onRegisterReading}
+          onChangeStatus={onChangeStatus}
+          onDelete={onDelete}
+          onCoverUpdated={onCoverUpdated}
+        />
+      </div>
     </div>
   )
 }

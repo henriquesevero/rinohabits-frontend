@@ -73,6 +73,28 @@ export function useBooks(statusFilter?: BookStatus) {
 
   const clearJustCompleted = useCallback(() => setJustCompletedBook(null), [])
 
+  const reorderBooks = useCallback(async (reorderedSubsetIds: string[]) => {
+    let allOrderedIds: string[] = []
+
+    setBooks((current) => {
+      const byId = new Map(current.map((b) => [b.id, b]))
+      const reorderedSet = new Set(reorderedSubsetIds)
+
+      // Positions (indices) in global array occupied by the reordered subset
+      const positions: number[] = []
+      current.forEach((b, i) => { if (reorderedSet.has(b.id)) positions.push(i) })
+
+      // Slot the reordered items back into those same positions
+      const result = [...current]
+      reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
+
+      allOrderedIds = result.map((b) => b.id)
+      return result
+    })
+
+    await bookService.reorderBooks(allOrderedIds)
+  }, [])
+
   return {
     books,
     isLoading,
@@ -82,6 +104,7 @@ export function useBooks(statusFilter?: BookStatus) {
     deleteBook,
     updateCover,
     refresh,
+    reorderBooks,
     justCompletedBook,
     clearJustCompleted,
   }

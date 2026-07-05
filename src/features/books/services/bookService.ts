@@ -92,6 +92,10 @@ export const bookService = {
     await apiClient.delete(`/books/${bookId}`)
   },
 
+  async reorderBooks(ids: string[]): Promise<void> {
+    await apiClient.patch('/books/reorder', { ids })
+  },
+
   async getReadingStats(periodType: string, offset: number): Promise<ReadingStats> {
     const { data } = await apiClient.get<ReadingStatsApiDto>('/books/reading-stats', {
       params: { period: periodType, offset },
