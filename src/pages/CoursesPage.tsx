@@ -141,7 +141,7 @@ export function CoursesPage() {
               <CourseCard
                 key={course.id}
                 course={course}
-                onRegisterStudy={registerStudy}
+                onRegisterStudy={async (id, hours) => { await registerStudy(id, hours) }}
                 onChangeStatus={changeStatus}
                 onDelete={setCourseToDelete}
                 onCoverUpdated={updateCover}
