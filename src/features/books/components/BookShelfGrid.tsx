@@ -5,11 +5,10 @@ interface BookShelfGridProps {
   onSelect: (bookId: string) => void
 }
 
-const STATUS_BOOKMARK: Record<BookStatus, string> = {
-  na_estante: '#94a3b8',
-  quero_ler:  '#3b82f6',
-  lendo:      '#f59e0b',
-  lido:       '#10b981',
+const STATUS_BOOKMARK: Partial<Record<BookStatus, string>> = {
+  quero_ler: '#3b82f6',
+  lendo:     '#f59e0b',
+  lido:      '#10b981',
 }
 
 export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
@@ -40,14 +39,16 @@ function BookPoster({ book, onSelect }: { book: Book; onSelect: (id: string) => 
             {coverLetter}
           </div>
         )}
-        <div
-          className="absolute left-2 top-0 w-3 shadow-sm"
-          style={{
-            height: 20,
-            backgroundColor: bookmarkColor,
-            clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
-          }}
-        />
+        {bookmarkColor && (
+          <div
+            className="absolute left-2 top-0 w-3 shadow-sm"
+            style={{
+              height: 20,
+              backgroundColor: bookmarkColor,
+              clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
+            }}
+          />
+        )}
       </div>
     </button>
   )
