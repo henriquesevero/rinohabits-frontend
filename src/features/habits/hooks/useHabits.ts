@@ -89,16 +89,29 @@ export function useHabits() {
   )
 
   const reorderHabits = useCallback(async (reorderedIds: string[]) => {
-    // Optimistic update: reorder the habits array in local state
+    const idOrder = new Map(reorderedIds.map((id, i) => [id, i]))
+
+    // Optimistic: reorder allHabits (source of truth for the manage list)
+    setAllHabits((current) => {
+      const sorted = [...current].sort((a, b) => {
+        const ia = idOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER
+        const ib = idOrder.get(b.id) ?? Number.MAX_SAFE_INTEGER
+        return ia - ib
+      })
+      return sorted
+    })
+
+    // Optimistic: keep dashboard.habits in the same relative order too
     setDashboard((current) => {
       if (!current) return current
-      const byId = new Map(current.habits.map((h) => [h.habit.id, h]))
-      const reordered = reorderedIds.map((id) => byId.get(id)).filter(Boolean) as typeof current.habits
-      // Re-append any habits not in the reordered list (shouldn't happen, but safe)
-      const reorderedSet = new Set(reorderedIds)
-      const rest = current.habits.filter((h) => !reorderedSet.has(h.habit.id))
-      return { ...current, habits: [...reordered, ...rest] }
+      const sorted = [...current.habits].sort((a, b) => {
+        const ia = idOrder.get(a.habit.id) ?? Number.MAX_SAFE_INTEGER
+        const ib = idOrder.get(b.habit.id) ?? Number.MAX_SAFE_INTEGER
+        return ia - ib
+      })
+      return { ...current, habits: sorted }
     })
+
     await habitService.reorder(reorderedIds)
   }, [])
 
