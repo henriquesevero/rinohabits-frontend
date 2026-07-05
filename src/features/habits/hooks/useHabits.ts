@@ -86,7 +86,21 @@ export function useHabits() {
     [refresh],
   )
 
-  return { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, refresh }
+  const reorderHabits = useCallback(async (reorderedIds: string[]) => {
+    // Optimistic update: reorder the habits array in local state
+    setDashboard((current) => {
+      if (!current) return current
+      const byId = new Map(current.habits.map((h) => [h.habit.id, h]))
+      const reordered = reorderedIds.map((id) => byId.get(id)).filter(Boolean) as typeof current.habits
+      // Re-append any habits not in the reordered list (shouldn't happen, but safe)
+      const reorderedSet = new Set(reorderedIds)
+      const rest = current.habits.filter((h) => !reorderedSet.has(h.habit.id))
+      return { ...current, habits: [...reordered, ...rest] }
+    })
+    await habitService.reorder(reorderedIds)
+  }, [])
+
+  return { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits, refresh }
 }
 
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {

@@ -72,4 +72,8 @@ export const habitService = {
   async remove(habitId: string): Promise<void> {
     await apiClient.delete(`/habits/${habitId}`)
   },
+
+  async reorder(ids: string[]): Promise<void> {
+    await apiClient.patch('/habits/reorder', { ids })
+  },
 }

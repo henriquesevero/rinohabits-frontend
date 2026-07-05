@@ -12,7 +12,7 @@ import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
 export function HabitsPage() {
-  const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
+  const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits } = useHabits()
   const { summary, refetch: refetchCalendar } = useCalendar()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
@@ -87,7 +87,7 @@ export function HabitsPage() {
         {isLoading && <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando hábitos…</p>}
         {error && <p className="text-center text-sm text-red-500">{error}</p>}
 
-        {dashboard && <TodayHabitsGrid habits={dashboard.habits} onToggle={handleToggle} />}
+        {dashboard && <TodayHabitsGrid habits={dashboard.habits} onToggle={handleToggle} onReorder={reorderHabits} />}
 
         <button
           type="button"
@@ -105,6 +105,7 @@ export function HabitsPage() {
                 onToggle={handleToggle}
                 onEdit={handleEditRequest}
                 onDelete={handleDeleteRequest}
+                onReorder={reorderHabits}
               />
             )}
           </div>
