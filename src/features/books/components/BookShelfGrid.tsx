@@ -29,23 +29,25 @@ const STATUS_BOOKMARK: Record<BookStatus, string> = {
 
 export function BookShelfGrid({ books, onSelect, onReorder }: BookShelfGridProps) {
   const [activeId, setActiveId] = useState<string | null>(null)
-  // Track whether a drag just ended so we can cancel the next click
+  // Width of the actual grid cell, captured on drag start so the overlay matches
+  const overlayWidth = useRef<number>(0)
+  // Prevents the click handler from opening the modal right after a drag ends
   const justDragged = useRef(false)
 
   const sensors = useSensors(
-    // Desktop mouse: small distance threshold feels snappy
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    // Mobile touch: long-press (350 ms) prevents conflict with horizontal swipe
+    // Long-press on mobile: distinguishes drag from tap and from app swipe gesture
     useSensor(TouchSensor, { activationConstraint: { delay: 350, tolerance: 6 } }),
   )
 
   const activeBook = books.find((b) => b.id === activeId) ?? null
 
   function handleDragStart({ active }: DragStartEvent) {
+    const rect = active.rect.current.initial
+    overlayWidth.current = rect ? Math.round(rect.width) : 0
     setActiveId(active.id as string)
     justDragged.current = false
-    // Haptic feedback on devices that support it
-    if (navigator.vibrate) navigator.vibrate(30)
+    if (navigator.vibrate) navigator.vibrate(25)
   }
 
   function handleDragEnd({ active, over }: DragEndEvent) {
@@ -63,15 +65,12 @@ export function BookShelfGrid({ books, onSelect, onReorder }: BookShelfGridProps
   }
 
   function handleSelect(bookId: string) {
-    if (justDragged.current) {
-      justDragged.current = false
-      return
-    }
+    if (justDragged.current) { justDragged.current = false; return }
     onSelect(bookId)
   }
 
   return (
-    // data-no-swipe tells AppShell to skip swipe-tab detection in this zone
+    // data-no-swipe: tells AppShell to skip swipe-tab detection inside this zone
     <div data-no-swipe>
       <DndContext
         sensors={sensors}
@@ -86,26 +85,22 @@ export function BookShelfGrid({ books, onSelect, onReorder }: BookShelfGridProps
               <SortableBookPoster
                 key={book.id}
                 book={book}
-                onSelect={handleSelect}
                 isDragging={activeId === book.id}
-                anyDragging={activeId !== null}
+                onSelect={handleSelect}
               />
             ))}
           </div>
         </SortableContext>
 
-        <DragOverlay
-          dropAnimation={{
-            duration: 200,
-            easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
-          }}
-        >
-          {activeBook && (
+        <DragOverlay dropAnimation={{ duration: 180, easing: 'ease' }}>
+          {activeBook && overlayWidth.current > 0 && (
+            // Explicit width so BookPoster's w-full resolves to the grid cell size, not the viewport
             <div
-              className="pointer-events-none"
               style={{
-                transform: 'scale(1.08)',
-                filter: 'drop-shadow(0 20px 30px rgba(0,0,0,0.35))',
+                width: overlayWidth.current,
+                transform: 'scale(1.06)',
+                transformOrigin: 'center top',
+                filter: 'drop-shadow(0 12px 20px rgba(0,0,0,0.4))',
               }}
             >
               <BookPoster book={activeBook} />
@@ -117,66 +112,56 @@ export function BookShelfGrid({ books, onSelect, onReorder }: BookShelfGridProps
   )
 }
 
-interface SortableBookPosterProps {
+function SortableBookPoster({
+  book,
+  isDragging,
+  onSelect,
+}: {
   book: Book
-  onSelect: (bookId: string) => void
   isDragging: boolean
-  anyDragging: boolean
-}
-
-function SortableBookPoster({ book, onSelect, isDragging, anyDragging }: SortableBookPosterProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging: isSortableDragging,
-  } = useSortable({ id: book.id })
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition: transition ?? undefined,
-    // Hide original item while dragging (overlay takes its place)
-    opacity: isSortableDragging ? 0 : 1,
-    // Prevent text selection during drag
-    userSelect: 'none' as const,
-  }
+  onSelect: (id: string) => void
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: book.id })
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      // CSS.Translate (not CSS.Transform) — translate only, no scale
+      // Scale from CSS.Transform breaks aspect-ratio containers in grids
+      style={{
+        transform: CSS.Translate.toString(transform),
+        transition: transition ?? undefined,
+        opacity: isDragging ? 0 : 1,
+        userSelect: 'none',
+      }}
       {...attributes}
       {...listeners}
-      // touch-action: none is required for dnd-kit touch sensor to work correctly
-      className="touch-none"
-      onClick={() => { if (!anyDragging) onSelect(book.id) }}
+      className="touch-none cursor-grab active:cursor-grabbing"
+      onClick={() => { if (!isDragging) onSelect(book.id) }}
     >
-      <BookPoster book={book} dimmed={anyDragging && !isDragging} />
+      <BookPoster book={book} />
     </div>
   )
 }
 
-function BookPoster({ book, dimmed }: { book: Book; dimmed?: boolean }) {
+function BookPoster({ book }: { book: Book }) {
   const coverLetter = book.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(book.title)
   const bookmarkColor = STATUS_BOOKMARK[book.status]
 
   return (
-    <div
-      className="flex flex-col"
-      style={{
-        transition: 'opacity 0.15s ease',
-        opacity: dimmed ? 0.5 : 1,
-      }}
-    >
+    <div className="flex flex-col">
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md">
         {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} className="h-full w-full object-cover" draggable={false} />
+          <img
+            src={book.coverUrl}
+            alt={book.title}
+            className="h-full w-full object-cover"
+            draggable={false}
+          />
         ) : (
           <div
-            className="flex h-full w-full items-center justify-center text-xl font-bold text-white select-none"
+            className="flex h-full w-full select-none items-center justify-center text-xl font-bold text-white"
             style={{ backgroundColor: coverColor }}
           >
             {coverLetter}
