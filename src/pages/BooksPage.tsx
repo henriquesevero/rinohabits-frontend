@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { BookCheck, BookOpen, Bookmark, Library, type LucideIcon } from 'lucide-react'
+import { BookCheck, BookOpen, Bookmark, Library, PackageOpen, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -13,13 +13,14 @@ import type { Book, BookStatus } from '../features/books/types/book.types'
 type ShelfFilter = 'all' | BookStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',       label: 'Estante',   icon: Library   },
-  { status: 'quero_ler', label: 'Quero Ler', icon: Bookmark  },
-  { status: 'lendo',     label: 'Lendo',     icon: BookOpen  },
-  { status: 'lido',      label: 'Lido',      icon: BookCheck },
+  { status: 'all',        label: 'Estante',    icon: Library     },
+  { status: 'na_estante', label: 'Na Estante', icon: PackageOpen },
+  { status: 'quero_ler',  label: 'Quero Ler',  icon: Bookmark    },
+  { status: 'lendo',      label: 'Lendo',      icon: BookOpen    },
+  { status: 'lido',       label: 'Lido',       icon: BookCheck   },
 ]
 
-const SHELF_ORDER: Record<BookStatus, number> = { quero_ler: 0, lendo: 1, lido: 2 }
+const SHELF_ORDER: Record<BookStatus, number> = { na_estante: 0, quero_ler: 1, lendo: 2, lido: 3 }
 
 function sortForShelf(books: Book[]): Book[] {
   return [...books].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
@@ -49,10 +50,11 @@ export function BooksPage() {
 
   const filtered = activeStatus === 'all' ? sortForShelf(books) : books.filter((b) => b.status === activeStatus)
   const counts: Record<ShelfFilter, number> = {
-    all: books.length,
-    lendo: books.filter((b) => b.status === 'lendo').length,
-    quero_ler: books.filter((b) => b.status === 'quero_ler').length,
-    lido: books.filter((b) => b.status === 'lido').length,
+    all:        books.length,
+    na_estante: books.filter((b) => b.status === 'na_estante').length,
+    quero_ler:  books.filter((b) => b.status === 'quero_ler').length,
+    lendo:      books.filter((b) => b.status === 'lendo').length,
+    lido:       books.filter((b) => b.status === 'lido').length,
   }
 
   function handleDelete(bookId: string) {
@@ -177,9 +179,10 @@ export function BooksPage() {
 
           {!isLoading && filtered.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
-              {activeStatus === 'lendo' && 'Nenhum livro sendo lido.'}
-              {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
-              {activeStatus === 'lido' && 'Nenhum livro finalizado ainda.'}
+              {activeStatus === 'na_estante' && 'Nenhum livro só na estante.'}
+              {activeStatus === 'quero_ler'  && 'Nenhum livro na lista de desejo.'}
+              {activeStatus === 'lendo'      && 'Nenhum livro sendo lido.'}
+              {activeStatus === 'lido'       && 'Nenhum livro finalizado ainda.'}
             </p>
           )}
         </div>

@@ -7,9 +7,10 @@ interface BookShelfGridProps {
 }
 
 const STATUS_BOOKMARK: Record<BookStatus, string> = {
-  lendo:     '#f59e0b',
-  quero_ler: '#3b82f6',
-  lido:      '#10b981',
+  na_estante: '#94a3b8',
+  quero_ler:  '#3b82f6',
+  lendo:      '#f59e0b',
+  lido:       '#10b981',
 }
 
 export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {

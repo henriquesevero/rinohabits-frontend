@@ -5,9 +5,10 @@ import { bookService } from '../services/bookService'
 import type { BookStatus, CreateBookPayload, GoogleBook } from '../types/book.types'
 
 const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
-  { value: 'quero_ler', label: 'Quero Ler' },
-  { value: 'lendo', label: 'Lendo' },
-  { value: 'lido', label: 'Lido' },
+  { value: 'na_estante', label: 'Na Estante' },
+  { value: 'quero_ler',  label: 'Quero Ler'  },
+  { value: 'lendo',      label: 'Lendo'       },
+  { value: 'lido',       label: 'Lido'        },
 ]
 
 // Module-level cache: persists across remounts, shared between form instances
@@ -44,7 +45,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const [author, setAuthor] = useState('')
   const [totalPages, setTotalPages] = useState('')
   const [coverUrl, setCoverUrl] = useState('')
-  const [status, setStatus] = useState<BookStatus>('quero_ler')
+  const [status, setStatus] = useState<BookStatus>('na_estante')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)

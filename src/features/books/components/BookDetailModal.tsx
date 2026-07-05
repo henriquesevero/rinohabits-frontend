@@ -14,9 +14,10 @@ interface BookDetailModalProps {
 }
 
 const STATUS_BADGE: Record<BookStatus, { label: string; classes: string }> = {
-  lido: { label: 'Lido', classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-  lendo: { label: 'Lendo', classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  quero_ler: { label: 'Pendente', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  lido:       { label: 'Lido',       classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  lendo:      { label: 'Lendo',      classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+  quero_ler:  { label: 'Quero Ler',  classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  na_estante: { label: 'Na Estante', classes: 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50' },
 }
 
 export function BookDetailModal({
@@ -228,6 +229,15 @@ export function BookDetailModal({
                     >
                       <BookOpen className="h-3.5 w-3.5" />
                       Registrar
+                    </button>
+                  )}
+                  {book.status === 'na_estante' && (
+                    <button
+                      type="button"
+                      onClick={() => onChangeStatus(book.id, 'quero_ler')}
+                      className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
+                    >
+                      Quero Ler
                     </button>
                   )}
                   {book.status === 'quero_ler' && (

@@ -1,4 +1,4 @@
-export type BookStatus = 'quero_ler' | 'lendo' | 'lido'
+export type BookStatus = 'na_estante' | 'quero_ler' | 'lendo' | 'lido'
 
 export interface Book {
   id: string
