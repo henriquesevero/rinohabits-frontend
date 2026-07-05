@@ -6,10 +6,10 @@ interface CourseShelfGridProps {
   onSelect: (courseId: string) => void
 }
 
-const STATUS_TAG: Record<CourseStatus, { label: string; className: string }> = {
-  fazendo:     { label: 'Fazendo',    className: 'bg-amber-500/90 text-white' },
-  quero_fazer: { label: 'Quero Fazer', className: 'bg-blue-500/90 text-white' },
-  concluido:   { label: 'Concluído',  className: 'bg-emerald-500/90 text-white' },
+const STATUS_BOOKMARK: Record<CourseStatus, string> = {
+  fazendo:     '#f59e0b',
+  quero_fazer: '#3b82f6',
+  concluido:   '#10b981',
 }
 
 export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
@@ -25,7 +25,7 @@ export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
 function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseId: string) => void }) {
   const coverLetter = course.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(course.title)
-  const tag = STATUS_TAG[course.status]
+  const bookmarkColor = STATUS_BOOKMARK[course.status]
 
   return (
     <motion.button
@@ -49,11 +49,14 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseI
             {coverLetter}
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm ${tag.className}`}>
-            {tag.label}
-          </span>
-        </div>
+        <div
+          className="absolute left-3 top-0 w-5 shadow-md"
+          style={{
+            height: 32,
+            backgroundColor: bookmarkColor,
+            clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
+          }}
+        />
       </div>
 
     </motion.button>

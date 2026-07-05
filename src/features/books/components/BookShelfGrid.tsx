@@ -6,10 +6,10 @@ interface BookShelfGridProps {
   onSelect: (bookId: string) => void
 }
 
-const STATUS_TAG: Record<BookStatus, { label: string; className: string }> = {
-  lendo:     { label: 'Lendo',     className: 'bg-amber-500/90 text-white' },
-  quero_ler: { label: 'Quero Ler', className: 'bg-blue-500/90 text-white' },
-  lido:      { label: 'Lido',      className: 'bg-emerald-500/90 text-white' },
+const STATUS_BOOKMARK: Record<BookStatus, string> = {
+  lendo:     '#f59e0b',
+  quero_ler: '#3b82f6',
+  lido:      '#10b981',
 }
 
 export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
@@ -25,7 +25,7 @@ export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
 function BookPoster({ book, onSelect }: { book: Book; onSelect: (bookId: string) => void }) {
   const coverLetter = book.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(book.title)
-  const tag = STATUS_TAG[book.status]
+  const bookmarkColor = STATUS_BOOKMARK[book.status]
 
   return (
     <motion.button
@@ -49,11 +49,14 @@ function BookPoster({ book, onSelect }: { book: Book; onSelect: (bookId: string)
             {coverLetter}
           </div>
         )}
-        <div className="absolute inset-x-0 bottom-0 flex justify-center pb-1.5">
-          <span className={`rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide shadow-sm backdrop-blur-sm ${tag.className}`}>
-            {tag.label}
-          </span>
-        </div>
+        <div
+          className="absolute left-3 top-0 w-5 shadow-md"
+          style={{
+            height: 32,
+            backgroundColor: bookmarkColor,
+            clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
+          }}
+        />
       </div>
 
     </motion.button>
