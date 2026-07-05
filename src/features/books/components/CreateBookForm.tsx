@@ -2,14 +2,7 @@ import axios from 'axios'
 import { Loader2, Plus, Search } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { bookService } from '../services/bookService'
-import type { BookStatus, CreateBookPayload, GoogleBook } from '../types/book.types'
-
-const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
-  { value: 'na_estante', label: 'Na Estante' },
-  { value: 'quero_ler',  label: 'Quero Ler'  },
-  { value: 'lendo',      label: 'Lendo'       },
-  { value: 'lido',       label: 'Lido'        },
-]
+import type { CreateBookPayload, GoogleBook } from '../types/book.types'
 
 // Module-level cache: persists across remounts, shared between form instances
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -45,7 +38,6 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const [author, setAuthor] = useState('')
   const [totalPages, setTotalPages] = useState('')
   const [coverUrl, setCoverUrl] = useState('')
-  const [status, setStatus] = useState<BookStatus>('na_estante')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -138,7 +130,6 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     setAuthor('')
     setTotalPages('')
     setCoverUrl('')
-    setStatus('quero_ler')
   }
 
   function selectBook(book: GoogleBook) {
@@ -167,7 +158,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
         title,
         author,
         totalPages: Number.isFinite(pages) && pages > 0 ? pages : null,
-        status,
+        status: 'na_estante',
         coverUrl: coverUrl || null,
       })
       reset()
@@ -326,23 +317,6 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             placeholder="Total de páginas"
             className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
-
-          <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
-            {STATUS_OPTIONS.map((opt) => (
-              <button
-                key={opt.value}
-                type="button"
-                onClick={() => setStatus(opt.value)}
-                className={`flex-1 rounded-md px-2 py-1 text-xs font-medium transition-colors ${
-                  status === opt.value
-                    ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
-                    : 'text-black/50 dark:text-white/50'
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
 
           <div className="flex gap-2">
             <button

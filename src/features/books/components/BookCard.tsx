@@ -4,6 +4,12 @@ import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
+const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
+  { value: 'quero_ler', label: 'Quero Ler' },
+  { value: 'lendo',     label: 'Lendo'     },
+  { value: 'lido',      label: 'Lido'      },
+]
+
 interface BookCardProps {
   book: Book
   onRegisterReading: (bookId: string, pages: number) => Promise<void>
@@ -109,11 +115,13 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{book.title}</p>
-              <span
-                className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badge.classes}`}
-              >
-                {badge.label}
-              </span>
+              {book.status !== 'na_estante' && (
+                <span
+                  className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badge.classes}`}
+                >
+                  {badge.label}
+                </span>
+              )}
             </div>
             {book.author && <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>}
           </div>
@@ -148,87 +156,76 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           </div>
         )}
 
-        {isLogging ? (
-          <div className="flex gap-2">
-            {pagesError && (
-              <p className="w-full text-[11px] text-red-500 dark:text-red-400">
-                {book.totalPages
-                  ? `Entre ${book.currentPage + 1} e ${book.totalPages}.`
-                  : `Deve ser maior que ${book.currentPage}.`}
-              </p>
-            )}
-            <input
-              type="number"
-              min={book.currentPage + 1}
-              max={book.totalPages ?? undefined}
-              autoFocus
-              value={pagesInput}
-              onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleRegister()
-              }}
-              placeholder={`Parei na pág. ${book.currentPage}`}
-              className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
-            />
+        {/* Status selector */}
+        <div className="flex gap-1 rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChangeStatus(book.id, opt.value)}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1 text-[10px] font-medium transition-colors ${
+                book.status === opt.value
+                  ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                  : 'text-black/50 dark:text-white/50'
+              }`}
+            >
+              {opt.value === 'lido' && book.status === 'lido' && (
+                <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+              )}
+              {opt.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Registrar leitura (só quando lendo) */}
+        {book.status === 'lendo' && (
+          isLogging ? (
+            <div className="flex flex-col gap-1">
+              {pagesError && (
+                <p className="text-[11px] text-red-500 dark:text-red-400">
+                  {book.totalPages
+                    ? `Entre ${book.currentPage + 1} e ${book.totalPages}.`
+                    : `Deve ser maior que ${book.currentPage}.`}
+                </p>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={book.currentPage + 1}
+                  max={book.totalPages ?? undefined}
+                  autoFocus
+                  value={pagesInput}
+                  onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+                  placeholder={`Parei na pág. ${book.currentPage}`}
+                  className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
+                />
+                <button
+                  type="button"
+                  onClick={handleRegister}
+                  className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
+                >
+                  Salvar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsLogging(false); setPagesInput('') }}
+                  className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={handleRegister}
-              className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
+              onClick={() => setIsLogging(true)}
+              className="flex items-center gap-1 self-start rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
             >
-              Salvar
+              <BookOpen className="h-3.5 w-3.5" />
+              Registrar leitura
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogging(false)
-                setPagesInput('')
-              }}
-              className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
-            >
-              ✕
-            </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            {!isDone && (
-              <button
-                type="button"
-                onClick={() => setIsLogging(true)}
-                className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
-              >
-                <BookOpen className="h-3.5 w-3.5" />
-                Registrar
-              </button>
-            )}
-            {book.status === 'na_estante' && (
-              <button
-                type="button"
-                onClick={() => onChangeStatus(book.id, 'quero_ler')}
-                className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-              >
-                Quero Ler
-              </button>
-            )}
-            {book.status === 'quero_ler' && (
-              <button
-                type="button"
-                onClick={() => onChangeStatus(book.id, 'lendo')}
-                className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-              >
-                Ler agora
-              </button>
-            )}
-            {book.status === 'lendo' && (
-              <button
-                type="button"
-                onClick={() => onChangeStatus(book.id, 'lido')}
-                className="flex items-center gap-1 rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-              >
-                <CheckCircle className="h-3.5 w-3.5" />
-                Marcar lido
-              </button>
-            )}
-          </div>
+          )
         )}
       </div>
     </motion.div>

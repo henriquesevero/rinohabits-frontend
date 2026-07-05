@@ -10,7 +10,7 @@ import {
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence } from 'framer-motion'
-import { BookCheck, BookOpen, Bookmark, GripVertical, Library, PackageOpen, type LucideIcon } from 'lucide-react'
+import { BookCheck, BookOpen, Bookmark, GripVertical, Library, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -24,11 +24,10 @@ import type { Book, BookStatus } from '../features/books/types/book.types'
 type ShelfFilter = 'all' | BookStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',        label: 'Estante',    icon: Library     },
-  { status: 'na_estante', label: 'Na Estante', icon: PackageOpen },
-  { status: 'quero_ler',  label: 'Quero Ler',  icon: Bookmark    },
-  { status: 'lendo',      label: 'Lendo',      icon: BookOpen    },
-  { status: 'lido',       label: 'Lido',       icon: BookCheck   },
+  { status: 'all',       label: 'Estante',  icon: Library  },
+  { status: 'quero_ler', label: 'Quero Ler', icon: Bookmark },
+  { status: 'lendo',     label: 'Lendo',     icon: BookOpen },
+  { status: 'lido',      label: 'Lido',      icon: BookCheck },
 ]
 
 export function BooksPage() {
@@ -54,7 +53,10 @@ export function BooksPage() {
     return () => clearTimeout(timeout)
   }, [justCompletedBook, clearJustCompleted])
 
-  const filtered = activeStatus === 'all' ? books : books.filter((b) => b.status === activeStatus)
+  const filtered = activeStatus === 'all'
+    ? books
+    : books.filter((b) => b.status === activeStatus)
+
   const counts: Record<ShelfFilter, number> = {
     all:        books.length,
     na_estante: books.filter((b) => b.status === 'na_estante').length,
@@ -236,10 +238,9 @@ function SortableBookList({
 
           {!isLoading && books.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
-              {activeStatus === 'na_estante' && 'Nenhum livro só na estante.'}
-              {activeStatus === 'quero_ler'  && 'Nenhum livro na lista de desejo.'}
-              {activeStatus === 'lendo'      && 'Nenhum livro sendo lido.'}
-              {activeStatus === 'lido'       && 'Nenhum livro finalizado ainda.'}
+              {activeStatus === 'quero_ler' && 'Nenhum livro na lista de desejo.'}
+              {activeStatus === 'lendo'     && 'Nenhum livro sendo lido.'}
+              {activeStatus === 'lido'      && 'Nenhum livro finalizado ainda.'}
             </p>
           )}
         </div>

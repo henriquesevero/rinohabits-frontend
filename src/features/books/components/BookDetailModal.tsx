@@ -4,6 +4,12 @@ import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
 
+const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
+  { value: 'quero_ler', label: 'Quero Ler' },
+  { value: 'lendo',     label: 'Lendo'     },
+  { value: 'lido',      label: 'Lido'      },
+]
+
 interface BookDetailModalProps {
   book: Book | null
   onRegisterReading: (bookId: string, pages: number) => Promise<void>
@@ -13,11 +19,10 @@ interface BookDetailModalProps {
   onClose: () => void
 }
 
-const STATUS_BADGE: Record<BookStatus, { label: string; classes: string }> = {
-  lido:       { label: 'Lido',       classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-  lendo:      { label: 'Lendo',      classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  quero_ler:  { label: 'Quero Ler',  classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
-  na_estante: { label: 'Na Estante', classes: 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50' },
+const STATUS_BADGE: Partial<Record<BookStatus, { label: string; classes: string }>> = {
+  lido:      { label: 'Lido',      classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  lendo:     { label: 'Lendo',     classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+  quero_ler: { label: 'Quero Ler', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
 }
 
 export function BookDetailModal({
@@ -142,11 +147,13 @@ export function BookDetailModal({
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
-                <span
-                  className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}
-                >
-                  {badge.label}
-                </span>
+                {badge && (
+                  <span
+                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}
+                  >
+                    {badge.label}
+                  </span>
+                )}
                 <p className="text-base font-semibold leading-tight text-black/90 dark:text-white/90">
                   {book.title}
                 </p>
@@ -176,97 +183,87 @@ export function BookDetailModal({
               </div>
             )}
 
-            <div className="mt-4">
-              {isLogging ? (
-                <div className="flex flex-col gap-1.5">
-                {pagesError && (
-                  <p className="text-[11px] text-red-500 dark:text-red-400">
-                    {book.totalPages
-                      ? `Insira uma página entre ${book.currentPage + 1} e ${book.totalPages}.`
-                      : `Deve ser maior que a página atual (${book.currentPage}).`}
-                  </p>
+            <div className="mt-4 flex flex-col gap-2">
+              {/* Status selector */}
+              <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
+                {STATUS_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onChangeStatus(book.id, opt.value)}
+                    className={`flex flex-1 items-center justify-center gap-1 rounded-md px-2 py-1.5 text-xs font-medium transition-colors ${
+                      book.status === opt.value
+                        ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                        : 'text-black/50 dark:text-white/50'
+                    }`}
+                  >
+                    {opt.value === 'lido' && book.status === 'lido' && (
+                      <CheckCircle className="h-3 w-3 text-emerald-500" />
+                    )}
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Registrar + Excluir */}
+              <div className="flex gap-2">
+                {book.status === 'lendo' && !isLogging && (
+                  <button
+                    type="button"
+                    onClick={() => setIsLogging(true)}
+                    className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                    Registrar leitura
+                  </button>
                 )}
-                <div className="flex gap-2">
-                  <input
-                    type="number"
-                    min={book.currentPage + 1}
-                    max={book.totalPages ?? undefined}
-                    autoFocus
-                    value={pagesInput}
-                    onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') handleRegister()
-                    }}
-                    placeholder={`Parei na página… (atual: ${book.currentPage})`}
-                    className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRegister}
-                    className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
-                  >
-                    Salvar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsLogging(false)
-                      setPagesInput('')
-                    }}
-                    className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
-                  >
-                    ✕
-                  </button>
-                </div>
-                </div>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {!isDone && (
+                <button
+                  type="button"
+                  onClick={() => onRequestDelete(book.id)}
+                  className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Excluir
+                </button>
+              </div>
+
+              {/* Inline reading log */}
+              {isLogging && (
+                <div className="flex flex-col gap-1.5">
+                  {pagesError && (
+                    <p className="text-[11px] text-red-500 dark:text-red-400">
+                      {book.totalPages
+                        ? `Insira uma página entre ${book.currentPage + 1} e ${book.totalPages}.`
+                        : `Deve ser maior que a página atual (${book.currentPage}).`}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min={book.currentPage + 1}
+                      max={book.totalPages ?? undefined}
+                      autoFocus
+                      value={pagesInput}
+                      onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+                      placeholder={`Parei na página… (atual: ${book.currentPage})`}
+                      className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
+                    />
                     <button
                       type="button"
-                      onClick={() => setIsLogging(true)}
-                      className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
+                      onClick={handleRegister}
+                      className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
                     >
-                      <BookOpen className="h-3.5 w-3.5" />
-                      Registrar
+                      Salvar
                     </button>
-                  )}
-                  {book.status === 'na_estante' && (
                     <button
                       type="button"
-                      onClick={() => onChangeStatus(book.id, 'quero_ler')}
-                      className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
+                      onClick={() => { setIsLogging(false); setPagesInput('') }}
+                      className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
                     >
-                      Quero Ler
+                      ✕
                     </button>
-                  )}
-                  {book.status === 'quero_ler' && (
-                    <button
-                      type="button"
-                      onClick={() => onChangeStatus(book.id, 'lendo')}
-                      className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-                    >
-                      Ler agora
-                    </button>
-                  )}
-                  {book.status === 'lendo' && (
-                    <button
-                      type="button"
-                      onClick={() => onChangeStatus(book.id, 'lido')}
-                      className="flex items-center gap-1 rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-                    >
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Marcar lido
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => onRequestDelete(book.id)}
-                    className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Excluir
-                  </button>
+                  </div>
                 </div>
               )}
             </div>
