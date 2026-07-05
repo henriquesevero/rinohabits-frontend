@@ -50,9 +50,9 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (courseI
           </div>
         )}
         <div
-          className="absolute left-3 top-0 w-5 shadow-md"
+          className="absolute left-2 top-0 w-3 shadow-sm"
           style={{
-            height: 32,
+            height: 20,
             backgroundColor: bookmarkColor,
             clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
           }}

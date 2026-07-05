@@ -29,6 +29,7 @@ export function BookDetailModal({
 }: BookDetailModalProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [pagesInput, setPagesInput] = useState('')
+  const [pagesError, setPagesError] = useState(false)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -36,6 +37,12 @@ export function BookDetailModal({
     if (!book) return
     const pages = Number.parseInt(pagesInput, 10)
     if (!pages || pages <= 0) return
+    const remaining = book.totalPages ? book.totalPages - book.currentPage : null
+    if (remaining !== null && pages > remaining) {
+      setPagesError(true)
+      return
+    }
+    setPagesError(false)
     setIsLogging(false)
     setPagesInput('')
     await onRegisterReading(book.id, pages)
@@ -58,6 +65,7 @@ export function BookDetailModal({
   function handleClose() {
     setIsLogging(false)
     setPagesInput('')
+    setPagesError(false)
     onClose()
   }
 
@@ -167,18 +175,25 @@ export function BookDetailModal({
 
             <div className="mt-4">
               {isLogging ? (
+                <div className="flex flex-col gap-1.5">
+                {pagesError && (
+                  <p className="text-[11px] text-red-500 dark:text-red-400">
+                    Máximo {book.totalPages! - book.currentPage} páginas restantes.
+                  </p>
+                )}
                 <div className="flex gap-2">
                   <input
                     type="number"
                     min={1}
+                    max={book.totalPages ? book.totalPages - book.currentPage : undefined}
                     autoFocus
                     value={pagesInput}
-                    onChange={(e) => setPagesInput(e.target.value)}
+                    onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') handleRegister()
                     }}
                     placeholder="Páginas lidas hoje"
-                    className="flex-1 rounded-lg border border-white/30 bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80"
+                    className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
                   />
                   <button
                     type="button"
@@ -197,6 +212,7 @@ export function BookDetailModal({
                   >
                     ✕
                   </button>
+                </div>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">

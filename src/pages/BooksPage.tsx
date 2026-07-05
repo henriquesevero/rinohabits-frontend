@@ -74,6 +74,16 @@ export function BooksPage() {
     await registerReading(bookId, pages)
   }
 
+  async function handleChangeStatus(bookId: string, status: BookStatus) {
+    if (status === 'lido') {
+      const book = books.find((b) => b.id === bookId)
+      if (book?.totalPages && book.currentPage < book.totalPages) {
+        await registerReading(bookId, book.totalPages - book.currentPage)
+      }
+    }
+    await changeStatus(bookId, status)
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <BookCompleteCelebration
@@ -85,7 +95,7 @@ export function BooksPage() {
       <BookDetailModal
         book={selectedBook}
         onRegisterReading={handleRegisterReading}
-        onChangeStatus={changeStatus}
+        onChangeStatus={handleChangeStatus}
         onCoverUpdated={updateCover}
         onRequestDelete={handleDelete}
         onClose={() => setSelectedBookId(null)}
@@ -156,7 +166,7 @@ export function BooksPage() {
                 key={book.id}
                 book={book}
                 onRegisterReading={handleRegisterReading}
-                onChangeStatus={changeStatus}
+                onChangeStatus={handleChangeStatus}
                 onDelete={handleDelete}
                 onCoverUpdated={updateCover}
               />
