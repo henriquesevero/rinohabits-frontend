@@ -7,18 +7,20 @@ import { AccountPage } from '../pages/AccountPage'
 import { BooksPage } from '../pages/BooksPage'
 import { CoursesPage } from '../pages/CoursesPage'
 import { HabitsPage } from '../pages/HabitsPage'
+import { RankingPage } from '../pages/RankingPage'
 import { StatsPage } from '../pages/StatsPage'
 import type { TabKey } from './tabs'
 
 const PAGES: Record<TabKey, () => ReactElement> = {
-  habits: HabitsPage,
-  stats: StatsPage,
-  books: BooksPage,
+  habits:  HabitsPage,
+  stats:   StatsPage,
+  books:   BooksPage,
   courses: CoursesPage,
+  ranking: RankingPage,
   account: AccountPage,
 }
 
-const MAIN_TABS: TabKey[] = ['habits', 'stats', 'books', 'courses']
+const MAIN_TABS: TabKey[] = ['habits', 'stats', 'books', 'courses', 'ranking']
 
 const pageVariants = {
   enter: (dir: number) => ({ x: dir >= 0 ? 48 : -48, opacity: 0 }),
@@ -53,7 +55,11 @@ export function AppContent() {
     }
   }
 
-  const Page = PAGES[activeTab]
+  function renderPage() {
+    if (activeTab === 'habits') return <HabitsPage onNavigateToRanking={() => changeTab('ranking')} />
+    const Page = PAGES[activeTab]
+    return <Page />
+  }
 
   return (
     <AppShell
@@ -104,7 +110,7 @@ export function AppContent() {
                 transition={pageTransition}
                 className="h-full"
               >
-                <Page />
+                {renderPage()}
               </motion.div>
             </AnimatePresence>
           </motion.div>

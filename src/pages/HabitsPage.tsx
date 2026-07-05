@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { HabitsCompleteConfetti } from '../components/ui/HabitsCompleteConfetti'
+import { GamificationCard } from '../features/gamification/components/GamificationCard'
+import { XPGainToast } from '../features/gamification/components/XPGainToast'
+import { useGamification } from '../features/gamification/hooks/useGamification'
 import { EditHabitModal } from '../features/habits/components/EditHabitModal'
 import { HabitForm } from '../features/habits/components/HabitForm'
 import { HabitList } from '../features/habits/components/HabitList'
@@ -10,13 +13,19 @@ import { StreakCard } from '../features/stats/components/StreakCard'
 import { WeeklyHeatmap } from '../features/stats/components/WeeklyHeatmap'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
 
-export function HabitsPage() {
+interface HabitsPageProps {
+  onNavigateToRanking?: () => void
+}
+
+export function HabitsPage({ onNavigateToRanking }: HabitsPageProps) {
   const { dashboard, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit } = useHabits()
   const { summary, refetch: refetchCalendar } = useCalendar()
+  const { stats: gamification, refetch: refetchGamification } = useGamification()
   const [isManaging, setIsManaging] = useState(false)
   const [habitToDelete, setHabitToDelete] = useState<string | null>(null)
   const [habitToEdit, setHabitToEdit] = useState<string | null>(null)
   const [showConfetti, setShowConfetti] = useState(false)
+  const [showXPToast, setShowXPToast] = useState(false)
   const formRef = useRef<HTMLDivElement>(null)
   const wasAllComplete = useRef<boolean | null>(null)
 
@@ -27,7 +36,9 @@ export function HabitsPage() {
     const isAllComplete = total > 0 && completed === total
     if (wasAllComplete.current === false && isAllComplete) {
       setShowConfetti(true)
+      setShowXPToast(true)
       setTimeout(() => setShowConfetti(false), 3500)
+      setTimeout(() => setShowXPToast(false), 2800)
     }
     wasAllComplete.current = isAllComplete
   }, [dashboard])
@@ -35,6 +46,7 @@ export function HabitsPage() {
   async function handleToggle(habitId: string) {
     await toggleHabit(habitId)
     refetchCalendar()
+    refetchGamification()
   }
 
   function handleEditRequest(habitId: string) {
@@ -58,6 +70,7 @@ export function HabitsPage() {
   return (
     <>
       <HabitsCompleteConfetti show={showConfetti} />
+      <XPGainToast show={showXPToast} xp={50} />
 
       <EditHabitModal habit={editingHabit} onSave={updateHabit} onClose={() => setHabitToEdit(null)} />
 
@@ -72,6 +85,10 @@ export function HabitsPage() {
       />
 
       <div className="flex flex-col gap-4">
+        {gamification && (
+          <GamificationCard stats={gamification} onNavigateToRanking={onNavigateToRanking} />
+        )}
+
         <StreakCard
           streak={dashboard?.streak ?? 0}
           activeDays={summary?.activeDays ?? 0}
