@@ -186,7 +186,7 @@ export function BookDetailModal({
 
             <div className="mt-4 flex flex-col gap-2">
               {/* Status selector */}
-              <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
+              <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
                 {STATUS_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
