@@ -14,8 +14,8 @@ interface CourseDetailModalProps {
 }
 
 const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
-  { value: 'na_prateleira', label: 'Prateleira'  },
   { value: 'quero_fazer',   label: 'Quero Fazer' },
+  { value: 'na_prateleira', label: 'Prateleira'  },
   { value: 'fazendo',       label: 'Fazendo'     },
   { value: 'concluido',     label: 'Feito'       },
 ]
