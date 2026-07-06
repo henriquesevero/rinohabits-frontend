@@ -57,11 +57,16 @@ export const bookService = {
     return mapBook(data)
   },
 
-  async search(q: string, type: 'title' | 'author' | 'general' = 'general', signal?: AbortSignal): Promise<BookSearchResult[]> {
-    const { data } = await apiClient.get<BookSearchResult[]>('/books/search', {
-      params: type === 'general' ? { q } : { q, type },
-      signal,
-    })
+  async search(
+    q: string,
+    type: 'title' | 'author' | 'general' = 'general',
+    source: 'openlib' | 'google' = 'openlib',
+    signal?: AbortSignal,
+  ): Promise<BookSearchResult[]> {
+    const params: Record<string, string> = { q }
+    if (type !== 'general') params.type = type
+    if (source === 'google') params.source = 'google'
+    const { data } = await apiClient.get<BookSearchResult[]>('/books/search', { params, signal })
     return data
   },
 

@@ -1,26 +1,28 @@
 import axios from 'axios'
-import { Loader2, Plus, Search } from 'lucide-react'
+import { ArrowLeft, Loader2, Plus, Search } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { bookService } from '../services/bookService'
 import type { BookSearchResult, CreateBookPayload } from '../types/book.types'
 
 type SearchType = 'general' | 'title' | 'author'
+type SearchSource = 'openlib' | 'google'
 
-// Module-level cache: persists across remounts, shared between form instances
 const CACHE_TTL_MS = 5 * 60 * 1000
 const searchCache = new Map<string, { data: BookSearchResult[]; expiresAt: number }>()
 
-function cacheKey(q: string, type: SearchType) { return `${type}:${q}` }
+function cacheKey(q: string, type: SearchType, source: SearchSource) {
+  return `${source}:${type}:${q}`
+}
 
-function getCached(q: string, type: SearchType): BookSearchResult[] | null {
-  const entry = searchCache.get(cacheKey(q, type))
+function getCached(q: string, type: SearchType, source: SearchSource): BookSearchResult[] | null {
+  const entry = searchCache.get(cacheKey(q, type, source))
   if (!entry) return null
-  if (Date.now() > entry.expiresAt) { searchCache.delete(cacheKey(q, type)); return null }
+  if (Date.now() > entry.expiresAt) { searchCache.delete(cacheKey(q, type, source)); return null }
   return entry.data
 }
 
-function setCached(q: string, type: SearchType, data: BookSearchResult[]) {
-  searchCache.set(cacheKey(q, type), { data, expiresAt: Date.now() + CACHE_TTL_MS })
+function setCached(q: string, type: SearchType, source: SearchSource, data: BookSearchResult[]) {
+  searchCache.set(cacheKey(q, type, source), { data, expiresAt: Date.now() + CACHE_TTL_MS })
 }
 
 interface CreateBookFormProps {
@@ -39,6 +41,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [step, setStep] = useState<Step>('search')
   const [searchType, setSearchType] = useState<SearchType>('general')
+  const [searchSource, setSearchSource] = useState<SearchSource>('openlib')
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<BookSearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
@@ -55,6 +58,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const abortRef = useRef<AbortController | null>(null)
   const seqRef = useRef(0)
 
+  // Re-fire search when source or type changes (if there's already a query)
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
@@ -69,7 +73,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
       return
     }
 
-    const cached = getCached(q, searchType)
+    const cached = getCached(q, searchType, searchSource)
     if (cached) {
       abortRef.current?.abort()
       setResults(cached)
@@ -85,7 +89,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [query, searchType]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [query, searchType, searchSource]) // eslint-disable-line react-hooks/exhaustive-deps
 
   async function runSearch(q: string) {
     abortRef.current?.abort()
@@ -99,18 +103,17 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     try {
       let data: BookSearchResult[]
       try {
-        data = await bookService.search(q, searchType, ctrl.signal)
+        data = await bookService.search(q, searchType, searchSource, ctrl.signal)
       } catch (firstErr) {
         if (axios.isCancel(firstErr)) return
         if (seq !== seqRef.current) return
         await new Promise((r) => setTimeout(r, 700))
         if (seq !== seqRef.current) return
-        data = await bookService.search(q, searchType, ctrl.signal)
+        data = await bookService.search(q, searchType, searchSource, ctrl.signal)
       }
 
       if (seq !== seqRef.current) return
-
-      setCached(q, searchType, data)
+      setCached(q, searchType, searchSource, data)
       setResults(data)
     } catch (err) {
       if (seq !== seqRef.current) return
@@ -131,10 +134,24 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     setHasSearched(false)
     setSearchError(false)
     setIsSearching(false)
+    setSearchSource('openlib')
     setTitle('')
     setAuthor('')
     setTotalPages('')
     setCoverUrl('')
+  }
+
+  function switchToGoogle() {
+    setResults([])
+    setHasSearched(false)
+    setSearchSource('google')
+    // Immediately fire search with current query (effect handles it via dependency on searchSource)
+  }
+
+  function switchToOpenLib() {
+    setResults([])
+    setHasSearched(false)
+    setSearchSource('openlib')
   }
 
   function selectBook(book: BookSearchResult) {
@@ -173,6 +190,8 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     }
   }
 
+  const noResults = hasSearched && !isSearching && !searchError && results.length === 0
+
   if (!isOpen) {
     return (
       <button
@@ -190,7 +209,20 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
       {step === 'search' ? (
         <>
-          <p className="text-sm font-semibold text-black/80 dark:text-white/80">Buscar livro</p>
+          {/* Header row */}
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-semibold text-black/80 dark:text-white/80">Buscar livro</p>
+            {searchSource === 'google' && (
+              <button
+                type="button"
+                onClick={switchToOpenLib}
+                className="flex items-center gap-1 rounded-full bg-blue-500/10 px-2.5 py-0.5 text-[11px] font-medium text-blue-600 dark:text-blue-400"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Open Library
+              </button>
+            )}
+          </div>
 
           {/* Search type toggle */}
           <div className="flex gap-1 rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
@@ -210,6 +242,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             ))}
           </div>
 
+          {/* Search input */}
           <div className="flex items-center gap-2 rounded-lg border border-black/15 bg-white/40 px-3 py-2 dark:border-white/20 dark:bg-black/30">
             {isSearching ? (
               <Loader2 className="h-4 w-4 shrink-0 animate-spin text-black/35 dark:text-white/35" />
@@ -227,6 +260,11 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
               autoFocus
               className="flex-1 bg-transparent text-sm text-black/80 outline-none placeholder:text-black/40 dark:text-white/80 dark:placeholder:text-white/40"
             />
+            {searchSource === 'google' && !isSearching && (
+              <span className="shrink-0 rounded-full bg-blue-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-blue-600 dark:text-blue-400">
+                Google
+              </span>
+            )}
             {query.length > 0 && (
               <button
                 type="button"
@@ -239,9 +277,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
           </div>
 
           {query.trim().length > 0 && query.trim().length < 2 && (
-            <p className="text-center text-xs text-black/35 dark:text-white/35">
-              Continue digitando...
-            </p>
+            <p className="text-center text-xs text-black/35 dark:text-white/35">Continue digitando...</p>
           )}
 
           {hasSearched && !isSearching && searchError && (
@@ -250,12 +286,36 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             </p>
           )}
 
-          {hasSearched && !isSearching && !searchError && results.length === 0 && (
+          {/* No results — Open Library → offer Google Books fallback */}
+          {noResults && searchSource === 'openlib' && (
+            <div className="flex flex-col items-center gap-2 py-1">
+              <p className="text-xs text-black/40 dark:text-white/40">
+                Nenhum resultado no Open Library.
+              </p>
+              <button
+                type="button"
+                onClick={switchToGoogle}
+                className="flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/8 px-3 py-1.5 text-xs font-medium text-blue-600 transition-colors hover:bg-blue-500/15 dark:text-blue-400"
+              >
+                <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Buscar no Google Books
+              </button>
+            </div>
+          )}
+
+          {/* No results — already on Google Books */}
+          {noResults && searchSource === 'google' && (
             <p className="text-center text-xs text-black/40 dark:text-white/40">
               Nenhum resultado encontrado.
             </p>
           )}
 
+          {/* Results list */}
           {results.length > 0 && (
             <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
               {results.map((book) => (
@@ -279,14 +339,10 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
                       {book.title}
                     </p>
                     {book.author && (
-                      <p className="truncate text-xs text-black/50 dark:text-white/50">
-                        {book.author}
-                      </p>
+                      <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>
                     )}
                     {book.page_count > 0 && (
-                      <p className="text-xs text-black/35 dark:text-white/35">
-                        {book.page_count} páginas
-                      </p>
+                      <p className="text-xs text-black/35 dark:text-white/35">{book.page_count} páginas</p>
                     )}
                   </div>
                 </button>
@@ -315,11 +371,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
         <form onSubmit={handleConfirm} className="flex flex-col gap-3">
           {coverUrl && (
             <div className="flex justify-center">
-              <img
-                src={coverUrl}
-                alt=""
-                className="h-32 w-[86px] rounded-lg object-cover shadow-md"
-              />
+              <img src={coverUrl} alt="" className="h-32 w-[86px] rounded-lg object-cover shadow-md" />
             </div>
           )}
 
