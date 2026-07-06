@@ -13,10 +13,10 @@ type ShelfFilter = 'all' | CourseStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
   { status: 'all',           label: 'Todos',       icon: LayoutGrid },
+  { status: 'na_prateleira', label: 'Prateleira',  icon: Archive    },
   { status: 'quero_fazer',   label: 'Quero Fazer', icon: Pin        },
   { status: 'fazendo',       label: 'Fazendo',     icon: CirclePlay },
   { status: 'concluido',     label: 'Feito',       icon: BadgeCheck },
-  { status: 'na_prateleira', label: 'Prateleira',  icon: Archive    },
 ]
 
 const SHELF_ORDER: Record<CourseStatus, number> = {
