@@ -93,7 +93,7 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={isUploadingCover}
-          className="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+          className="absolute -bottom-1 -right-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
           title="Alterar capa"
         >
           {isUploadingCover ? (
