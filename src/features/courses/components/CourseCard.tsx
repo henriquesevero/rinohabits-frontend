@@ -12,10 +12,18 @@ interface CourseCardProps {
   onCoverUpdated: (courseId: string, url: string) => void
 }
 
+const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
+  { value: 'na_prateleira', label: 'Prateleira'  },
+  { value: 'quero_fazer',   label: 'Quero Fazer' },
+  { value: 'fazendo',       label: 'Fazendo'     },
+  { value: 'concluido',     label: 'Feito'       },
+]
+
 const STATUS_BADGE: Record<CourseStatus, { label: string; classes: string }> = {
-  concluido:   { label: 'Feito',       classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-  fazendo:     { label: 'Fazendo',     classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  quero_fazer: { label: 'Quero Fazer', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  na_prateleira: { label: 'Prateleira', classes: 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50' },
+  concluido:     { label: 'Feito',      classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  fazendo:       { label: 'Fazendo',    classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+  quero_fazer:   { label: 'Quero Fazer', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
 }
 
 export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, onCoverUpdated }: CourseCardProps) {
@@ -108,9 +116,11 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <p className="truncate text-sm font-semibold text-black/80 dark:text-white/80">{course.title}</p>
-              <span className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badge.classes}`}>
-                {badge.label}
-              </span>
+              {course.status !== 'na_prateleira' && (
+                <span className={`flex-shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${badge.classes}`}>
+                  {badge.label}
+                </span>
+              )}
             </div>
             {course.description && (
               <p className="line-clamp-1 text-xs text-black/50 dark:text-white/50">{course.description}</p>
@@ -158,65 +168,68 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           </div>
         )}
 
-        {isLogging ? (
-          <div className="flex gap-2">
-            {hoursError && (
-              <p className="w-full text-[11px] text-red-500 dark:text-red-400">Insira um valor maior que 0.</p>
-            )}
-            <input
-              type="number"
-              min={0.1}
-              step={0.5}
-              autoFocus
-              value={hoursInput}
-              onChange={(e) => { setHoursInput(e.target.value); setHoursError(false) }}
-              onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
-              placeholder="Horas estudadas"
-              className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${hoursError ? 'border-red-400' : 'border-white/30'}`}
-            />
-            <button type="button" onClick={handleRegister} className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950">
-              Salvar
+        {/* Status selector */}
+        <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
+          {STATUS_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              onClick={() => onChangeStatus(course.id, opt.value)}
+              className={`flex flex-1 items-center justify-center gap-1 rounded-md px-1 py-1 text-[9px] font-medium transition-colors ${
+                course.status === opt.value
+                  ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                  : 'text-black/50 dark:text-white/50'
+              }`}
+            >
+              {opt.value === 'concluido' && course.status === 'concluido' && (
+                <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+              )}
+              {opt.label}
             </button>
+          ))}
+        </div>
+
+        {/* Registrar horas */}
+        {!isDone && (
+          isLogging ? (
+            <div className="flex flex-col gap-1">
+              {hoursError && (
+                <p className="text-[11px] text-red-500 dark:text-red-400">Insira um valor maior que 0.</p>
+              )}
+              <div className="flex gap-2">
+                <input
+                  type="number"
+                  min={0.1}
+                  step={0.5}
+                  autoFocus
+                  value={hoursInput}
+                  onChange={(e) => { setHoursInput(e.target.value); setHoursError(false) }}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+                  placeholder="Horas estudadas"
+                  className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${hoursError ? 'border-red-400' : 'border-white/30'}`}
+                />
+                <button type="button" onClick={handleRegister} className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950">
+                  Salvar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setIsLogging(false); setHoursInput('') }}
+                  className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={() => { setIsLogging(false); setHoursInput('') }}
-              className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
+              onClick={() => setIsLogging(true)}
+              className="flex items-center gap-1 self-start rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
             >
-              ✕
+              <Clock className="h-3.5 w-3.5" />
+              Registrar horas
             </button>
-          </div>
-        ) : (
-          <div className="flex gap-2">
-            {!isDone && (
-              <button
-                type="button"
-                onClick={() => setIsLogging(true)}
-                className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
-              >
-                <Clock className="h-3.5 w-3.5" />
-                Registrar
-              </button>
-            )}
-            {course.status === 'quero_fazer' && (
-              <button
-                type="button"
-                onClick={() => onChangeStatus(course.id, 'fazendo')}
-                className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-              >
-                Começar
-              </button>
-            )}
-            {course.status === 'fazendo' && (
-              <button
-                type="button"
-                onClick={() => onChangeStatus(course.id, 'concluido')}
-                className="flex items-center gap-1 rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-              >
-                <CheckCircle className="h-3.5 w-3.5" />
-                Marcar feito
-              </button>
-            )}
-          </div>
+          )
         )}
       </div>
     </motion.div>

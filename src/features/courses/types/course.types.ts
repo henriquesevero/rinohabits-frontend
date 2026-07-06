@@ -1,4 +1,4 @@
-export type CourseStatus = 'quero_fazer' | 'fazendo' | 'concluido'
+export type CourseStatus = 'na_prateleira' | 'quero_fazer' | 'fazendo' | 'concluido'
 
 export interface Course {
   id: string

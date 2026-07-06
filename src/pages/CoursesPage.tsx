@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { BadgeCheck, CirclePlay, LayoutGrid, Pin, type LucideIcon } from 'lucide-react'
+import { Archive, BadgeCheck, CirclePlay, LayoutGrid, Pin, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { CourseCard } from '../features/courses/components/CourseCard'
@@ -12,16 +12,18 @@ import type { Course, CourseStatus } from '../features/courses/types/course.type
 type ShelfFilter = 'all' | CourseStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',         label: 'Todos',       icon: LayoutGrid },
-  { status: 'quero_fazer', label: 'Quero Fazer', icon: Pin        },
-  { status: 'fazendo',     label: 'Fazendo',     icon: CirclePlay },
-  { status: 'concluido',   label: 'Feito',       icon: BadgeCheck },
+  { status: 'all',           label: 'Todos',       icon: LayoutGrid },
+  { status: 'quero_fazer',   label: 'Quero Fazer', icon: Pin        },
+  { status: 'fazendo',       label: 'Fazendo',     icon: CirclePlay },
+  { status: 'concluido',     label: 'Feito',       icon: BadgeCheck },
+  { status: 'na_prateleira', label: 'Prateleira',  icon: Archive    },
 ]
 
-const SHELF_ORDER: Record<CourseStatus, number> = { quero_fazer: 0, fazendo: 1, concluido: 2 }
-
-function sortForShelf(courses: Course[]): Course[] {
-  return [...courses].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
+const SHELF_ORDER: Record<CourseStatus, number> = {
+  quero_fazer:   0,
+  fazendo:       1,
+  concluido:     2,
+  na_prateleira: 3,
 }
 
 export function CoursesPage() {
@@ -49,10 +51,11 @@ export function CoursesPage() {
   const filtered = activeStatus === 'all' ? sortForShelf(courses) : courses.filter((c) => c.status === activeStatus)
 
   const counts: Record<ShelfFilter, number> = {
-    all:         courses.length,
-    quero_fazer: courses.filter((c) => c.status === 'quero_fazer').length,
-    fazendo:     courses.filter((c) => c.status === 'fazendo').length,
-    concluido:   courses.filter((c) => c.status === 'concluido').length,
+    all:           courses.length,
+    quero_fazer:   courses.filter((c) => c.status === 'quero_fazer').length,
+    fazendo:       courses.filter((c) => c.status === 'fazendo').length,
+    concluido:     courses.filter((c) => c.status === 'concluido').length,
+    na_prateleira: courses.filter((c) => c.status === 'na_prateleira').length,
   }
 
   async function handleDeleteConfirm() {
@@ -154,6 +157,7 @@ export function CoursesPage() {
               {activeStatus === 'fazendo' && 'Nenhum curso em andamento.'}
               {activeStatus === 'quero_fazer' && 'Nenhum curso na lista de desejo.'}
               {activeStatus === 'concluido' && 'Nenhum curso concluído ainda.'}
+              {activeStatus === 'na_prateleira' && 'Nenhum curso na prateleira.'}
             </p>
           )}
         </div>

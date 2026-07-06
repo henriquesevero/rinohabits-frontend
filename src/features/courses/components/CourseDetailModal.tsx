@@ -13,10 +13,18 @@ interface CourseDetailModalProps {
   onClose: () => void
 }
 
+const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
+  { value: 'na_prateleira', label: 'Prateleira'  },
+  { value: 'quero_fazer',   label: 'Quero Fazer' },
+  { value: 'fazendo',       label: 'Fazendo'     },
+  { value: 'concluido',     label: 'Feito'       },
+]
+
 const STATUS_BADGE: Record<CourseStatus, { label: string; classes: string }> = {
-  concluido: { label: 'Concluído', classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
-  fazendo: { label: 'Fazendo', classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
-  quero_fazer: { label: 'Pendente', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
+  na_prateleira: { label: 'Prateleira', classes: 'bg-black/10 text-black/50 dark:bg-white/10 dark:text-white/50' },
+  concluido:     { label: 'Concluído',  classes: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' },
+  fazendo:       { label: 'Fazendo',    classes: 'bg-amber-500/15 text-amber-600 dark:text-amber-400' },
+  quero_fazer:   { label: 'Pendente',   classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
 }
 
 export function CourseDetailModal({
@@ -136,11 +144,13 @@ export function CourseDetailModal({
               </div>
 
               <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
-                <span
-                  className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}
-                >
-                  {badge.label}
-                </span>
+                {course.status !== 'na_prateleira' && (
+                  <span
+                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}
+                  >
+                    {badge.label}
+                  </span>
+                )}
                 <p className="text-base font-semibold leading-tight text-black/90 dark:text-white/90">
                   {course.title}
                 </p>
@@ -190,7 +200,29 @@ export function CourseDetailModal({
               </p>
             )}
 
-            <div className="mt-4">
+            <div className="mt-4 flex flex-col gap-2">
+              {/* Status selector */}
+              <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
+                {STATUS_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onChangeStatus(course.id, opt.value)}
+                    className={`flex flex-1 items-center justify-center gap-0.5 rounded-md px-1 py-1.5 text-[10px] font-medium transition-colors ${
+                      course.status === opt.value
+                        ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                        : 'text-black/50 dark:text-white/50'
+                    }`}
+                  >
+                    {opt.value === 'concluido' && course.status === 'concluido' && (
+                      <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+                    )}
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Registrar horas + Excluir */}
               {isLogging ? (
                 <div className="flex gap-2">
                   <input
@@ -234,25 +266,6 @@ export function CourseDetailModal({
                     >
                       <Clock className="h-3.5 w-3.5" />
                       Registrar horas
-                    </button>
-                  )}
-                  {course.status === 'quero_fazer' && (
-                    <button
-                      type="button"
-                      onClick={() => onChangeStatus(course.id, 'fazendo')}
-                      className="rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-                    >
-                      Começar
-                    </button>
-                  )}
-                  {course.status === 'fazendo' && (
-                    <button
-                      type="button"
-                      onClick={() => onChangeStatus(course.id, 'concluido')}
-                      className="flex items-center gap-1 rounded-lg border border-white/30 px-2.5 py-1.5 text-xs text-black/60 dark:text-white/60"
-                    >
-                      <CheckCircle className="h-3.5 w-3.5" />
-                      Marcar concluído
                     </button>
                   )}
                   <button

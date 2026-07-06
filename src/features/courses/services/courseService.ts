@@ -80,4 +80,8 @@ export const courseService = {
   async remove(courseId: string): Promise<void> {
     await apiClient.delete(`/courses/${courseId}`)
   },
+
+  async reorderCourses(ids: string[]): Promise<void> {
+    await apiClient.patch('/courses/reorder', { ids })
+  },
 }

@@ -7,9 +7,10 @@ interface CourseShelfGridProps {
 }
 
 const STATUS_BOOKMARK: Record<CourseStatus, string> = {
-  fazendo:     '#f59e0b',
-  quero_fazer: '#3b82f6',
-  concluido:   '#10b981',
+  na_prateleira: '#9ca3af',
+  fazendo:       '#f59e0b',
+  quero_fazer:   '#3b82f6',
+  concluido:     '#10b981',
 }
 
 export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
