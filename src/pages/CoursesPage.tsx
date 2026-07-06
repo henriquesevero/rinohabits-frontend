@@ -26,6 +26,10 @@ const SHELF_ORDER: Record<CourseStatus, number> = {
   na_prateleira: 3,
 }
 
+function sortForShelf(courses: Course[]): Course[] {
+  return [...courses].sort((a, b) => SHELF_ORDER[a.status] - SHELF_ORDER[b.status])
+}
+
 export function CoursesPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null)
