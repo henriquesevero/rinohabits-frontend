@@ -2,10 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { habitService } from '../services/habitService'
 import type { CreateHabitPayload, Habit, TodayDashboard, TodayHabit, UpdateHabitPayload } from '../types/habit.types'
 
-function isRequiredToday(activeWeekdays: number[]): boolean {
+function isIncludedToday(payload: CreateHabitPayload): boolean {
+  if (payload.weeklyFrequency !== null) return true
   const day = new Date().getDay()
   const iso = day === 0 ? 7 : day
-  return activeWeekdays.includes(iso)
+  return payload.activeWeekdays.includes(iso)
 }
 
 async function getTodayWithRetry(): Promise<TodayDashboard> {
@@ -37,36 +38,49 @@ export function useHabits() {
     }
   }, [])
 
+  const refreshSilent = useCallback(async () => {
+    try {
+      const [data, all] = await Promise.all([getTodayWithRetry(), habitService.listAll()])
+      setDashboard(data)
+      setAllHabits(all)
+    } catch { /* ignore */ }
+  }, [])
+
   useEffect(() => {
     refresh()
   }, [refresh])
 
   const toggleHabit = useCallback(async (habitId: string) => {
+    // Optimistic update: toggle isCompleted and weekCompletions; hide if quota met
     setDashboard((current) => (current ? applyToggle(current, habitId) : current))
 
     try {
       const isCompleted = await habitService.toggleLog(habitId)
       setDashboard((current) => (current ? applyToggle(current, habitId, isCompleted) : current))
+
+      // For frequency habits marked as completed, re-fetch silently so the
+      // week count is in sync and the habit disappears if the quota was met.
+      const habit = allHabits.find((h) => h.id === habitId)
+      if (habit?.weeklyFrequency !== null && isCompleted) {
+        await refreshSilent()
+      }
     } catch {
       setDashboard((current) => (current ? applyToggle(current, habitId) : current))
     }
-  }, [])
+  }, [allHabits, refreshSilent])
 
   const createHabit = useCallback(
     async (payload: CreateHabitPayload) => {
       const created = await habitService.create(payload)
 
-      if (isRequiredToday(payload.activeWeekdays)) {
+      if (isIncludedToday(payload)) {
         setDashboard((current) =>
           current
-            ? { ...current, habits: [...current.habits, { habit: created, isCompleted: false }] }
+            ? { ...current, habits: [...current.habits, { habit: created, isCompleted: false, weekCompletions: 0 }] }
             : current,
         )
       }
 
-      // refresh() reconciles with the backend (streak, exact day-boundary) but
-      // never clears dashboard on failure, so the optimistic entry above
-      // stays visible even if this call fails.
       await refresh()
     },
     [refresh],
@@ -91,7 +105,6 @@ export function useHabits() {
   const reorderHabits = useCallback(async (reorderedIds: string[]) => {
     const idOrder = new Map(reorderedIds.map((id, i) => [id, i]))
 
-    // Optimistic: reorder allHabits (source of truth for the manage list)
     setAllHabits((current) => {
       const sorted = [...current].sort((a, b) => {
         const ia = idOrder.get(a.id) ?? Number.MAX_SAFE_INTEGER
@@ -101,7 +114,6 @@ export function useHabits() {
       return sorted
     })
 
-    // Optimistic: keep dashboard.habits in the same relative order too
     setDashboard((current) => {
       if (!current) return current
       const sorted = [...current.habits].sort((a, b) => {
@@ -119,10 +131,21 @@ export function useHabits() {
 }
 
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {
-  return {
-    ...dashboard,
-    habits: dashboard.habits.map((item: TodayHabit) =>
-      item.habit.id === habitId ? { ...item, isCompleted: forcedValue ?? !item.isCompleted } : item,
-    ),
-  }
+  const newHabits = dashboard.habits.map((item: TodayHabit) => {
+    if (item.habit.id !== habitId) return item
+    const newIsCompleted = forcedValue ?? !item.isCompleted
+    // Track week completions for frequency habits
+    const wc = item.weekCompletions ?? 0
+    const newWeekCompletions = item.habit.weeklyFrequency !== null
+      ? (newIsCompleted ? wc + 1 : Math.max(0, wc - 1))
+      : wc
+    return { ...item, isCompleted: newIsCompleted, weekCompletions: newWeekCompletions }
+  })
+
+  // Remove frequency habits that just hit their weekly quota
+  const filtered = newHabits.filter(
+    (item) => !(item.habit.weeklyFrequency !== null && (item.weekCompletions ?? 0) >= item.habit.weeklyFrequency),
+  )
+
+  return { ...dashboard, habits: filtered }
 }

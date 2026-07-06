@@ -7,12 +7,14 @@ interface HabitApiDto {
   icon: string
   color: string
   active_weekdays: number[]
+  weekly_frequency: number | null
   monthly_target: number | null
 }
 
 interface TodayHabitApiDto {
   habit: HabitApiDto
   is_completed: boolean
+  week_completions: number
 }
 
 interface TodayDashboardApiDto {
@@ -28,12 +30,17 @@ function mapHabit(dto: HabitApiDto): Habit {
     icon: dto.icon,
     color: dto.color,
     activeWeekdays: dto.active_weekdays,
+    weeklyFrequency: dto.weekly_frequency,
     monthlyTarget: dto.monthly_target,
   }
 }
 
 function mapTodayHabit(dto: TodayHabitApiDto): TodayHabit {
-  return { habit: mapHabit(dto.habit), isCompleted: dto.is_completed }
+  return {
+    habit: mapHabit(dto.habit),
+    isCompleted: dto.is_completed,
+    weekCompletions: dto.week_completions,
+  }
 }
 
 export const habitService = {
@@ -53,6 +60,7 @@ export const habitService = {
       icon: payload.icon,
       color: payload.color,
       active_weekdays: payload.activeWeekdays,
+      weekly_frequency: payload.weeklyFrequency,
       monthly_target: payload.monthlyTarget,
     })
     return mapHabit(data)
@@ -64,6 +72,7 @@ export const habitService = {
       icon: payload.icon,
       color: payload.color,
       active_weekdays: payload.activeWeekdays,
+      weekly_frequency: payload.weeklyFrequency,
       monthly_target: payload.monthlyTarget,
     })
     return mapHabit(data)

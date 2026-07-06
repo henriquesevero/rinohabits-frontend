@@ -4,12 +4,14 @@ export interface Habit {
   icon: string
   color: string
   activeWeekdays: number[]
+  weeklyFrequency: number | null
   monthlyTarget: number | null
 }
 
 export interface TodayHabit {
   habit: Habit
   isCompleted: boolean
+  weekCompletions?: number
 }
 
 export interface TodayDashboard {
@@ -23,6 +25,7 @@ export interface CreateHabitPayload {
   icon: string
   color: string
   activeWeekdays: number[]
+  weeklyFrequency: number | null
   monthlyTarget: number | null
 }
 
@@ -31,5 +34,6 @@ export interface UpdateHabitPayload {
   icon: string
   color: string
   activeWeekdays: number[]
+  weeklyFrequency: number | null
   monthlyTarget: number | null
 }

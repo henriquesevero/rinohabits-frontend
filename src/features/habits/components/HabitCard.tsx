@@ -15,7 +15,22 @@ interface HabitCardProps {
 }
 
 export function HabitCard({ item, onToggle, onEdit, onDelete, isScheduledToday = true }: HabitCardProps) {
-  const { habit, isCompleted } = item
+  const { habit, isCompleted, weekCompletions } = item
+
+  function subtitle() {
+    if (habit.weeklyFrequency !== null) {
+      const done = isScheduledToday
+        ? (weekCompletions ?? 0)
+        : habit.weeklyFrequency // quota met → show N/N
+      return `${done}/${habit.weeklyFrequency} essa semana`
+    }
+    if (!isScheduledToday) {
+      return habit.activeWeekdays.map((d) => WEEKDAY_LABELS[d]).join(' · ')
+    }
+    return null
+  }
+
+  const sub = subtitle()
 
   return (
     <div
@@ -36,10 +51,8 @@ export function HabitCard({ item, onToggle, onEdit, onDelete, isScheduledToday =
             <span className={`text-sm font-medium ${isScheduledToday ? 'text-black/80 dark:text-white/80' : 'text-black/40 dark:text-white/40'}`}>
               {habit.name}
             </span>
-            {!isScheduledToday && (
-              <span className="text-[10px] text-black/35 dark:text-white/35">
-                {habit.activeWeekdays.map((d) => WEEKDAY_LABELS[d]).join(' · ')}
-              </span>
+            {sub && (
+              <span className="text-[10px] text-black/35 dark:text-white/35">{sub}</span>
             )}
           </div>
         </div>

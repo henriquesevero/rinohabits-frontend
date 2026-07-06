@@ -9,6 +9,7 @@ const EMPTY_VALUE: HabitFormValue = {
   icon: '✅',
   color: COLOR_PRESETS[0],
   activeWeekdays: [],
+  weeklyFrequency: null,
 }
 
 interface HabitFormProps {
@@ -32,7 +33,8 @@ export function HabitForm({ onCreate, formRef }: HabitFormProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!value.name || value.activeWeekdays.length === 0) return
+    const hasSchedule = value.weeklyFrequency !== null || value.activeWeekdays.length > 0
+    if (!value.name || !hasSchedule) return
 
     setIsSubmitting(true)
     try {
@@ -41,6 +43,7 @@ export function HabitForm({ onCreate, formRef }: HabitFormProps) {
         icon: value.icon,
         color: value.color,
         activeWeekdays: value.activeWeekdays,
+        weeklyFrequency: value.weeklyFrequency,
         monthlyTarget: null,
       })
       setValue(EMPTY_VALUE)
@@ -81,7 +84,7 @@ export function HabitForm({ onCreate, formRef }: HabitFormProps) {
           </button>
           <button
             type="submit"
-            disabled={isSubmitting || !value.name || value.activeWeekdays.length === 0}
+            disabled={isSubmitting || !value.name || (value.weeklyFrequency === null && value.activeWeekdays.length === 0)}
             className="flex-1 rounded-lg bg-black/80 px-3 py-2 text-xs font-medium text-white disabled:opacity-50 dark:bg-white/90 dark:text-black/80"
           >
             Criar

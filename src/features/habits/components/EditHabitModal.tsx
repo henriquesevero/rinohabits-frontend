@@ -15,6 +15,7 @@ function toFormValue(habit: Habit): HabitFormValue {
     icon: habit.icon,
     color: habit.color,
     activeWeekdays: habit.activeWeekdays,
+    weeklyFrequency: habit.weeklyFrequency,
   }
 }
 
@@ -28,7 +29,8 @@ export function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) 
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (!habit || !value || !value.name || value.activeWeekdays.length === 0) return
+    const hasSchedule = value && (value.weeklyFrequency !== null || value.activeWeekdays.length > 0)
+    if (!habit || !value || !value.name || !hasSchedule) return
 
     setIsSubmitting(true)
     try {
@@ -37,6 +39,7 @@ export function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) 
         icon: value.icon,
         color: value.color,
         activeWeekdays: value.activeWeekdays,
+        weeklyFrequency: value.weeklyFrequency,
         monthlyTarget: null,
       })
       onClose()
@@ -80,7 +83,7 @@ export function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) 
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting || !value.name || value.activeWeekdays.length === 0}
+                  disabled={isSubmitting || !value.name || (value.weeklyFrequency === null && value.activeWeekdays.length === 0)}
                   className="flex-1 rounded-xl bg-black/80 py-2.5 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white/90 dark:text-black/90"
                 >
                   Salvar
