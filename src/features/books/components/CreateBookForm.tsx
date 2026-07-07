@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { Loader2, Plus, Search } from 'lucide-react'
+import { Loader2, Search } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { bookService } from '../services/bookService'
 import type { BookSearchResult, CreateBookPayload } from '../types/book.types'
@@ -27,6 +27,8 @@ function setCached(q: string, type: SearchType, source: SearchSource, data: Book
 
 interface CreateBookFormProps {
   onCreate: (payload: CreateBookPayload) => Promise<void>
+  open: boolean
+  onClose: () => void
 }
 
 type Step = 'search' | 'confirm'
@@ -37,8 +39,7 @@ const SEARCH_TYPES: { value: SearchType; label: string }[] = [
   { value: 'author',  label: 'Autor' },
 ]
 
-export function CreateBookForm({ onCreate }: CreateBookFormProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function CreateBookForm({ onCreate, open, onClose }: CreateBookFormProps) {
   const [step, setStep] = useState<Step>('search')
   const [searchType, setSearchType] = useState<SearchType>('general')
   const [searchSource, setSearchSource] = useState<SearchSource>('openlib')
@@ -58,6 +59,11 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const seqRef = useRef(0)
+
+  // Reset form state when closed externally
+  useEffect(() => {
+    if (!open) reset()
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Re-fire search when source or type changes (if there's already a query)
   useEffect(() => {
@@ -143,6 +149,11 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     setCoverUrl('')
   }
 
+  function close() {
+    reset()
+    onClose()
+  }
+
   function switchToGoogle() {
     setResults([])
     setHasSearched(false)
@@ -186,8 +197,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
         collection: collection.trim() || null,
         coverUrl: coverUrl || null,
       })
-      reset()
-      setIsOpen(false)
+      close()
     } finally {
       setIsSubmitting(false)
     }
@@ -195,18 +205,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
 
   const noResults = hasSearched && !isSearching && !searchError && results.length === 0
 
-  if (!isOpen) {
-    return (
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-white/30 px-4 py-3 text-sm text-black/50 hover:bg-white/20 dark:text-white/50"
-      >
-        <Plus className="h-4 w-4" />
-        Adicionar livro
-      </button>
-    )
-  }
+  if (!open) return null
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
@@ -352,7 +351,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             </button>
             <button
               type="button"
-              onClick={() => { reset(); setIsOpen(false) }}
+              onClick={close}
               className="text-xs text-black/40 transition-colors hover:text-black/60 dark:text-white/40 dark:hover:text-white/60"
             >
               Cancelar

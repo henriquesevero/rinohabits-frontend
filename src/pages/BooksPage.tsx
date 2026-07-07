@@ -10,7 +10,7 @@ import {
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowUpDown, BookCheck, BookOpen, Bookmark, GripVertical, Library, Search, X, type LucideIcon } from 'lucide-react'
+import { ArrowUpDown, BookCheck, BookOpen, BookPlus, Bookmark, GripVertical, Library, Search, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -34,6 +34,7 @@ const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
   const [filterQuery, setFilterQuery] = useState('')
+  const [isAddingBook, setIsAddingBook] = useState(false)
   const [isReordering, setIsReordering] = useState(false)
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
@@ -53,9 +54,10 @@ export function BooksPage() {
     clearJustCompleted,
   } = useBooks()
 
-  // Exit reorder mode and clear filter when tab changes
+  // Exit reorder/add mode and clear filter when tab changes
   useEffect(() => {
     if (activeStatus !== 'all') setIsReordering(false)
+    setIsAddingBook(false)
     setFilterQuery('')
   }, [activeStatus])
 
@@ -221,15 +223,13 @@ export function BooksPage() {
         )}
       </AnimatePresence>
 
+      {/* ── Header ── */}
       <div className="flex items-baseline justify-between">
         <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Biblioteca</h1>
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
       </div>
 
-      {/* Add form — only in Estante, only when not reordering */}
-      {activeStatus === 'all' && !isReordering && <CreateBookForm onCreate={createBook} />}
-
-      {/* Tab bar — hidden while reordering */}
+      {/* ── Tab bar — hidden while reordering ── */}
       {!isReordering && (
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => (
@@ -261,7 +261,7 @@ export function BooksPage() {
         </div>
       )}
 
-      {/* Search filter — always visible, works across all tabs */}
+      {/* ── Search filter — always visible when there are books ── */}
       {!isReordering && books.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30 dark:text-white/30" />
@@ -269,7 +269,7 @@ export function BooksPage() {
             type="text"
             value={filterQuery}
             onChange={(e) => setFilterQuery(e.target.value)}
-            placeholder="Filtrar na coleção…"
+            placeholder="Filtrar por título, autor ou coleção…"
             className="w-full rounded-xl border border-black/10 bg-white/50 py-2 pl-8 pr-8 text-sm text-black/80 placeholder:text-black/30 focus:border-black/20 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/30"
           />
           {filterQuery && (
@@ -284,6 +284,44 @@ export function BooksPage() {
         </div>
       )}
 
+      {/* ── Action buttons — only on Estante tab ── */}
+      {activeStatus === 'all' && !isReordering && (
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => setIsAddingBook((v) => !v)}
+            className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl border py-2.5 text-xs font-medium transition-colors ${
+              isAddingBook
+                ? 'border-black/20 bg-black/80 text-white dark:border-white/20 dark:bg-white/90 dark:text-black/90'
+                : 'border-black/15 bg-white/40 text-black/60 hover:bg-black/5 dark:border-white/15 dark:bg-white/5 dark:text-white/60 dark:hover:bg-white/10'
+            }`}
+          >
+            <BookPlus className="h-4 w-4" />
+            Adicionar livro
+          </button>
+
+          {books.length > 1 && (
+            <button
+              type="button"
+              onClick={() => { setIsAddingBook(false); setIsReordering(true) }}
+              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-black/15 bg-white/40 py-2.5 text-xs font-medium text-black/60 transition-colors hover:bg-black/5 dark:border-white/15 dark:bg-white/5 dark:text-white/60 dark:hover:bg-white/10"
+            >
+              <ArrowUpDown className="h-4 w-4" />
+              Reordenar
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* ── Add book form — inline, below action buttons ── */}
+      {activeStatus === 'all' && !isReordering && (
+        <CreateBookForm
+          onCreate={createBook}
+          open={isAddingBook}
+          onClose={() => setIsAddingBook(false)}
+        />
+      )}
+
       {isLoading && (
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
@@ -291,16 +329,6 @@ export function BooksPage() {
       {/* ── Estante (all) ── */}
       {activeStatus === 'all' && !isReordering && (
         <>
-          {books.length > 1 && (
-            <button
-              type="button"
-              onClick={() => setIsReordering(true)}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-black/20 py-2 text-xs font-medium text-black/50 hover:bg-black/5 dark:border-white/20 dark:text-white/50 dark:hover:bg-white/5"
-            >
-              <ArrowUpDown className="h-3.5 w-3.5" />
-              Reordenar estante
-            </button>
-          )}
           <BookShelfGrid books={displayBooks} onSelect={setSelectedBookId} />
           {!isLoading && displayBooks.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
