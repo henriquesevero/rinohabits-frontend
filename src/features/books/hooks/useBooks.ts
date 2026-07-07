@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { bookService } from '../services/bookService'
-import type { Book, BookStatus, CreateBookPayload } from '../types/book.types'
+import type { Book, BookStatus, CreateBookPayload, UpdateBookPayload } from '../types/book.types'
 
 export function useBooks(statusFilter?: BookStatus) {
   const [books, setBooks] = useState<Book[]>([])
@@ -67,6 +67,12 @@ export function useBooks(statusFilter?: BookStatus) {
     [refresh],
   )
 
+  const updateBook = useCallback(async (bookId: string, payload: UpdateBookPayload) => {
+    const updated = await bookService.update(bookId, payload)
+    setBooks((current) => current.map((b) => (b.id === updated.id ? updated : b)))
+    return updated
+  }, [])
+
   const updateCover = useCallback((bookId: string, coverUrl: string) => {
     setBooks((current) => current.map((b) => (b.id === bookId ? { ...b, coverUrl } : b)))
   }, [])
@@ -101,6 +107,7 @@ export function useBooks(statusFilter?: BookStatus) {
     createBook,
     registerReading,
     changeStatus,
+    updateBook,
     deleteBook,
     updateCover,
     refresh,

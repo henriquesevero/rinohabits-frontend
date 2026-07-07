@@ -45,6 +45,7 @@ export function BooksPage() {
     createBook,
     registerReading,
     changeStatus,
+    updateBook,
     deleteBook,
     updateCover,
     reorderBooks,
@@ -73,7 +74,8 @@ export function BooksPage() {
     ? filtered.filter(
         (b) =>
           b.title.toLowerCase().includes(q) ||
-          (b.author ?? '').toLowerCase().includes(q),
+          (b.author ?? '').toLowerCase().includes(q) ||
+          (b.collection ?? '').toLowerCase().includes(q),
       )
     : filtered
 
@@ -148,6 +150,7 @@ export function BooksPage() {
         book={selectedBook}
         onRegisterReading={handleRegisterReading}
         onChangeStatus={handleChangeStatus}
+        onUpdateBook={updateBook}
         onCoverUpdated={updateCover}
         onRequestDelete={handleDelete}
         onClose={() => setSelectedBookId(null)}

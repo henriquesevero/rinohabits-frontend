@@ -1,3 +1,4 @@
+import { Layers } from 'lucide-react'
 import type { Book, BookStatus } from '../types/book.types'
 
 interface BookShelfGridProps {
@@ -12,13 +13,67 @@ const STATUS_BOOKMARK: Partial<Record<BookStatus, string>> = {
 }
 
 export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
+  const grouped = groupByCollection(books)
+
+  if (grouped.collections.length === 0) {
+    return (
+      <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+        {grouped.ungrouped.map((book) => (
+          <BookPoster key={book.id} book={book} onSelect={onSelect} />
+        ))}
+      </div>
+    )
+  }
+
   return (
-    <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-      {books.map((book) => (
-        <BookPoster key={book.id} book={book} onSelect={onSelect} />
+    <div className="flex flex-col gap-5">
+      {grouped.collections.map(({ name, books: collectionBooks }) => (
+        <div key={name} className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5">
+            <Layers className="h-3 w-3 text-black/40 dark:text-white/40" />
+            <span className="text-xs font-semibold text-black/50 dark:text-white/50">{name}</span>
+          </div>
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+            {collectionBooks.map((book) => (
+              <BookPoster key={book.id} book={book} onSelect={onSelect} />
+            ))}
+          </div>
+        </div>
       ))}
+
+      {grouped.ungrouped.length > 0 && (
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+          {grouped.ungrouped.map((book) => (
+            <BookPoster key={book.id} book={book} onSelect={onSelect} />
+          ))}
+        </div>
+      )}
     </div>
   )
+}
+
+function groupByCollection(books: Book[]) {
+  const collectionMap = new Map<string, Book[]>()
+  const ungrouped: Book[] = []
+
+  for (const book of books) {
+    if (book.collection) {
+      const existing = collectionMap.get(book.collection)
+      if (existing) {
+        existing.push(book)
+      } else {
+        collectionMap.set(book.collection, [book])
+      }
+    } else {
+      ungrouped.push(book)
+    }
+  }
+
+  const collections = Array.from(collectionMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([name, books]) => ({ name, books }))
+
+  return { collections, ungrouped }
 }
 
 function BookPoster({ book, onSelect }: { book: Book; onSelect: (id: string) => void }) {

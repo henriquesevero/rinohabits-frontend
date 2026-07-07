@@ -51,6 +51,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [totalPages, setTotalPages] = useState('')
+  const [collection, setCollection] = useState('')
   const [coverUrl, setCoverUrl] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -138,6 +139,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
     setTitle('')
     setAuthor('')
     setTotalPages('')
+    setCollection('')
     setCoverUrl('')
   }
 
@@ -181,6 +183,7 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
         author,
         totalPages: Number.isFinite(pages) && pages > 0 ? pages : null,
         status: 'na_estante',
+        collection: collection.trim() || null,
         coverUrl: coverUrl || null,
       })
       reset()
@@ -383,6 +386,12 @@ export function CreateBookForm({ onCreate }: CreateBookFormProps) {
             value={totalPages}
             onChange={(e) => setTotalPages(e.target.value)}
             placeholder="Total de páginas"
+            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
+          />
+          <input
+            value={collection}
+            onChange={(e) => setCollection(e.target.value)}
+            placeholder="Coleção / série (opcional)"
             className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
 

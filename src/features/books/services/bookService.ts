@@ -9,6 +9,7 @@ interface BookApiDto {
   total_pages: number | null
   current_page: number
   percentage: number
+  collection: string | null
   cover_url: string | null
   started_at: string | null
   finished_at: string | null
@@ -32,6 +33,7 @@ function mapBook(dto: BookApiDto): Book {
     totalPages: dto.total_pages,
     currentPage: dto.current_page,
     percentage: dto.percentage,
+    collection: dto.collection,
     coverUrl: dto.cover_url,
     startedAt: dto.started_at,
     finishedAt: dto.finished_at,
@@ -52,6 +54,7 @@ export const bookService = {
       author: payload.author,
       total_pages: payload.totalPages,
       status: payload.status,
+      collection: payload.collection ?? null,
       cover_url: payload.coverUrl ?? null,
     })
     return mapBook(data)
@@ -71,13 +74,17 @@ export const bookService = {
   },
 
   async update(bookId: string, payload: UpdateBookPayload): Promise<Book> {
-    const { data } = await apiClient.patch<BookApiDto>(`/books/${bookId}`, {
+    const body: Record<string, unknown> = {
       title: payload.title,
       author: payload.author,
       total_pages: payload.totalPages,
       status: payload.status,
       current_page: payload.currentPage,
-    })
+    }
+    if ('collection' in payload) {
+      body.collection = payload.collection === null ? '' : (payload.collection ?? undefined)
+    }
+    const { data } = await apiClient.patch<BookApiDto>(`/books/${bookId}`, body)
     return mapBook(data)
   },
 

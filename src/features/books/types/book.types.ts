@@ -8,6 +8,7 @@ export interface Book {
   totalPages: number | null
   currentPage: number
   percentage: number
+  collection: string | null
   coverUrl: string | null
   startedAt: string | null
   finishedAt: string | null
@@ -18,6 +19,7 @@ export interface CreateBookPayload {
   author: string
   totalPages: number | null
   status: BookStatus
+  collection?: string | null
   coverUrl?: string | null
 }
 
@@ -35,6 +37,7 @@ export interface UpdateBookPayload {
   totalPages?: number | null
   status?: BookStatus
   currentPage?: number
+  collection?: string | null
 }
 
 export interface ReadingStats {

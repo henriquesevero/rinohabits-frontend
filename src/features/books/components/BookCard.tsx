@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { BookOpen, Camera, CheckCircle, Trash2 } from 'lucide-react'
+import { BookOpen, Camera, CheckCircle, Layers, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus } from '../types/book.types'
@@ -125,6 +125,12 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
               )}
             </div>
             {book.author && <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>}
+            {book.collection && (
+              <span className="flex items-center gap-0.5 truncate text-[10px] text-black/35 dark:text-white/35">
+                <Layers className="h-2.5 w-2.5 shrink-0" />
+                {book.collection}
+              </span>
+            )}
           </div>
           <button
             type="button"

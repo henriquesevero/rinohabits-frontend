@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, Camera, CheckCircle, Trash2, X } from 'lucide-react'
+import { BookOpen, Camera, CheckCircle, Layers, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
-import type { Book, BookStatus } from '../types/book.types'
+import type { Book, BookStatus, UpdateBookPayload } from '../types/book.types'
 
 const STATUS_OPTIONS: { value: BookStatus; label: string }[] = [
   { value: 'na_estante', label: 'Estante'   },
@@ -15,6 +15,7 @@ interface BookDetailModalProps {
   book: Book | null
   onRegisterReading: (bookId: string, pages: number) => Promise<void>
   onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
+  onUpdateBook: (bookId: string, payload: UpdateBookPayload) => Promise<void>
   onCoverUpdated: (bookId: string, url: string) => void
   onRequestDelete: (bookId: string) => void
   onClose: () => void
@@ -30,6 +31,7 @@ export function BookDetailModal({
   book,
   onRegisterReading,
   onChangeStatus,
+  onUpdateBook,
   onCoverUpdated,
   onRequestDelete,
   onClose,
@@ -38,7 +40,17 @@ export function BookDetailModal({
   const [pagesInput, setPagesInput] = useState('')
   const [pagesError, setPagesError] = useState(false)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
+  const [isEditingCollection, setIsEditingCollection] = useState(false)
+  const [collectionInput, setCollectionInput] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function saveCollection() {
+    if (!book) return
+    setIsEditingCollection(false)
+    const value = collectionInput.trim()
+    if (value === (book.collection ?? '')) return
+    await onUpdateBook(book.id, { collection: value || null })
+  }
 
   async function handleRegister() {
     if (!book) return
@@ -75,6 +87,7 @@ export function BookDetailModal({
     setIsLogging(false)
     setPagesInput('')
     setPagesError(false)
+    setIsEditingCollection(false)
     onClose()
   }
 
@@ -159,6 +172,27 @@ export function BookDetailModal({
                   {book.title}
                 </p>
                 {book.author && <p className="text-xs text-black/50 dark:text-white/50">{book.author}</p>}
+                {/* Collection inline edit */}
+                {isEditingCollection ? (
+                  <input
+                    autoFocus
+                    value={collectionInput}
+                    onChange={(e) => setCollectionInput(e.target.value)}
+                    onBlur={saveCollection}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveCollection(); if (e.key === 'Escape') setIsEditingCollection(false) }}
+                    placeholder="Nome da coleção…"
+                    className="rounded-md border border-black/15 bg-white/60 px-2 py-0.5 text-xs text-black/80 outline-none dark:border-white/15 dark:bg-white/10 dark:text-white/80"
+                  />
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => { setCollectionInput(book.collection ?? ''); setIsEditingCollection(true) }}
+                    className="flex w-fit items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-black/40 hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
+                  >
+                    <Layers className="h-2.5 w-2.5" />
+                    {book.collection ?? 'Adicionar coleção'}
+                  </button>
+                )}
               </div>
             </div>
 
