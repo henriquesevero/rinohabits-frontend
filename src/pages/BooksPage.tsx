@@ -10,7 +10,7 @@ import {
 import { SortableContext, arrayMove, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookCheck, BookOpen, Bookmark, ArrowUpDown, GripVertical, Library, type LucideIcon } from 'lucide-react'
+import { ArrowUpDown, BookCheck, BookOpen, Bookmark, GripVertical, Library, Search, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { BookCompleteCelebration } from '../components/ui/BookCompleteCelebration'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -33,6 +33,7 @@ const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
 
 export function BooksPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
+  const [filterQuery, setFilterQuery] = useState('')
   const [isReordering, setIsReordering] = useState(false)
   const [bookToDelete, setBookToDelete] = useState<string | null>(null)
   const [selectedBookId, setSelectedBookId] = useState<string | null>(null)
@@ -51,9 +52,10 @@ export function BooksPage() {
     clearJustCompleted,
   } = useBooks()
 
-  // Exit reorder mode if tab changes
+  // Exit reorder mode and clear filter when tab changes
   useEffect(() => {
     if (activeStatus !== 'all') setIsReordering(false)
+    setFilterQuery('')
   }, [activeStatus])
 
   useEffect(() => {
@@ -65,6 +67,15 @@ export function BooksPage() {
   const filtered = activeStatus === 'all'
     ? books
     : books.filter((b) => b.status === activeStatus)
+
+  const q = filterQuery.trim().toLowerCase()
+  const displayBooks = q
+    ? filtered.filter(
+        (b) =>
+          b.title.toLowerCase().includes(q) ||
+          (b.author ?? '').toLowerCase().includes(q),
+      )
+    : filtered
 
   const counts: Record<ShelfFilter, number> = {
     all:        books.length,
@@ -247,6 +258,29 @@ export function BooksPage() {
         </div>
       )}
 
+      {/* Search filter — always visible, works across all tabs */}
+      {!isReordering && books.length > 0 && (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30 dark:text-white/30" />
+          <input
+            type="text"
+            value={filterQuery}
+            onChange={(e) => setFilterQuery(e.target.value)}
+            placeholder="Filtrar na coleção…"
+            className="w-full rounded-xl border border-black/10 bg-white/50 py-2 pl-8 pr-8 text-sm text-black/80 placeholder:text-black/30 focus:border-black/20 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:placeholder:text-white/30"
+          />
+          {filterQuery && (
+            <button
+              type="button"
+              onClick={() => setFilterQuery('')}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-0.5 text-black/30 hover:text-black/60 dark:text-white/30 dark:hover:text-white/60"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
+        </div>
+      )}
+
       {isLoading && (
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
@@ -264,10 +298,10 @@ export function BooksPage() {
               Reordenar estante
             </button>
           )}
-          <BookShelfGrid books={filtered} onSelect={setSelectedBookId} />
-          {!isLoading && filtered.length === 0 && (
+          <BookShelfGrid books={displayBooks} onSelect={setSelectedBookId} />
+          {!isLoading && displayBooks.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
-              Sua estante está vazia. Adicione um livro para começar.
+              {q ? 'Nenhum livro encontrado.' : 'Sua estante está vazia. Adicione um livro para começar.'}
             </p>
           )}
         </>
@@ -285,7 +319,7 @@ export function BooksPage() {
       {/* ── Status tabs list ── */}
       {activeStatus !== 'all' && (
         <SortableBookList
-          books={filtered}
+          books={displayBooks}
           onRegisterReading={handleRegisterReading}
           onChangeStatus={handleChangeStatus}
           onDelete={handleDelete}
