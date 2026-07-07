@@ -15,7 +15,7 @@ interface BookDetailModalProps {
   book: Book | null
   onRegisterReading: (bookId: string, pages: number) => Promise<void>
   onChangeStatus: (bookId: string, status: BookStatus) => Promise<void>
-  onUpdateBook: (bookId: string, payload: UpdateBookPayload) => Promise<void>
+  onUpdateBook: (bookId: string, payload: UpdateBookPayload) => Promise<unknown>
   onCoverUpdated: (bookId: string, url: string) => void
   onRequestDelete: (bookId: string) => void
   onClose: () => void
