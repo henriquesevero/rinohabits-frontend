@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { Archive, BadgeCheck, CirclePlay, LayoutGrid, Pin, type LucideIcon } from 'lucide-react'
+import { Archive, BadgeCheck, CirclePlay, Pin, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { CourseCard } from '../features/courses/components/CourseCard'
@@ -12,11 +12,10 @@ import type { Course, CourseStatus } from '../features/courses/types/course.type
 type ShelfFilter = 'all' | CourseStatus
 
 const TABS: { status: ShelfFilter; label: string; icon: LucideIcon }[] = [
-  { status: 'all',           label: 'Todos',       icon: LayoutGrid },
-  { status: 'na_prateleira', label: 'Prateleira',  icon: Archive    },
-  { status: 'quero_fazer',   label: 'Quero Fazer', icon: Pin        },
-  { status: 'fazendo',       label: 'Fazendo',     icon: CirclePlay },
-  { status: 'concluido',     label: 'Feito',       icon: BadgeCheck },
+  { status: 'all',         label: 'Prateleira',  icon: Archive    },
+  { status: 'quero_fazer', label: 'Quero Fazer', icon: Pin        },
+  { status: 'fazendo',     label: 'Fazendo',     icon: CirclePlay },
+  { status: 'concluido',   label: 'Feito',       icon: BadgeCheck },
 ]
 
 const SHELF_ORDER: Record<CourseStatus, number> = {
@@ -137,7 +136,7 @@ export function CoursesPage() {
           <CourseShelfGrid courses={filtered} onSelect={setSelectedCourseId} />
           {!isLoading && filtered.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
-              Nenhum curso cadastrado. Adicione um para começar.
+              Sua prateleira está vazia. Adicione um curso para começar.
             </p>
           )}
         </>
