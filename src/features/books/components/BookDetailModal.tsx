@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { BookOpen, Camera, CheckCircle, Layers, Trash2, X } from 'lucide-react'
+import { BookOpen, Camera, CheckCircle, Layers, Pencil, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus, UpdateBookPayload } from '../types/book.types'
@@ -40,16 +40,44 @@ export function BookDetailModal({
   const [pagesInput, setPagesInput] = useState('')
   const [pagesError, setPagesError] = useState(false)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
-  const [isEditingCollection, setIsEditingCollection] = useState(false)
-  const [collectionInput, setCollectionInput] = useState('')
+
+  // Edit mode
+  const [isEditing, setIsEditing] = useState(false)
+  const [editTitle, setEditTitle] = useState('')
+  const [editAuthor, setEditAuthor] = useState('')
+  const [editPages, setEditPages] = useState('')
+  const [editCollection, setEditCollection] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
+
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  async function saveCollection() {
+  function startEditing() {
     if (!book) return
-    setIsEditingCollection(false)
-    const value = collectionInput.trim()
-    if (value === (book.collection ?? '')) return
-    await onUpdateBook(book.id, { collection: value || null })
+    setEditTitle(book.title)
+    setEditAuthor(book.author ?? '')
+    setEditPages(book.totalPages ? String(book.totalPages) : '')
+    setEditCollection(book.collection ?? '')
+    setIsEditing(true)
+  }
+
+  async function saveEdit() {
+    if (!book || !editTitle.trim()) return
+    setIsSavingEdit(true)
+    try {
+      const pages = parseInt(editPages, 10)
+      const payload: UpdateBookPayload = {
+        title: editTitle.trim(),
+        author: editAuthor.trim(),
+        collection: editCollection.trim() || null,
+      }
+      if (Number.isFinite(pages) && pages > 0) {
+        payload.totalPages = pages
+      }
+      await onUpdateBook(book.id, payload)
+      setIsEditing(false)
+    } finally {
+      setIsSavingEdit(false)
+    }
   }
 
   async function handleRegister() {
@@ -87,7 +115,7 @@ export function BookDetailModal({
     setIsLogging(false)
     setPagesInput('')
     setPagesError(false)
-    setIsEditingCollection(false)
+    setIsEditing(false)
     onClose()
   }
 
@@ -97,6 +125,9 @@ export function BookDetailModal({
   const coverLetter = book.title.charAt(0).toUpperCase()
   const coverColor = stringToColor(book.title)
   const badge = STATUS_BADGE[book.status]
+
+  const inputClass =
+    'w-full rounded-xl border border-black/10 bg-white/60 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/30 focus:border-black/25 dark:border-white/10 dark:bg-white/8 dark:text-white/80 dark:placeholder:text-white/30 dark:focus:border-white/20'
 
   return (
     <AnimatePresence>
@@ -118,21 +149,35 @@ export function BookDetailModal({
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-sm rounded-2xl border border-white/20 bg-white/90 p-5 shadow-2xl backdrop-blur-xl dark:bg-black/85"
           >
-            <button
-              type="button"
-              onClick={handleClose}
-              className="absolute right-3 top-3 flex h-7 w-7 items-center justify-center rounded-full text-black/40 hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
-            >
-              <X className="h-4 w-4" />
-            </button>
+            {/* Header buttons */}
+            <div className="absolute right-3 top-3 flex items-center gap-1">
+              {!isEditing && (
+                <button
+                  type="button"
+                  onClick={startEditing}
+                  className="flex h-7 w-7 items-center justify-center rounded-full text-black/40 hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
+                  title="Editar livro"
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={handleClose}
+                className="flex h-7 w-7 items-center justify-center rounded-full text-black/40 hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
 
+            {/* Cover + info row */}
             <div className="flex gap-4">
               <div className="relative flex-shrink-0">
                 {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={book.title} className="h-32 w-22 rounded-lg object-cover shadow" />
+                  <img src={book.coverUrl} alt={book.title} className="h-32 rounded-lg object-cover shadow" style={{ width: '5.5rem' }} />
                 ) : (
                   <div
-                    className="flex h-32 w-22 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
+                    className="flex h-32 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
                     style={{ backgroundColor: coverColor, width: '5.5rem' }}
                   >
                     {coverLetter}
@@ -151,52 +196,84 @@ export function BookDetailModal({
                     <Camera className="h-3 w-3" />
                   )}
                 </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={handleCoverChange}
-                />
+                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverChange} />
               </div>
 
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
-                {badge && (
-                  <span
-                    className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}
-                  >
-                    {badge.label}
-                  </span>
-                )}
-                <p className="text-base font-semibold leading-tight text-black/90 dark:text-white/90">
-                  {book.title}
-                </p>
-                {book.author && <p className="text-xs text-black/50 dark:text-white/50">{book.author}</p>}
-                {/* Collection inline edit */}
-                {isEditingCollection ? (
+              {/* Info / edit fields */}
+              {isEditing ? (
+                <div className="flex min-w-0 flex-1 flex-col gap-2 pt-1">
                   <input
                     autoFocus
-                    value={collectionInput}
-                    onChange={(e) => setCollectionInput(e.target.value)}
-                    onBlur={saveCollection}
-                    onKeyDown={(e) => { if (e.key === 'Enter') saveCollection(); if (e.key === 'Escape') setIsEditingCollection(false) }}
-                    placeholder="Nome da coleção…"
-                    className="rounded-md border border-black/15 bg-white/60 px-2 py-0.5 text-xs text-black/80 outline-none dark:border-white/15 dark:bg-white/10 dark:text-white/80"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    placeholder="Título*"
+                    className={inputClass}
                   />
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => { setCollectionInput(book.collection ?? ''); setIsEditingCollection(true) }}
-                    className="flex w-fit items-center gap-1 rounded-md px-1.5 py-0.5 text-[10px] text-black/40 hover:bg-black/5 dark:text-white/40 dark:hover:bg-white/10"
-                  >
-                    <Layers className="h-2.5 w-2.5" />
-                    {book.collection ?? 'Adicionar coleção'}
-                  </button>
-                )}
-              </div>
+                  <input
+                    value={editAuthor}
+                    onChange={(e) => setEditAuthor(e.target.value)}
+                    placeholder="Autor"
+                    className={inputClass}
+                  />
+                  <input
+                    type="number"
+                    min={1}
+                    value={editPages}
+                    onChange={(e) => setEditPages(e.target.value)}
+                    placeholder="Total de páginas"
+                    className={inputClass}
+                  />
+                  <input
+                    value={editCollection}
+                    onChange={(e) => setEditCollection(e.target.value)}
+                    placeholder="Coleção / série"
+                    className={inputClass}
+                  />
+                </div>
+              ) : (
+                <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
+                  {badge && (
+                    <span className={`w-fit rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${badge.classes}`}>
+                      {badge.label}
+                    </span>
+                  )}
+                  <p className="text-base font-semibold leading-tight text-black/90 dark:text-white/90">
+                    {book.title}
+                  </p>
+                  {book.author && <p className="text-xs text-black/50 dark:text-white/50">{book.author}</p>}
+                  {book.collection && (
+                    <span className="flex items-center gap-1 text-[10px] text-black/40 dark:text-white/40">
+                      <Layers className="h-2.5 w-2.5 shrink-0" />
+                      {book.collection}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
-            {book.totalPages && (
+            {/* Edit save/cancel */}
+            {isEditing && (
+              <div className="mt-4 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(false)}
+                  className="flex-1 rounded-xl border border-black/10 py-2 text-sm font-medium text-black/60 hover:bg-black/5 dark:border-white/10 dark:text-white/60 dark:hover:bg-white/5"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="button"
+                  onClick={saveEdit}
+                  disabled={isSavingEdit || !editTitle.trim()}
+                  className="flex-1 rounded-xl bg-black/80 py-2 text-sm font-semibold text-white disabled:opacity-50 dark:bg-white/90 dark:text-black/90"
+                >
+                  {isSavingEdit ? 'Salvando…' : 'Salvar'}
+                </button>
+              </div>
+            )}
+
+            {/* Progress bar — only in view mode */}
+            {!isEditing && book.totalPages && (
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                   <motion.div
@@ -218,90 +295,86 @@ export function BookDetailModal({
               </div>
             )}
 
-            <div className="mt-4 flex flex-col gap-2">
-              {/* Status selector */}
-              <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
-                {STATUS_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    onClick={() => onChangeStatus(book.id, opt.value)}
-                    className={`flex flex-1 items-center justify-center gap-0.5 rounded-md px-1 py-1.5 text-[10px] font-medium transition-colors ${
-                      book.status === opt.value
-                        ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
-                        : 'text-black/50 dark:text-white/50'
-                    }`}
-                  >
-                    {opt.value === 'lido' && book.status === 'lido' && (
-                      <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
-                    )}
-                    {opt.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Registrar + Excluir */}
-              <div className="flex gap-2">
-                {book.status === 'lendo' && !isLogging && (
-                  <button
-                    type="button"
-                    onClick={() => setIsLogging(true)}
-                    className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
-                  >
-                    <BookOpen className="h-3.5 w-3.5" />
-                    Registrar leitura
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => onRequestDelete(book.id)}
-                  className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                  Excluir
-                </button>
-              </div>
-
-              {/* Inline reading log */}
-              {isLogging && (
-                <div className="flex flex-col gap-1.5">
-                  {pagesError && (
-                    <p className="text-[11px] text-red-500 dark:text-red-400">
-                      {book.totalPages
-                        ? `Insira uma página entre ${book.currentPage + 1} e ${book.totalPages}.`
-                        : `Deve ser maior que a página atual (${book.currentPage}).`}
-                    </p>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      type="number"
-                      min={book.currentPage + 1}
-                      max={book.totalPages ?? undefined}
-                      autoFocus
-                      value={pagesInput}
-                      onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
-                      onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
-                      placeholder={`Parei na página… (atual: ${book.currentPage})`}
-                      className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
-                    />
+            {/* Actions — only in view mode */}
+            {!isEditing && (
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
+                  {STATUS_OPTIONS.map((opt) => (
                     <button
+                      key={opt.value}
                       type="button"
-                      onClick={handleRegister}
-                      className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950"
+                      onClick={() => onChangeStatus(book.id, opt.value)}
+                      className={`flex flex-1 items-center justify-center gap-0.5 rounded-md px-1 py-1.5 text-[10px] font-medium transition-colors ${
+                        book.status === opt.value
+                          ? 'bg-white text-black/80 shadow-sm dark:bg-black/60 dark:text-white/80'
+                          : 'text-black/50 dark:text-white/50'
+                      }`}
                     >
-                      Salvar
+                      {opt.value === 'lido' && book.status === 'lido' && (
+                        <CheckCircle className="h-2.5 w-2.5 text-emerald-500" />
+                      )}
+                      {opt.label}
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => { setIsLogging(false); setPagesInput('') }}
-                      className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
-                    >
-                      ✕
-                    </button>
-                  </div>
+                  ))}
                 </div>
-              )}
-            </div>
+
+                <div className="flex gap-2">
+                  {book.status === 'lendo' && !isLogging && (
+                    <button
+                      type="button"
+                      onClick={() => setIsLogging(true)}
+                      className="flex items-center gap-1 rounded-lg bg-emerald-500 px-2.5 py-1.5 text-xs font-medium text-white"
+                    >
+                      <BookOpen className="h-3.5 w-3.5" />
+                      Registrar leitura
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => onRequestDelete(book.id)}
+                    className="ml-auto flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/10"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Excluir
+                  </button>
+                </div>
+
+                {isLogging && (
+                  <div className="flex flex-col gap-1.5">
+                    {pagesError && (
+                      <p className="text-[11px] text-red-500 dark:text-red-400">
+                        {book.totalPages
+                          ? `Insira uma página entre ${book.currentPage + 1} e ${book.totalPages}.`
+                          : `Deve ser maior que a página atual (${book.currentPage}).`}
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        min={book.currentPage + 1}
+                        max={book.totalPages ?? undefined}
+                        autoFocus
+                        value={pagesInput}
+                        onChange={(e) => { setPagesInput(e.target.value); setPagesError(false) }}
+                        onKeyDown={(e) => { if (e.key === 'Enter') handleRegister() }}
+                        placeholder={`Parei na página… (atual: ${book.currentPage})`}
+                        className={`flex-1 rounded-lg border bg-white/40 px-2 py-1.5 text-xs text-black/80 outline-none dark:bg-black/30 dark:text-white/80 ${pagesError ? 'border-red-400' : 'border-white/30'}`}
+                      />
+                      <button type="button" onClick={handleRegister} className="rounded-lg bg-amber-400 px-3 py-1.5 text-xs font-medium text-amber-950">
+                        Salvar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => { setIsLogging(false); setPagesInput('') }}
+                        className="rounded-lg border border-white/30 px-2 py-1.5 text-xs text-black/50 dark:text-white/50"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </motion.div>
         </motion.div>
       )}
