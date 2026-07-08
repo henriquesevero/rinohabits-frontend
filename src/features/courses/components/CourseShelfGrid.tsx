@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Layers } from 'lucide-react'
+import { ChevronDown, ChevronRight, ChevronUp, Layers } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import type { Course, CourseStatus } from '../types/course.types'
 
@@ -15,6 +15,7 @@ const STATUS_BOOKMARK: Record<CourseStatus, string> = {
 }
 
 export const COURSE_COLLECTION_STORAGE_KEY = 'courses-collection-order'
+const COLLAPSED_KEY = 'courses-collapsed-collections'
 
 function loadSavedOrder(): string[] {
   try {
@@ -30,8 +31,33 @@ function persistOrder(order: string[]) {
   } catch {}
 }
 
+function loadCollapsed(): Set<string> {
+  try {
+    return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]'))
+  } catch {
+    return new Set()
+  }
+}
+
+function persistCollapsed(s: Set<string>) {
+  try {
+    localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...s]))
+  } catch {}
+}
+
 export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
   const [savedOrder, setSavedOrder] = useState<string[]>(loadSavedOrder)
+  const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
+
+  function toggleCollapsed(name: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      persistCollapsed(next)
+      return next
+    })
+  }
 
   const sortedCollectionNames = useMemo(() => {
     const fromCourses = [...new Set(
@@ -82,12 +108,23 @@ export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
         const collectionCourses = collectionMap.get(name) ?? []
         const isFirst = idx === 0
         const isLast = idx === sortedCollectionNames.length - 1
+        const isCollapsed = collapsed.has(name)
 
         return (
           <div key={name} className="flex flex-col gap-2">
             <div className="flex items-center gap-1">
-              <Layers className="h-3 w-3 shrink-0 text-black/40 dark:text-white/40" />
-              <span className="flex-1 text-xs font-semibold text-black/50 dark:text-white/50">{name}</span>
+              <button
+                type="button"
+                onClick={() => toggleCollapsed(name)}
+                className="flex min-w-0 flex-1 items-center gap-1 text-left"
+              >
+                <Layers className="h-3 w-3 shrink-0 text-black/40 dark:text-white/40" />
+                <span className="flex-1 truncate text-xs font-semibold text-black/50 dark:text-white/50">{name}</span>
+                {isCollapsed
+                  ? <ChevronRight className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
+                  : <ChevronDown className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
+                }
+              </button>
               <div className="flex items-center gap-0.5">
                 <button
                   type="button"
@@ -105,15 +142,17 @@ export function CourseShelfGrid({ courses, onSelect }: CourseShelfGridProps) {
                   className="flex h-5 w-5 items-center justify-center rounded text-black/30 transition-colors hover:bg-black/5 hover:text-black/60 disabled:opacity-20 dark:text-white/30 dark:hover:bg-white/10 dark:hover:text-white/60"
                   aria-label="Mover coleção para baixo"
                 >
-                  <ChevronDown className="h-3.5 w-3.5" />
+                  <ChevronUp className="h-3.5 w-3.5 rotate-180" />
                 </button>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-              {collectionCourses.map((course) => (
-                <CoursePoster key={course.id} course={course} onSelect={onSelect} />
-              ))}
-            </div>
+            {!isCollapsed && (
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+                {collectionCourses.map((course) => (
+                  <CoursePoster key={course.id} course={course} onSelect={onSelect} />
+                ))}
+              </div>
+            )}
           </div>
         )
       })}
