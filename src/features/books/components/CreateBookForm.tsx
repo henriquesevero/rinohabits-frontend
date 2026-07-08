@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { Loader2, Search } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { CollectionAutocomplete } from '../../../components/ui/CollectionAutocomplete'
 import { bookService } from '../services/bookService'
 import type { BookSearchResult, CreateBookPayload } from '../types/book.types'
 
@@ -388,18 +389,13 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
             placeholder="Total de páginas"
             className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
-          <input
+          <CollectionAutocomplete
             value={collection}
-            onChange={(e) => setCollection(e.target.value)}
-            list="create-book-collections"
+            onChange={setCollection}
+            suggestions={existingCollections}
             placeholder="Coleção / série (opcional)"
-            className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
+            className="w-full rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
-          {existingCollections.length > 0 && (
-            <datalist id="create-book-collections">
-              {existingCollections.map((c) => <option key={c} value={c} />)}
-            </datalist>
-          )}
 
           <div className="flex gap-2">
             <button

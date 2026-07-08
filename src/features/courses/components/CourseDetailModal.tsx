@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, CheckCircle, Clock, ExternalLink, Layers, Pencil, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { CollectionAutocomplete } from '../../../components/ui/CollectionAutocomplete'
 import { courseService } from '../services/courseService'
 import type { Course, CourseStatus, UpdateCoursePayload } from '../types/course.types'
 
@@ -236,18 +237,13 @@ export function CourseDetailModal({
                     placeholder="Total de horas"
                     className={inputClass}
                   />
-                  <input
+                  <CollectionAutocomplete
                     value={editCollection}
-                    onChange={(e) => setEditCollection(e.target.value)}
-                    list="edit-course-collections"
+                    onChange={setEditCollection}
+                    suggestions={existingCollections}
                     placeholder="Coleção / série"
                     className={inputClass}
                   />
-                  {existingCollections.length > 0 && (
-                    <datalist id="edit-course-collections">
-                      {existingCollections.map((c) => <option key={c} value={c} />)}
-                    </datalist>
-                  )}
                 </div>
               ) : (
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">

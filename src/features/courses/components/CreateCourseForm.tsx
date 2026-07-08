@@ -1,5 +1,6 @@
 import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { CollectionAutocomplete } from '../../../components/ui/CollectionAutocomplete'
 import type { CourseStatus, CreateCoursePayload } from '../types/course.types'
 
 const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
@@ -97,18 +98,13 @@ export function CreateCourseForm({ onCreate, existingCollections = [] }: CreateC
         placeholder="Total de horas"
         className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
-      <input
+      <CollectionAutocomplete
         value={collection}
-        onChange={(e) => setCollection(e.target.value)}
-        list="create-course-collections"
+        onChange={setCollection}
+        suggestions={existingCollections}
         placeholder="Coleção / série (opcional)"
-        className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
+        className="w-full rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
-      {existingCollections.length > 0 && (
-        <datalist id="create-course-collections">
-          {existingCollections.map((c) => <option key={c} value={c} />)}
-        </datalist>
-      )}
       <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
         {STATUS_OPTIONS.map((opt) => (
           <button

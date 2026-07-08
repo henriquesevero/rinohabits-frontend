@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { BookOpen, Camera, CheckCircle, Layers, Pencil, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { CollectionAutocomplete } from '../../../components/ui/CollectionAutocomplete'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus, UpdateBookPayload } from '../types/book.types'
 
@@ -225,18 +226,13 @@ export function BookDetailModal({
                     placeholder="Total de páginas"
                     className={inputClass}
                   />
-                  <input
+                  <CollectionAutocomplete
                     value={editCollection}
-                    onChange={(e) => setEditCollection(e.target.value)}
-                    list="edit-book-collections"
+                    onChange={setEditCollection}
+                    suggestions={existingCollections}
                     placeholder="Coleção / série"
                     className={inputClass}
                   />
-                  {existingCollections.length > 0 && (
-                    <datalist id="edit-book-collections">
-                      {existingCollections.map((c) => <option key={c} value={c} />)}
-                    </datalist>
-                  )}
                 </div>
               ) : (
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">
