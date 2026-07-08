@@ -29,6 +29,7 @@ interface CreateBookFormProps {
   onCreate: (payload: CreateBookPayload) => Promise<void>
   open: boolean
   onClose: () => void
+  existingCollections?: string[]
 }
 
 type Step = 'search' | 'confirm'
@@ -39,7 +40,7 @@ const SEARCH_TYPES: { value: SearchType; label: string }[] = [
   { value: 'author',  label: 'Autor' },
 ]
 
-export function CreateBookForm({ onCreate, open, onClose }: CreateBookFormProps) {
+export function CreateBookForm({ onCreate, open, onClose, existingCollections = [] }: CreateBookFormProps) {
   const [step, setStep] = useState<Step>('search')
   const [searchType, setSearchType] = useState<SearchType>('general')
   const [searchSource, setSearchSource] = useState<SearchSource>('openlib')
@@ -390,9 +391,15 @@ export function CreateBookForm({ onCreate, open, onClose }: CreateBookFormProps)
           <input
             value={collection}
             onChange={(e) => setCollection(e.target.value)}
+            list="create-book-collections"
             placeholder="Coleção / série (opcional)"
             className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
           />
+          {existingCollections.length > 0 && (
+            <datalist id="create-book-collections">
+              {existingCollections.map((c) => <option key={c} value={c} />)}
+            </datalist>
+          )}
 
           <div className="flex gap-2">
             <button

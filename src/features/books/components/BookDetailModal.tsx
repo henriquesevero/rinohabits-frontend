@@ -19,6 +19,7 @@ interface BookDetailModalProps {
   onCoverUpdated: (bookId: string, url: string) => void
   onRequestDelete: (bookId: string) => void
   onClose: () => void
+  existingCollections?: string[]
 }
 
 const STATUS_BADGE: Partial<Record<BookStatus, { label: string; classes: string }>> = {
@@ -35,6 +36,7 @@ export function BookDetailModal({
   onCoverUpdated,
   onRequestDelete,
   onClose,
+  existingCollections = [],
 }: BookDetailModalProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [pagesInput, setPagesInput] = useState('')
@@ -226,9 +228,15 @@ export function BookDetailModal({
                   <input
                     value={editCollection}
                     onChange={(e) => setEditCollection(e.target.value)}
+                    list="edit-book-collections"
                     placeholder="Coleção / série"
                     className={inputClass}
                   />
+                  {existingCollections.length > 0 && (
+                    <datalist id="edit-book-collections">
+                      {existingCollections.map((c) => <option key={c} value={c} />)}
+                    </datalist>
+                  )}
                 </div>
               ) : (
                 <div className="flex min-w-0 flex-1 flex-col gap-1.5 pt-1">

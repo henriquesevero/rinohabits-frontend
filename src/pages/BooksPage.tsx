@@ -139,6 +139,7 @@ export function BooksPage() {
 
   const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
   const selectedBook = books.find((b) => b.id === selectedBookId) ?? null
+  const existingCollections = [...new Set(books.map((b) => b.collection).filter(Boolean) as string[])]
 
   return (
     <div className="flex flex-col gap-4">
@@ -156,6 +157,7 @@ export function BooksPage() {
         onCoverUpdated={updateCover}
         onRequestDelete={handleDelete}
         onClose={() => setSelectedBookId(null)}
+        existingCollections={existingCollections}
       />
 
       <ConfirmModal
@@ -319,6 +321,7 @@ export function BooksPage() {
           onCreate={createBook}
           open={isAddingBook}
           onClose={() => setIsAddingBook(false)}
+          existingCollections={existingCollections}
         />
       )}
 
