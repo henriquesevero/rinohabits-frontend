@@ -12,4 +12,16 @@ export const accountService = {
   async deleteAccount(currentPassword: string): Promise<void> {
     await apiClient.delete('/me', { data: { current_password: currentPassword } })
   },
+
+  async resetHabits(): Promise<void> {
+    await apiClient.delete('/me/habits')
+  },
+
+  async resetBooks(): Promise<void> {
+    await apiClient.delete('/me/books')
+  },
+
+  async resetCourses(): Promise<void> {
+    await apiClient.delete('/me/courses')
+  },
 }

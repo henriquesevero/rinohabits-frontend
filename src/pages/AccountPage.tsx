@@ -1,6 +1,6 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
-import { Bell, BellOff, Camera, KeyRound, Mail, Moon, Sun, Trash2 } from 'lucide-react'
+import { Bell, BellOff, Camera, KeyRound, Mail, Moon, RotateCcw, Sun, Trash2 } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { authService } from '../features/auth/services/authService'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
@@ -104,6 +104,9 @@ export function AccountPage() {
 
       {/* Alterar senha */}
       <ChangePasswordForm />
+
+      {/* Resetar dados */}
+      <ResetDataSection />
 
       {/* Excluir conta */}
       <DeleteAccountSection onDeleted={logout} />
@@ -388,6 +391,129 @@ function DeleteAccountSection({ onDeleted }: { onDeleted: () => void }) {
         confirmLabel="Sim, excluir tudo"
         destructive
         onConfirm={handleDelete}
+        onCancel={() => setShowConfirm(false)}
+      />
+    </div>
+  )
+}
+
+const RESET_OPTIONS = [
+  {
+    key: 'habits' as const,
+    label: 'Hábitos',
+    desc: 'Sequências, checks, dias ativos, dias perfeitos e histórico dos gráficos',
+  },
+  {
+    key: 'books' as const,
+    label: 'Livros',
+    desc: 'Todos os livros cadastrados e histórico de leitura',
+  },
+  {
+    key: 'courses' as const,
+    label: 'Cursos',
+    desc: 'Todos os cursos cadastrados e histórico de estudo',
+  },
+]
+
+function ResetDataSection() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [selected, setSelected] = useState({ habits: false, books: false, courses: false })
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
+
+  const hasSelection = selected.habits || selected.books || selected.courses
+
+  const selectedLabels = RESET_OPTIONS
+    .filter((o) => selected[o.key])
+    .map((o) => o.label.toLowerCase())
+    .join(', ')
+
+  function toggle(key: keyof typeof selected) {
+    setSelected((prev) => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  async function handleReset() {
+    setIsSubmitting(true)
+    setError(null)
+    try {
+      if (selected.habits) await accountService.resetHabits()
+      if (selected.books) await accountService.resetBooks()
+      if (selected.courses) await accountService.resetCourses()
+      setSelected({ habits: false, books: false, courses: false })
+      setSuccess(`Dados de ${selectedLabels} resetados com sucesso.`)
+      setTimeout(() => setSuccess(null), 4000)
+    } catch (err) {
+      setError(resolveError(err))
+    } finally {
+      setIsSubmitting(false)
+      setShowConfirm(false)
+    }
+  }
+
+  return (
+    <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
+      <button
+        type="button"
+        onClick={() => { setIsOpen(!isOpen); setError(null); setSuccess(null) }}
+        className="flex w-full items-center gap-2 text-left"
+      >
+        <RotateCcw className="h-4 w-4 text-orange-500" />
+        <span className="text-sm font-medium text-orange-600 dark:text-orange-400">Resetar dados</span>
+      </button>
+
+      {isOpen && (
+        <div className="mt-3 flex flex-col gap-3">
+          <p className="text-xs text-black/50 dark:text-white/50">
+            Selecione o que deseja resetar. Esta ação é irreversível e não pode ser desfeita.
+          </p>
+
+          {RESET_OPTIONS.map(({ key, label, desc }) => (
+            <label key={key} className="flex cursor-pointer items-start gap-3">
+              <input
+                type="checkbox"
+                checked={selected[key]}
+                onChange={() => toggle(key)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-orange-500"
+              />
+              <div>
+                <p className="text-sm font-medium text-black/80 dark:text-white/80">{label}</p>
+                <p className="text-xs text-black/40 dark:text-white/40">{desc}</p>
+              </div>
+            </label>
+          ))}
+
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          {success && <p className="text-xs text-emerald-600 dark:text-emerald-400">{success}</p>}
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => { setIsOpen(false); setSelected({ habits: false, books: false, courses: false }) }}
+              className="flex-1 rounded-lg border border-white/30 px-3 py-2 text-xs text-black/60 dark:text-white/60"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              disabled={!hasSelection || isSubmitting}
+              onClick={() => setShowConfirm(true)}
+              className="flex-1 rounded-lg bg-orange-500 px-3 py-2 text-xs font-medium text-white disabled:opacity-50"
+            >
+              Resetar selecionados
+            </button>
+          </div>
+        </div>
+      )}
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title="Resetar dados"
+        description={`Tem certeza que deseja resetar: ${selectedLabels}? Todos os dados relacionados serão apagados permanentemente.`}
+        confirmLabel="Sim, resetar"
+        destructive
+        onConfirm={handleReset}
         onCancel={() => setShowConfirm(false)}
       />
     </div>
