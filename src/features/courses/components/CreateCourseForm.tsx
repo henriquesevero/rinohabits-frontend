@@ -10,14 +10,16 @@ const STATUS_OPTIONS: { value: CourseStatus; label: string }[] = [
 
 interface CreateCourseFormProps {
   onCreate: (payload: CreateCoursePayload) => Promise<void>
+  existingCollections?: string[]
 }
 
-export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
+export function CreateCourseForm({ onCreate, existingCollections = [] }: CreateCourseFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [link, setLink] = useState('')
   const [totalHours, setTotalHours] = useState('')
+  const [collection, setCollection] = useState('')
   const [status, setStatus] = useState<CourseStatus>('quero_fazer')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -33,11 +35,13 @@ export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
         link,
         totalHours: Number.isFinite(hours) && hours > 0 ? hours : null,
         status,
+        collection: collection.trim() || null,
       })
       setTitle('')
       setDescription('')
       setLink('')
       setTotalHours('')
+      setCollection('')
       setStatus('quero_fazer')
       setIsOpen(false)
     } finally {
@@ -93,6 +97,18 @@ export function CreateCourseForm({ onCreate }: CreateCourseFormProps) {
         placeholder="Total de horas"
         className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
       />
+      <input
+        value={collection}
+        onChange={(e) => setCollection(e.target.value)}
+        list="create-course-collections"
+        placeholder="Coleção / série (opcional)"
+        className="rounded-lg border border-black/15 bg-white/40 px-3 py-2 text-sm text-black/80 outline-none placeholder:text-black/40 dark:border-white/20 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/40"
+      />
+      {existingCollections.length > 0 && (
+        <datalist id="create-course-collections">
+          {existingCollections.map((c) => <option key={c} value={c} />)}
+        </datalist>
+      )}
       <div className="flex gap-1 rounded-lg bg-black/5 p-1 dark:bg-white/10">
         {STATUS_OPTIONS.map((opt) => (
           <button

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Camera, CheckCircle, Clock, ExternalLink, Trash2 } from 'lucide-react'
+import { Camera, CheckCircle, Clock, ExternalLink, Layers, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { courseService } from '../services/courseService'
 import type { Course, CourseStatus } from '../types/course.types'
@@ -124,6 +124,12 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
             </div>
             {course.description && (
               <p className="line-clamp-1 text-xs text-black/50 dark:text-white/50">{course.description}</p>
+            )}
+            {course.collection && (
+              <span className="flex items-center gap-1 text-[10px] text-black/40 dark:text-white/40">
+                <Layers className="h-2.5 w-2.5 shrink-0" />
+                {course.collection}
+              </span>
             )}
             {course.link && (
               <a

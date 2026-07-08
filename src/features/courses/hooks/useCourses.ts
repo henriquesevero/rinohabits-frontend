@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { courseService } from '../services/courseService'
-import type { Course, CourseStatus, CreateCoursePayload } from '../types/course.types'
+import type { Course, CourseStatus, CreateCoursePayload, UpdateCoursePayload } from '../types/course.types'
 
 export function useCourses(statusFilter?: CourseStatus) {
   const [courses, setCourses] = useState<Course[]>([])
@@ -64,6 +64,12 @@ export function useCourses(statusFilter?: CourseStatus) {
     [refresh],
   )
 
+  const updateCourse = useCallback(async (courseId: string, payload: UpdateCoursePayload): Promise<Course> => {
+    const updated = await courseService.update(courseId, payload)
+    setCourses((current) => current.map((c) => (c.id === updated.id ? updated : c)))
+    return updated
+  }, [])
+
   const updateCover = useCallback((courseId: string, coverUrl: string) => {
     setCourses((current) => current.map((c) => (c.id === courseId ? { ...c, coverUrl } : c)))
   }, [])
@@ -74,6 +80,7 @@ export function useCourses(statusFilter?: CourseStatus) {
     courses,
     isLoading,
     createCourse,
+    updateCourse,
     registerStudy,
     changeStatus,
     deleteCourse,

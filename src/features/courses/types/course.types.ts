@@ -9,6 +9,7 @@ export interface Course {
   totalHours: number | null
   currentHours: number
   percentage: number
+  collection: string | null
   coverUrl: string | null
   startedAt: string | null
   finishedAt: string | null
@@ -20,6 +21,7 @@ export interface CreateCoursePayload {
   link: string
   totalHours: number | null
   status: CourseStatus
+  collection?: string | null
 }
 
 export interface UpdateCoursePayload {
@@ -28,4 +30,5 @@ export interface UpdateCoursePayload {
   link?: string
   totalHours?: number | null
   status?: CourseStatus
+  collection?: string | null
 }

@@ -10,6 +10,7 @@ interface CourseApiDto {
   total_hours: number | null
   current_hours: number
   percentage: number
+  collection: string | null
   cover_url: string | null
   started_at: string | null
   finished_at: string | null
@@ -25,6 +26,7 @@ function mapCourse(dto: CourseApiDto): Course {
     totalHours: dto.total_hours,
     currentHours: dto.current_hours,
     percentage: dto.percentage,
+    collection: dto.collection,
     coverUrl: dto.cover_url,
     startedAt: dto.started_at,
     finishedAt: dto.finished_at,
@@ -46,18 +48,23 @@ export const courseService = {
       link: payload.link,
       total_hours: payload.totalHours,
       status: payload.status,
+      collection: payload.collection ?? null,
     })
     return mapCourse(data)
   },
 
   async update(courseId: string, payload: UpdateCoursePayload): Promise<Course> {
-    const { data } = await apiClient.patch<CourseApiDto>(`/courses/${courseId}`, {
+    const body: Record<string, unknown> = {
       title: payload.title,
       description: payload.description,
       link: payload.link,
       total_hours: payload.totalHours,
       status: payload.status,
-    })
+    }
+    if ('collection' in payload) {
+      body.collection = payload.collection === null ? '' : (payload.collection ?? undefined)
+    }
+    const { data } = await apiClient.patch<CourseApiDto>(`/courses/${courseId}`, body)
     return mapCourse(data)
   },
 

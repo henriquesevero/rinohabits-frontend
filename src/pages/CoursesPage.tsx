@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { Archive, BadgeCheck, CirclePlay, Pin, type LucideIcon } from 'lucide-react'
+import { Archive, BadgeCheck, CirclePlay, Pin, Search, X, type LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
 import { CourseCard } from '../features/courses/components/CourseCard'
@@ -31,12 +31,14 @@ function sortForShelf(courses: Course[]): Course[] {
 
 export function CoursesPage() {
   const [activeStatus, setActiveStatus] = useState<ShelfFilter>('all')
+  const [filterQuery, setFilterQuery] = useState('')
   const [courseToDelete, setCourseToDelete] = useState<string | null>(null)
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null)
   const {
     courses,
     isLoading,
     createCourse,
+    updateCourse,
     registerStudy,
     changeStatus,
     deleteCourse,
@@ -46,12 +48,27 @@ export function CoursesPage() {
   } = useCourses()
 
   useEffect(() => {
+    setFilterQuery('')
+  }, [activeStatus])
+
+  useEffect(() => {
     if (!justCompletedCourse) return
     const timeout = setTimeout(clearJustCompleted, 5500)
     return () => clearTimeout(timeout)
   }, [justCompletedCourse, clearJustCompleted])
 
-  const filtered = activeStatus === 'all' ? sortForShelf(courses) : courses.filter((c) => c.status === activeStatus)
+  const base = activeStatus === 'all' ? sortForShelf(courses) : courses.filter((c) => c.status === activeStatus)
+  const q = filterQuery.trim().toLowerCase()
+  const filtered = q
+    ? base.filter(
+        (c) =>
+          c.title.toLowerCase().includes(q) ||
+          (c.description ?? '').toLowerCase().includes(q) ||
+          (c.collection ?? '').toLowerCase().includes(q),
+      )
+    : base
+
+  const existingCollections = [...new Set(courses.map((c) => c.collection).filter(Boolean) as string[])]
 
   const counts: Record<ShelfFilter, number> = {
     all:           courses.length,
@@ -78,9 +95,11 @@ export function CoursesPage() {
         course={selectedCourse}
         onRegisterStudy={async (id, hours) => { await registerStudy(id, hours) }}
         onChangeStatus={changeStatus}
+        onUpdateCourse={updateCourse}
         onCoverUpdated={updateCover}
         onRequestDelete={setCourseToDelete}
         onClose={() => setSelectedCourseId(null)}
+        existingCollections={existingCollections}
       />
 
       <ConfirmModal
@@ -127,6 +146,26 @@ export function CoursesPage() {
         ))}
       </div>
 
+      {/* Filter bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30 dark:text-white/30" />
+        <input
+          value={filterQuery}
+          onChange={(e) => setFilterQuery(e.target.value)}
+          placeholder="Filtrar por título, descrição ou coleção…"
+          className="w-full rounded-xl border border-black/10 bg-white/40 py-2 pl-9 pr-8 text-sm text-black/80 outline-none placeholder:text-black/30 backdrop-blur-md dark:border-white/10 dark:bg-black/30 dark:text-white/80 dark:placeholder:text-white/30"
+        />
+        {filterQuery && (
+          <button
+            type="button"
+            onClick={() => setFilterQuery('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-black/30 hover:text-black/60 dark:text-white/30 dark:hover:text-white/60"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
+
       {isLoading && (
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
@@ -166,7 +205,7 @@ export function CoursesPage() {
         </div>
       )}
 
-      <CreateCourseForm onCreate={createCourse} />
+      <CreateCourseForm onCreate={createCourse} existingCollections={existingCollections} />
     </div>
   )
 }
