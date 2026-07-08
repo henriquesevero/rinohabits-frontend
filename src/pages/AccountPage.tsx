@@ -441,9 +441,8 @@ function ResetDataSection() {
       if (selected.habits) await accountService.resetHabits()
       if (selected.books) await accountService.resetBooks()
       if (selected.courses) await accountService.resetCourses()
-      setSelected({ habits: false, books: false, courses: false })
-      setSuccess(`Dados de ${selectedLabels} resetados com sucesso.`)
-      setTimeout(() => setSuccess(null), 4000)
+      setSuccess(`Dados de ${selectedLabels} resetados. Recarregando…`)
+      setTimeout(() => window.location.reload(), 1200)
     } catch (err) {
       setError(resolveError(err))
     } finally {
