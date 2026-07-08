@@ -210,7 +210,7 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
   if (!open) return null
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
+    <div className="relative z-10 flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
       {step === 'search' ? (
         <>
           {/* Header row */}

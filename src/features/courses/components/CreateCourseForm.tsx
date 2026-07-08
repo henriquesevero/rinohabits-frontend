@@ -66,7 +66,7 @@ export function CreateCourseForm({ onCreate, existingCollections = [] }: CreateC
   return (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30"
+      className="relative z-10 flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30"
     >
       <input
         value={title}
