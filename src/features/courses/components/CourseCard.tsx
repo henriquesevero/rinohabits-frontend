@@ -75,7 +75,7 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
     >
       <div className="relative flex-shrink-0">
         {course.coverUrl ? (
-          <img src={course.coverUrl} alt={course.title} className="h-28 w-20 rounded-lg object-cover" />
+          <img src={course.coverUrl} alt={course.title} loading="lazy" decoding="async" className="h-28 w-20 rounded-lg object-cover" />
         ) : (
           <div
             className="flex h-28 w-20 items-center justify-center rounded-lg text-2xl font-bold text-white"

@@ -272,7 +272,7 @@ function BookPoster({ book, onSelect }: { book: Book; onSelect: (id: string) => 
     <button type="button" onClick={() => onSelect(book.id)} className="flex flex-col text-left">
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md">
         {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} className="h-full w-full object-cover" />
+          <img src={book.coverUrl} alt={book.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full select-none items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: coverColor }}>
             {coverLetter}

@@ -246,7 +246,7 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (id: str
     <button type="button" onClick={() => onSelect(course.id)} className="flex flex-col text-left">
       <div className="relative aspect-[2/3] w-full overflow-hidden rounded-lg shadow-md">
         {course.coverUrl ? (
-          <img src={course.coverUrl} alt={course.title} className="h-full w-full object-cover" />
+          <img src={course.coverUrl} alt={course.title} loading="lazy" decoding="async" className="h-full w-full object-cover" />
         ) : (
           <div className="flex h-full w-full select-none items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: coverColor }}>
             {coverLetter}

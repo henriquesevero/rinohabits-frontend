@@ -33,30 +33,51 @@ const pageVariants = {
 const pageTransition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const }
 
 const SPLASH_DURATION = 2000
+// Full exit + enter animation + buffer before allowing another tab switch
+const TAB_LOCK_MS = pageTransition.duration * 2000 + 150
 
 export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
   const directionRef = useRef(0)
-  const [showSplash, setShowSplash] = useState(false)
-  const loadedRef = useRef(false)
-  const prevAuthRef = useRef(false)
 
+  // Start with splash visible on every app load (standard PWA startup behaviour)
+  const [showSplash, setShowSplash] = useState(true)
+  const splashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const prevAuthRef = useRef<boolean | null>(null)
+
+  // Tab-transition lock — prevents rapid switches from confusing AnimatePresence mode="wait"
+  const tabLockRef = useRef(false)
+
+  // Startup splash: dismiss after SPLASH_DURATION
+  useEffect(() => {
+    splashTimerRef.current = setTimeout(() => setShowSplash(false), SPLASH_DURATION)
+    return () => { if (splashTimerRef.current) clearTimeout(splashTimerRef.current) }
+  }, [])
+
+  // Login splash: also show when the user explicitly logs in after the app is open
   useEffect(() => {
     if (isLoading) return
-    if (!loadedRef.current) {
-      loadedRef.current = true
+    if (prevAuthRef.current === null) {
       prevAuthRef.current = isAuthenticated
       return
     }
     if (!prevAuthRef.current && isAuthenticated) {
+      if (splashTimerRef.current) clearTimeout(splashTimerRef.current)
       setShowSplash(true)
-      setTimeout(() => setShowSplash(false), SPLASH_DURATION)
+      splashTimerRef.current = setTimeout(() => setShowSplash(false), SPLASH_DURATION)
     }
     prevAuthRef.current = isAuthenticated
   }, [isAuthenticated, isLoading])
 
+  function lockTab() {
+    tabLockRef.current = true
+    setTimeout(() => { tabLockRef.current = false }, TAB_LOCK_MS)
+  }
+
   function changeTab(next: TabKey) {
+    if (tabLockRef.current || next === activeTab) return
+    lockTab()
     const currIdx = MAIN_TABS.indexOf(activeTab)
     const nextIdx = MAIN_TABS.indexOf(next)
     // account tab is conceptually to the right of all main tabs
@@ -67,10 +88,12 @@ export function AppContent() {
   }
 
   function handleSwipe(dir: -1 | 1) {
+    if (tabLockRef.current) return
     const currIdx = MAIN_TABS.indexOf(activeTab)
     if (currIdx === -1) return
     const nextIdx = currIdx + dir
     if (nextIdx >= 0 && nextIdx < MAIN_TABS.length) {
+      lockTab()
       directionRef.current = dir
       setActiveTab(MAIN_TABS[nextIdx])
     }

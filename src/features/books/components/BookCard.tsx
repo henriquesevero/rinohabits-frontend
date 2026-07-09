@@ -75,7 +75,7 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
     >
       <div className="relative flex-shrink-0">
         {book.coverUrl ? (
-          <img src={book.coverUrl} alt={book.title} className="h-28 w-20 rounded-lg object-cover" />
+          <img src={book.coverUrl} alt={book.title} loading="lazy" decoding="async" className="h-28 w-20 rounded-lg object-cover" />
         ) : (
           <div
             className="flex h-28 w-20 items-center justify-center rounded-lg text-2xl font-bold text-white"
