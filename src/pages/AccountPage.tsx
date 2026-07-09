@@ -423,7 +423,7 @@ function ResetDataSection() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+
   const [showOverlay, setShowOverlay] = useState(false)
 
   const hasSelection = selected.habits || selected.books || selected.courses
@@ -462,7 +462,7 @@ function ResetDataSection() {
     <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
       <button
         type="button"
-        onClick={() => { setIsOpen(!isOpen); setError(null); setSuccess(null) }}
+        onClick={() => { setIsOpen(!isOpen); setError(null) }}
         className="flex w-full items-center gap-2 text-left"
       >
         <RotateCcw className="h-4 w-4 text-orange-500" />
