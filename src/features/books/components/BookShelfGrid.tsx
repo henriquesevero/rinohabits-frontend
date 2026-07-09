@@ -1,10 +1,12 @@
-import { ChevronDown, ChevronRight, ChevronUp, Layers } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Check, ChevronDown, ChevronRight, ChevronUp, Layers, Pencil, Trash2, X } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import type { Book, BookStatus } from '../types/book.types'
 
 interface BookShelfGridProps {
   books: Book[]
   onSelect: (bookId: string) => void
+  onRenameCollection?: (oldName: string, newName: string) => Promise<void>
+  onDeleteCollection?: (name: string) => Promise<void>
 }
 
 const STATUS_BOOKMARK: Partial<Record<BookStatus, string>> = {
@@ -17,59 +19,34 @@ const STORAGE_KEY = 'books-collection-order'
 const COLLAPSED_KEY = 'books-collapsed-collections'
 
 function loadSavedOrder(): string[] {
-  try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')
-  } catch {
-    return []
-  }
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]') } catch { return [] }
 }
-
 function persistOrder(order: string[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(order))
-  } catch {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(order)) } catch {}
 }
-
 function loadCollapsed(): Set<string> {
-  try {
-    return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]'))
-  } catch {
-    return new Set()
-  }
+  try { return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]')) } catch { return new Set() }
 }
-
 function persistCollapsed(s: Set<string>) {
-  try {
-    localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...s]))
-  } catch {}
+  try { localStorage.setItem(COLLAPSED_KEY, JSON.stringify([...s])) } catch {}
 }
 
-export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
+export function BookShelfGrid({ books, onSelect, onRenameCollection, onDeleteCollection }: BookShelfGridProps) {
   const [savedOrder, setSavedOrder] = useState<string[]>(loadSavedOrder)
   const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
+  const [editingName, setEditingName] = useState<string | null>(null)
+  const [editingValue, setEditingValue] = useState('')
+  const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const editInputRef = useRef<HTMLInputElement>(null)
 
-  function toggleCollapsed(name: string) {
-    setCollapsed((prev) => {
-      const next = new Set(prev)
-      if (next.has(name)) next.delete(name)
-      else next.add(name)
-      persistCollapsed(next)
-      return next
-    })
-  }
-
-  // Derive the ordered list of collection names from current books + user's saved order
   const sortedCollectionNames = useMemo(() => {
-    const fromBooks = [...new Set(
-      books.filter((b) => b.collection).map((b) => b.collection!)
-    )]
-    // Keep saved-order ones first; append new collections alphabetically at the end
+    const fromBooks = [...new Set(books.filter((b) => b.collection).map((b) => b.collection!))]
     const inOrder = savedOrder.filter((c) => fromBooks.includes(c))
     const notInOrder = fromBooks.filter((c) => !savedOrder.includes(c)).sort((a, b) => a.localeCompare(b))
     return [...inOrder, ...notInOrder]
   }, [books, savedOrder])
 
-  // Build collection → books map
   const collectionMap = useMemo(() => {
     const map = new Map<string, Book[]>()
     for (const book of books) {
@@ -84,6 +61,16 @@ export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
 
   const ungrouped = useMemo(() => books.filter((b) => !b.collection), [books])
 
+  function toggleCollapsed(name: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      persistCollapsed(next)
+      return next
+    })
+  }
+
   function moveCollection(name: string, dir: 'up' | 'down') {
     const idx = sortedCollectionNames.indexOf(name)
     const newOrder = [...sortedCollectionNames]
@@ -94,12 +81,68 @@ export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
     persistOrder(newOrder)
   }
 
+  function startEditing(name: string) {
+    setConfirmDelete(null)
+    setEditingName(name)
+    setEditingValue(name)
+    setTimeout(() => editInputRef.current?.focus(), 0)
+  }
+
+  function cancelEditing() {
+    setEditingName(null)
+    setEditingValue('')
+  }
+
+  async function saveRename(oldName: string) {
+    const newName = editingValue.trim()
+    if (!newName || newName === oldName) { cancelEditing(); return }
+    setIsSaving(true)
+    try {
+      await onRenameCollection?.(oldName, newName)
+      setSavedOrder((prev) => {
+        const next = prev.map((n) => (n === oldName ? newName : n))
+        persistOrder(next)
+        return next
+      })
+      setCollapsed((prev) => {
+        const next = new Set(prev)
+        if (next.has(oldName)) { next.delete(oldName); next.add(newName) }
+        persistCollapsed(next)
+        return next
+      })
+    } finally {
+      setIsSaving(false)
+      setEditingName(null)
+    }
+  }
+
+  async function handleDelete(name: string) {
+    setIsSaving(true)
+    try {
+      await onDeleteCollection?.(name)
+      setSavedOrder((prev) => {
+        const next = prev.filter((n) => n !== name)
+        persistOrder(next)
+        return next
+      })
+      setCollapsed((prev) => {
+        const next = new Set(prev)
+        next.delete(name)
+        persistCollapsed(next)
+        return next
+      })
+    } finally {
+      setIsSaving(false)
+      setConfirmDelete(null)
+    }
+  }
+
+  const iconBtn = 'flex h-6 w-6 shrink-0 items-center justify-center rounded text-black/30 transition-colors hover:bg-black/5 hover:text-black/60 disabled:opacity-20 dark:text-white/30 dark:hover:bg-white/10 dark:hover:text-white/60'
+
   if (sortedCollectionNames.length === 0) {
     return (
       <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-        {ungrouped.map((book) => (
-          <BookPoster key={book.id} book={book} onSelect={onSelect} />
-        ))}
+        {ungrouped.map((book) => <BookPoster key={book.id} book={book} onSelect={onSelect} />)}
       </div>
     )
   }
@@ -111,48 +154,100 @@ export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
         const isFirst = idx === 0
         const isLast = idx === sortedCollectionNames.length - 1
         const isCollapsed = collapsed.has(name)
+        const isEditing = editingName === name
+        const isConfirming = confirmDelete === name
 
         return (
           <div key={name} className="flex flex-col gap-2">
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => toggleCollapsed(name)}
-                className="flex min-w-0 flex-1 items-center gap-1 text-left"
-              >
-                <Layers className="h-3 w-3 shrink-0 text-black/40 dark:text-white/40" />
-                <span className="flex-1 truncate text-xs font-semibold text-black/50 dark:text-white/50">{name}</span>
-                {isCollapsed
-                  ? <ChevronRight className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
-                  : <ChevronDown className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
-                }
-              </button>
-              <div className="flex items-center gap-0.5">
+            {/* Header */}
+            {isConfirming ? (
+              <div className="flex items-center gap-1">
+                <Trash2 className="h-3 w-3 shrink-0 text-red-400" />
+                <span className="flex-1 truncate text-xs text-black/50 dark:text-white/50">
+                  Excluir &ldquo;{name}&rdquo;?
+                </span>
                 <button
                   type="button"
-                  onClick={() => moveCollection(name, 'up')}
-                  disabled={isFirst}
-                  className="flex h-5 w-5 items-center justify-center rounded text-black/30 transition-colors hover:bg-black/5 hover:text-black/60 disabled:opacity-20 dark:text-white/30 dark:hover:bg-white/10 dark:hover:text-white/60"
-                  aria-label="Mover coleção para cima"
+                  disabled={isSaving}
+                  onClick={() => handleDelete(name)}
+                  className={`${iconBtn} text-red-400 hover:text-red-500 dark:text-red-400`}
+                  aria-label="Confirmar exclusão"
                 >
-                  <ChevronUp className="h-3.5 w-3.5" />
+                  <Check className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
-                  onClick={() => moveCollection(name, 'down')}
-                  disabled={isLast}
-                  className="flex h-5 w-5 items-center justify-center rounded text-black/30 transition-colors hover:bg-black/5 hover:text-black/60 disabled:opacity-20 dark:text-white/30 dark:hover:bg-white/10 dark:hover:text-white/60"
-                  aria-label="Mover coleção para baixo"
+                  onClick={() => setConfirmDelete(null)}
+                  className={iconBtn}
+                  aria-label="Cancelar"
                 >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : isEditing ? (
+              <div className="flex items-center gap-1">
+                <Layers className="h-3 w-3 shrink-0 text-black/40 dark:text-white/40" />
+                <input
+                  ref={editInputRef}
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') saveRename(name)
+                    if (e.key === 'Escape') cancelEditing()
+                  }}
+                  disabled={isSaving}
+                  className="flex-1 rounded border border-black/15 bg-white/60 px-2 py-0.5 text-xs font-semibold text-black/70 outline-none dark:border-white/15 dark:bg-white/8 dark:text-white/70"
+                />
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => saveRename(name)}
+                  className={`${iconBtn} text-emerald-500 hover:text-emerald-600 dark:text-emerald-400`}
+                  aria-label="Salvar"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={cancelEditing}
+                  className={iconBtn}
+                  aria-label="Cancelar"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => toggleCollapsed(name)}
+                  className="flex min-w-0 flex-1 items-center gap-1 text-left"
+                >
+                  <Layers className="h-3 w-3 shrink-0 text-black/40 dark:text-white/40" />
+                  <span className="flex-1 truncate text-xs font-semibold text-black/50 dark:text-white/50">{name}</span>
+                  {isCollapsed
+                    ? <ChevronRight className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
+                    : <ChevronDown className="h-3 w-3 shrink-0 text-black/30 dark:text-white/30" />
+                  }
+                </button>
+                <button type="button" onClick={() => startEditing(name)} className={iconBtn} aria-label="Renomear coleção">
+                  <Pencil className="h-3 w-3" />
+                </button>
+                <button type="button" onClick={() => { setEditingName(null); setConfirmDelete(name) }} className={`${iconBtn} hover:text-red-500 dark:hover:text-red-400`} aria-label="Excluir coleção">
+                  <Trash2 className="h-3 w-3" />
+                </button>
+                <button type="button" onClick={() => moveCollection(name, 'up')} disabled={isFirst} className={iconBtn} aria-label="Mover coleção para cima">
+                  <ChevronUp className="h-3.5 w-3.5" />
+                </button>
+                <button type="button" onClick={() => moveCollection(name, 'down')} disabled={isLast} className={iconBtn} aria-label="Mover coleção para baixo">
                   <ChevronUp className="h-3.5 w-3.5 rotate-180" />
                 </button>
               </div>
-            </div>
+            )}
+
             {!isCollapsed && (
               <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-                {collectionBooks.map((book) => (
-                  <BookPoster key={book.id} book={book} onSelect={onSelect} />
-                ))}
+                {collectionBooks.map((book) => <BookPoster key={book.id} book={book} onSelect={onSelect} />)}
               </div>
             )}
           </div>
@@ -161,9 +256,7 @@ export function BookShelfGrid({ books, onSelect }: BookShelfGridProps) {
 
       {ungrouped.length > 0 && (
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-          {ungrouped.map((book) => (
-            <BookPoster key={book.id} book={book} onSelect={onSelect} />
-          ))}
+          {ungrouped.map((book) => <BookPoster key={book.id} book={book} onSelect={onSelect} />)}
         </div>
       )}
     </div>
@@ -181,22 +274,12 @@ function BookPoster({ book, onSelect }: { book: Book; onSelect: (id: string) => 
         {book.coverUrl ? (
           <img src={book.coverUrl} alt={book.title} className="h-full w-full object-cover" />
         ) : (
-          <div
-            className="flex h-full w-full select-none items-center justify-center text-xl font-bold text-white"
-            style={{ backgroundColor: coverColor }}
-          >
+          <div className="flex h-full w-full select-none items-center justify-center text-xl font-bold text-white" style={{ backgroundColor: coverColor }}>
             {coverLetter}
           </div>
         )}
         {bookmarkColor && (
-          <div
-            className="absolute left-2 top-0 w-3 shadow-sm"
-            style={{
-              height: 20,
-              backgroundColor: bookmarkColor,
-              clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)',
-            }}
-          />
+          <div className="absolute left-2 top-0 w-3 shadow-sm" style={{ height: 20, backgroundColor: bookmarkColor, clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)' }} />
         )}
       </div>
     </button>
@@ -205,9 +288,7 @@ function BookPoster({ book, onSelect }: { book: Book; onSelect: (id: string) => 
 
 function stringToColor(str: string): string {
   let hash = 0
-  for (let i = 0; i < str.length; i++) {
-    hash = str.charCodeAt(i) + ((hash << 5) - hash)
-  }
+  for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash)
   const colors = ['#6366f1', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#ef4444']
   return colors[Math.abs(hash) % colors.length]
 }

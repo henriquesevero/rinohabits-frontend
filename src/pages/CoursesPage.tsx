@@ -86,6 +86,16 @@ export function CoursesPage() {
     }
   }
 
+  async function handleRenameCollection(oldName: string, newName: string) {
+    const targets = courses.filter((c) => c.collection === oldName)
+    await Promise.all(targets.map((c) => updateCourse(c.id, { collection: newName })))
+  }
+
+  async function handleDeleteCollection(name: string) {
+    const targets = courses.filter((c) => c.collection === name)
+    await Promise.all(targets.map((c) => updateCourse(c.id, { collection: '' })))
+  }
+
   const courseToDeleteTitle = courses.find((c) => c.id === courseToDelete)?.title
   const selectedCourse = courses.find((c) => c.id === selectedCourseId) ?? null
 
@@ -172,7 +182,12 @@ export function CoursesPage() {
 
       {activeStatus === 'all' ? (
         <>
-          <CourseShelfGrid courses={filtered} onSelect={setSelectedCourseId} />
+          <CourseShelfGrid
+            courses={filtered}
+            onSelect={setSelectedCourseId}
+            onRenameCollection={handleRenameCollection}
+            onDeleteCollection={handleDeleteCollection}
+          />
           {!isLoading && filtered.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
               Sua prateleira está vazia. Adicione um curso para começar.

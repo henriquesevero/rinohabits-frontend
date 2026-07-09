@@ -137,6 +137,16 @@ export function BooksPage() {
     setIsReordering(false)
   }
 
+  async function handleRenameCollection(oldName: string, newName: string) {
+    const targets = books.filter((b) => b.collection === oldName)
+    await Promise.all(targets.map((b) => updateBook(b.id, { collection: newName })))
+  }
+
+  async function handleDeleteCollection(name: string) {
+    const targets = books.filter((b) => b.collection === name)
+    await Promise.all(targets.map((b) => updateBook(b.id, { collection: '' })))
+  }
+
   const bookToDeleteTitle = books.find((b) => b.id === bookToDelete)?.title
   const selectedBook = books.find((b) => b.id === selectedBookId) ?? null
   const existingCollections = [...new Set(books.map((b) => b.collection).filter(Boolean) as string[])]
@@ -332,7 +342,12 @@ export function BooksPage() {
       {/* ── Estante (all) ── */}
       {activeStatus === 'all' && !isReordering && (
         <>
-          <BookShelfGrid books={displayBooks} onSelect={setSelectedBookId} />
+          <BookShelfGrid
+            books={displayBooks}
+            onSelect={setSelectedBookId}
+            onRenameCollection={handleRenameCollection}
+            onDeleteCollection={handleDeleteCollection}
+          />
           {!isLoading && displayBooks.length === 0 && (
             <p className="text-center text-sm text-black/40 dark:text-white/40">
               {q ? 'Nenhum livro encontrado.' : 'Sua estante está vazia. Adicione um livro para começar.'}
