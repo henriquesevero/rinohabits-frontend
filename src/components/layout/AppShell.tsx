@@ -114,11 +114,12 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
       >
         <div className="absolute inset-x-0 top-0 h-px rounded-t-3xl bg-black/10 dark:bg-white/15" />
 
-        <div className="h-full overflow-y-auto overscroll-contain px-4 pb-10 pt-4">
+        <div
+          className="h-full overflow-y-auto overscroll-contain px-4 pb-16 pt-4"
+          style={{ WebkitMaskImage: 'linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%)', maskImage: 'linear-gradient(to bottom, black calc(100% - 3rem), transparent 100%)' }}
+        >
           {children}
         </div>
-
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-12 rounded-b-3xl bg-gradient-to-b from-transparent to-white/90 dark:to-[#050a07]/80" />
       </div>
     </div>
   )
