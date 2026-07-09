@@ -1,9 +1,11 @@
 import axios from 'axios'
 import md5 from 'blueimp-md5'
+import { AnimatePresence } from 'framer-motion'
 import { Bell, BellOff, Camera, KeyRound, Mail, Moon, RotateCcw, Sun, Trash2 } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { authService } from '../features/auth/services/authService'
 import { ConfirmModal } from '../components/ui/ConfirmModal'
+import { SplashOverlay } from '../components/ui/SplashOverlay'
 import { useAuthContext } from '../context/AuthContext'
 import { useThemeContext } from '../context/ThemeContext'
 import { usePushNotifications } from '../features/notifications/usePushNotifications'
@@ -422,6 +424,7 @@ function ResetDataSection() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const [showOverlay, setShowOverlay] = useState(false)
 
   const hasSelection = selected.habits || selected.books || selected.courses
 
@@ -441,8 +444,8 @@ function ResetDataSection() {
       if (selected.habits) await accountService.resetHabits()
       if (selected.books) await accountService.resetBooks()
       if (selected.courses) await accountService.resetCourses()
-      setSuccess(`Dados de ${selectedLabels} resetados. Recarregando…`)
-      setTimeout(() => window.location.reload(), 1200)
+      setShowOverlay(true)
+      setTimeout(() => window.location.reload(), 1800)
     } catch (err) {
       setError(resolveError(err))
     } finally {
@@ -452,6 +455,10 @@ function ResetDataSection() {
   }
 
   return (
+    <>
+    <AnimatePresence>
+      {showOverlay && <SplashOverlay key="reset-splash" message="Recarregando…" />}
+    </AnimatePresence>
     <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-4">
       <button
         type="button"
@@ -484,7 +491,6 @@ function ResetDataSection() {
           ))}
 
           {error && <p className="text-xs text-red-500">{error}</p>}
-          {success && <p className="text-xs text-emerald-600 dark:text-emerald-400">{success}</p>}
 
           <div className="flex gap-2">
             <button
@@ -516,6 +522,7 @@ function ResetDataSection() {
         onCancel={() => setShowConfirm(false)}
       />
     </div>
+    </>
   )
 }
 

@@ -4,6 +4,15 @@ import { defineConfig } from 'vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  server: {
+    proxy: {
+      '/__api': {
+        target: 'https://rinohabits-api-production.up.railway.app',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/__api/, ''),
+      },
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

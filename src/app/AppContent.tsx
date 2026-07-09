@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useRef, useState, type ReactElement } from 'react'
+import { useEffect, useRef, useState, type ReactElement } from 'react'
 import { AppShell } from '../components/layout/AppShell'
+import { SplashOverlay } from '../components/ui/SplashOverlay'
 import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
 import { AccountPage } from '../pages/AccountPage'
@@ -31,10 +32,29 @@ const pageVariants = {
 
 const pageTransition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const }
 
+const SPLASH_DURATION = 2000
+
 export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
   const directionRef = useRef(0)
+  const [showSplash, setShowSplash] = useState(false)
+  const loadedRef = useRef(false)
+  const prevAuthRef = useRef(false)
+
+  useEffect(() => {
+    if (isLoading) return
+    if (!loadedRef.current) {
+      loadedRef.current = true
+      prevAuthRef.current = isAuthenticated
+      return
+    }
+    if (!prevAuthRef.current && isAuthenticated) {
+      setShowSplash(true)
+      setTimeout(() => setShowSplash(false), SPLASH_DURATION)
+    }
+    prevAuthRef.current = isAuthenticated
+  }, [isAuthenticated, isLoading])
 
   function changeTab(next: TabKey) {
     const currIdx = MAIN_TABS.indexOf(activeTab)
@@ -65,9 +85,12 @@ export function AppContent() {
     <AppShell
       activeTab={activeTab}
       onTabChange={changeTab}
-      showNav={isAuthenticated && !isLoading}
-      onSwipe={isAuthenticated && !isLoading ? handleSwipe : undefined}
+      showNav={isAuthenticated && !isLoading && !showSplash}
+      onSwipe={isAuthenticated && !isLoading && !showSplash ? handleSwipe : undefined}
     >
+      <AnimatePresence>
+        {showSplash && <SplashOverlay key="login-splash" />}
+      </AnimatePresence>
       <AnimatePresence mode="wait">
         {isLoading ? (
           <motion.div
