@@ -11,11 +11,10 @@ interface CourseShelfGridProps {
   onDeleteCollection?: (name: string) => Promise<void>
 }
 
-const STATUS_BOOKMARK: Record<CourseStatus, string> = {
-  na_prateleira: '#9ca3af',
-  fazendo:       '#f59e0b',
-  quero_fazer:   '#3b82f6',
-  concluido:     '#10b981',
+const STATUS_BOOKMARK: Partial<Record<CourseStatus, string>> = {
+  fazendo:     '#f59e0b',
+  quero_fazer: '#3b82f6',
+  concluido:   '#10b981',
 }
 
 export const COURSE_COLLECTION_STORAGE_KEY = 'courses-collection-order'
@@ -269,7 +268,9 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (id: str
             {coverLetter}
           </div>
         )}
-        <div className="absolute left-2 top-0 w-3 shadow-sm" style={{ height: 20, backgroundColor: bookmarkColor, clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)' }} />
+        {bookmarkColor && (
+          <div className="absolute left-2 top-0 w-3 shadow-sm" style={{ height: 20, backgroundColor: bookmarkColor, clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)' }} />
+        )}
       </div>
       <p className="mt-1 line-clamp-2 text-[11px] leading-tight text-black/70 dark:text-white/70">{course.title}</p>
     </button>
