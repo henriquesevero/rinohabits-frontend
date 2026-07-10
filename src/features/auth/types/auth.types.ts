@@ -3,6 +3,8 @@ export interface AuthUser {
   name: string
   email: string
   avatarUrl: string | null
+  bookCollectionOrder: string[]
+  courseCollectionOrder: string[]
 }
 
 export interface LoginCredentials {

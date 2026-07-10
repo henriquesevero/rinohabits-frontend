@@ -1,4 +1,5 @@
 import { ReadingStatsCard } from '../features/books/components/ReadingStatsCard'
+import { StudyStatsCard } from '../features/courses/components/StudyStatsCard'
 import { EvolutionSection } from '../features/stats/components/EvolutionSection'
 import { MonthlyCalendar } from '../features/stats/components/MonthlyCalendar'
 import { useCalendar } from '../features/stats/hooks/useCalendar'
@@ -15,6 +16,8 @@ export function StatsPage() {
       <MonthlyCalendar year={year} month={month} summary={summary} onPrevious={goToPrevious} onNext={goToNext} />
 
       <ReadingStatsCard />
+
+      <StudyStatsCard />
     </div>
   )
 }

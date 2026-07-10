@@ -76,6 +76,28 @@ export function useCourses(statusFilter?: CourseStatus) {
 
   const clearJustCompleted = useCallback(() => setJustCompletedCourse(null), [])
 
+  const reorderCourses = useCallback(async (reorderedSubsetIds: string[]) => {
+    let allOrderedIds: string[] = []
+
+    setCourses((current) => {
+      const byId = new Map(current.map((c) => [c.id, c]))
+      const reorderedSet = new Set(reorderedSubsetIds)
+
+      // Positions (indices) in global array occupied by the reordered subset
+      const positions: number[] = []
+      current.forEach((c, i) => { if (reorderedSet.has(c.id)) positions.push(i) })
+
+      // Slot the reordered items back into those same positions
+      const result = [...current]
+      reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
+
+      allOrderedIds = result.map((c) => c.id)
+      return result
+    })
+
+    await courseService.reorderCourses(allOrderedIds)
+  }, [])
+
   return {
     courses,
     isLoading,
@@ -86,6 +108,7 @@ export function useCourses(statusFilter?: CourseStatus) {
     deleteCourse,
     updateCover,
     refresh,
+    reorderCourses,
     justCompletedCourse,
     clearJustCompleted,
   }

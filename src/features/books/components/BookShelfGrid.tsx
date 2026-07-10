@@ -1,5 +1,7 @@
 import { Check, ChevronDown, ChevronRight, ChevronUp, Layers, Pencil, Trash2, X } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAuthContext } from '../../../context/AuthContext'
+import { authService } from '../../auth/services/authService'
 import type { Book, BookStatus } from '../types/book.types'
 
 interface BookShelfGridProps {
@@ -23,6 +25,7 @@ function loadSavedOrder(): string[] {
 }
 function persistOrder(order: string[]) {
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(order)) } catch {}
+  authService.updateBookCollectionOrder(order).catch(() => {})
 }
 function loadCollapsed(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]')) } catch { return new Set() }
@@ -32,6 +35,7 @@ function persistCollapsed(s: Set<string>) {
 }
 
 export function BookShelfGrid({ books, onSelect, onRenameCollection, onDeleteCollection }: BookShelfGridProps) {
+  const { user } = useAuthContext()
   const [savedOrder, setSavedOrder] = useState<string[]>(loadSavedOrder)
   const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
   const [editingName, setEditingName] = useState<string | null>(null)
@@ -39,6 +43,19 @@ export function BookShelfGrid({ books, onSelect, onRenameCollection, onDeleteCol
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
+
+  // Server order wins once it exists, so a fresh login/device doesn't fall back to alphabetical.
+  // If the server has none yet, push this device's existing local order so it becomes the baseline.
+  useEffect(() => {
+    if (!user) return
+    if (user.bookCollectionOrder.length > 0) {
+      setSavedOrder(user.bookCollectionOrder)
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(user.bookCollectionOrder)) } catch {}
+    } else {
+      const local = loadSavedOrder()
+      if (local.length > 0) authService.updateBookCollectionOrder(local).catch(() => {})
+    }
+  }, [user])
 
   const sortedCollectionNames = useMemo(() => {
     const fromBooks = [...new Set(books.filter((b) => b.collection).map((b) => b.collection!))]

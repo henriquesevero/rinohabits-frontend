@@ -1,5 +1,5 @@
 import { apiClient } from '../../../services/apiClient'
-import type { Course, CourseStatus, CreateCoursePayload, UpdateCoursePayload } from '../types/course.types'
+import type { Course, CourseStatus, CreateCoursePayload, StudyStats, UpdateCoursePayload } from '../types/course.types'
 
 interface CourseApiDto {
   id: string
@@ -14,6 +14,15 @@ interface CourseApiDto {
   cover_url: string | null
   started_at: string | null
   finished_at: string | null
+}
+
+interface StudyStatsApiDto {
+  period_type: string
+  offset: number
+  start_date: string
+  end_date: string
+  hours_studied: number
+  courses_finished: number
 }
 
 function mapCourse(dto: CourseApiDto): Course {
@@ -90,5 +99,19 @@ export const courseService = {
 
   async reorderCourses(ids: string[]): Promise<void> {
     await apiClient.patch('/courses/reorder', { ids })
+  },
+
+  async getStudyStats(periodType: string, offset: number): Promise<StudyStats> {
+    const { data } = await apiClient.get<StudyStatsApiDto>('/courses/study-stats', {
+      params: { period: periodType, offset },
+    })
+    return {
+      periodType: data.period_type,
+      offset: data.offset,
+      startDate: data.start_date,
+      endDate: data.end_date,
+      hoursStudied: data.hours_studied,
+      coursesFinished: data.courses_finished,
+    }
   },
 }

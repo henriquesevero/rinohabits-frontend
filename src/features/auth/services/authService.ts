@@ -6,10 +6,19 @@ interface MeApiDto {
   name: string
   email: string
   avatar_url: string | null
+  book_collection_order: string[]
+  course_collection_order: string[]
 }
 
 function mapUser(dto: MeApiDto): AuthUser {
-  return { id: dto.id, name: dto.name, email: dto.email, avatarUrl: dto.avatar_url ?? null }
+  return {
+    id: dto.id,
+    name: dto.name,
+    email: dto.email,
+    avatarUrl: dto.avatar_url ?? null,
+    bookCollectionOrder: dto.book_collection_order ?? [],
+    courseCollectionOrder: dto.course_collection_order ?? [],
+  }
 }
 
 export const authService = {
@@ -35,5 +44,13 @@ export const authService = {
       headers: { 'Content-Type': 'multipart/form-data' },
     })
     return data.avatar_url
+  },
+
+  async updateBookCollectionOrder(order: string[]): Promise<void> {
+    await apiClient.patch('/me/book-collection-order', { order })
+  },
+
+  async updateCourseCollectionOrder(order: string[]): Promise<void> {
+    await apiClient.patch('/me/course-collection-order', { order })
   },
 }

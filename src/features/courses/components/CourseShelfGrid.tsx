@@ -1,5 +1,7 @@
 import { Check, ChevronDown, ChevronRight, ChevronUp, Layers, Pencil, Trash2, X } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useAuthContext } from '../../../context/AuthContext'
+import { authService } from '../../auth/services/authService'
 import type { Course, CourseStatus } from '../types/course.types'
 
 interface CourseShelfGridProps {
@@ -24,6 +26,7 @@ function loadSavedOrder(): string[] {
 }
 function persistOrder(order: string[]) {
   try { localStorage.setItem(COURSE_COLLECTION_STORAGE_KEY, JSON.stringify(order)) } catch {}
+  authService.updateCourseCollectionOrder(order).catch(() => {})
 }
 function loadCollapsed(): Set<string> {
   try { return new Set(JSON.parse(localStorage.getItem(COLLAPSED_KEY) ?? '[]')) } catch { return new Set() }
@@ -33,6 +36,7 @@ function persistCollapsed(s: Set<string>) {
 }
 
 export function CourseShelfGrid({ courses, onSelect, onRenameCollection, onDeleteCollection }: CourseShelfGridProps) {
+  const { user } = useAuthContext()
   const [savedOrder, setSavedOrder] = useState<string[]>(loadSavedOrder)
   const [collapsed, setCollapsed] = useState<Set<string>>(loadCollapsed)
   const [editingName, setEditingName] = useState<string | null>(null)
@@ -40,6 +44,19 @@ export function CourseShelfGrid({ courses, onSelect, onRenameCollection, onDelet
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
   const editInputRef = useRef<HTMLInputElement>(null)
+
+  // Server order wins once it exists, so a fresh login/device doesn't fall back to alphabetical.
+  // If the server has none yet, push this device's existing local order so it becomes the baseline.
+  useEffect(() => {
+    if (!user) return
+    if (user.courseCollectionOrder.length > 0) {
+      setSavedOrder(user.courseCollectionOrder)
+      try { localStorage.setItem(COURSE_COLLECTION_STORAGE_KEY, JSON.stringify(user.courseCollectionOrder)) } catch {}
+    } else {
+      const local = loadSavedOrder()
+      if (local.length > 0) authService.updateCourseCollectionOrder(local).catch(() => {})
+    }
+  }, [user])
 
   const sortedCollectionNames = useMemo(() => {
     const fromCourses = [...new Set(courses.filter((c) => c.collection).map((c) => c.collection!))]
@@ -254,6 +271,7 @@ function CoursePoster({ course, onSelect }: { course: Course; onSelect: (id: str
         )}
         <div className="absolute left-2 top-0 w-3 shadow-sm" style={{ height: 20, backgroundColor: bookmarkColor, clipPath: 'polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%)' }} />
       </div>
+      <p className="mt-1 line-clamp-2 text-[11px] leading-tight text-black/70 dark:text-white/70">{course.title}</p>
     </button>
   )
 }

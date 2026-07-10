@@ -32,3 +32,12 @@ export interface UpdateCoursePayload {
   status?: CourseStatus
   collection?: string | null
 }
+
+export interface StudyStats {
+  periodType: string
+  offset: number
+  startDate: string
+  endDate: string
+  hoursStudied: number
+  coursesFinished: number
+}
