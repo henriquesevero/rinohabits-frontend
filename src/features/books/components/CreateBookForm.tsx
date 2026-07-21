@@ -41,7 +41,9 @@ const SEARCH_TYPES: { value: SearchType; label: string }[] = [
   { value: 'author',  label: 'Autor' },
 ]
 
-export function CreateBookForm({ onCreate, open, onClose, existingCollections = [] }: CreateBookFormProps) {
+const NO_COLLECTIONS: string[] = []
+
+export function CreateBookForm({ onCreate, open, onClose, existingCollections = NO_COLLECTIONS }: CreateBookFormProps) {
   const [step, setStep] = useState<Step>('search')
   const [searchType, setSearchType] = useState<SearchType>('general')
   const [searchSource, setSearchSource] = useState<SearchSource>('openlib')
@@ -62,12 +64,10 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
   const abortRef = useRef<AbortController | null>(null)
   const seqRef = useRef(0)
 
-  // Reset form state when closed externally
   useEffect(() => {
     if (!open) reset()
   }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Re-fire search when source or type changes (if there's already a query)
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
@@ -116,7 +116,7 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
       } catch (firstErr) {
         if (axios.isCancel(firstErr)) return
         if (seq !== seqRef.current) return
-        await new Promise((r) => setTimeout(r, 700))
+        await new Promise<void>((resolve) => { setTimeout(resolve, 700) })
         if (seq !== seqRef.current) return
         data = await bookService.search(q, searchType, searchSource, ctrl.signal)
       }
@@ -160,7 +160,6 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
     setResults([])
     setHasSearched(false)
     setSearchSource('google')
-    // Immediately fire search with current query (effect handles it via dependency on searchSource)
   }
 
   function switchToOpenLib() {
@@ -213,7 +212,6 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
     <div className="relative z-10 flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
       {step === 'search' ? (
         <>
-          {/* Header row */}
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-black/80 dark:text-white/80">Buscar livro</p>
             <div className="flex gap-0.5 rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
@@ -242,7 +240,6 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
             </div>
           </div>
 
-          {/* Search type toggle */}
           <div className="flex gap-1 rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
             {SEARCH_TYPES.map((t) => (
               <button
@@ -260,7 +257,6 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
             ))}
           </div>
 
-          {/* Search input */}
           <div className="flex items-center gap-2 rounded-lg border border-black/15 bg-white/40 px-3 py-2 dark:border-white/20 dark:bg-black/30">
             {isSearching ? (
               <Loader2 className="h-4 w-4 shrink-0 animate-spin text-black/35 dark:text-white/35" />
@@ -299,7 +295,6 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
             </p>
           )}
 
-          {/* No results */}
           {noResults && (
             <p className="text-center text-xs text-black/40 dark:text-white/40">
               {searchSource === 'openlib'
@@ -308,40 +303,7 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
             </p>
           )}
 
-          {/* Results list */}
-          {results.length > 0 && (
-            <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
-              {results.map((book) => (
-                <button
-                  key={book.id}
-                  type="button"
-                  onClick={() => selectBook(book)}
-                  className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/30 p-2 text-left transition-colors hover:bg-white/50 dark:bg-black/20 dark:hover:bg-black/40"
-                >
-                  {book.cover_url ? (
-                    <img
-                      src={book.cover_url}
-                      alt=""
-                      className="h-14 w-10 shrink-0 rounded object-cover shadow-sm"
-                    />
-                  ) : (
-                    <div className="h-14 w-10 shrink-0 rounded bg-black/10 dark:bg-white/10" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-black/80 dark:text-white/80">
-                      {book.title}
-                    </p>
-                    {book.author && (
-                      <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>
-                    )}
-                    {book.page_count > 0 && (
-                      <p className="text-xs text-black/35 dark:text-white/35">{book.page_count} páginas</p>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
+          <BookSearchResultsList results={results} onSelect={selectBook} />
 
           <div className="flex items-center justify-between pt-1">
             <button
@@ -415,6 +377,36 @@ export function CreateBookForm({ onCreate, open, onClose, existingCollections = 
           </div>
         </form>
       )}
+    </div>
+  )
+}
+
+function BookSearchResultsList({ results, onSelect }: { results: BookSearchResult[]; onSelect: (book: BookSearchResult) => void }) {
+  if (results.length === 0) return null
+
+  return (
+    <div className="flex max-h-72 flex-col gap-2 overflow-y-auto">
+      {results.map((book) => (
+        <button
+          key={book.id}
+          type="button"
+          onClick={() => onSelect(book)}
+          className="flex items-center gap-3 rounded-lg border border-white/20 bg-white/30 p-2 text-left transition-colors hover:bg-white/50 dark:bg-black/20 dark:hover:bg-black/40"
+        >
+          {book.cover_url ? (
+            <img src={book.cover_url} alt="" className="h-14 w-10 shrink-0 rounded object-cover shadow-sm" />
+          ) : (
+            <div className="h-14 w-10 shrink-0 rounded bg-black/10 dark:bg-white/10" />
+          )}
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-black/80 dark:text-white/80">{book.title}</p>
+            {book.author && <p className="truncate text-xs text-black/50 dark:text-white/50">{book.author}</p>}
+            {book.page_count > 0 && (
+              <p className="text-xs text-black/35 dark:text-white/35">{book.page_count} páginas</p>
+            )}
+          </div>
+        </button>
+      ))}
     </div>
   )
 }

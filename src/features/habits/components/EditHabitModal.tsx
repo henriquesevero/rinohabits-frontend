@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, useState, type FormEvent } from 'react'
-import type { Habit, UpdateHabitPayload } from '../types/habit.types'
-import { HabitFormFields, type HabitFormValue } from './HabitFormFields'
+import type { Habit, HabitFormValue, UpdateHabitPayload } from '../types/habit.types'
+import { HabitFormFields } from './HabitFormFields'
 
 interface EditHabitModalProps {
   habit: Habit | null

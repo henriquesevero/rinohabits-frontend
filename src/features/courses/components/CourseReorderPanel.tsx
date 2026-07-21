@@ -90,7 +90,6 @@ export function CourseReorderPanel({ courses: initialCourses, onConfirm, onCance
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-black/70 dark:text-white/70">Reordenar prateleira</p>
         <div className="flex gap-2">
@@ -113,7 +112,6 @@ export function CourseReorderPanel({ courses: initialCourses, onConfirm, onCance
         </div>
       </div>
 
-      {/* Collection sections */}
       {sortedCollectionNames.map((name) => {
         const courses = sections.get(name) ?? []
         return (
@@ -127,7 +125,6 @@ export function CourseReorderPanel({ courses: initialCourses, onConfirm, onCance
         )
       })}
 
-      {/* Ungrouped courses */}
       {ungrouped.length > 0 && (
         <SortableSection
           sectionKey={null}

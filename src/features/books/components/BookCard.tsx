@@ -163,7 +163,6 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           </div>
         )}
 
-        {/* Status selector */}
         <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
           {STATUS_OPTIONS.map((opt) => (
             <button
@@ -184,7 +183,6 @@ export function BookCard({ book, onRegisterReading, onChangeStatus, onDelete, on
           ))}
         </div>
 
-        {/* Registrar leitura (só quando lendo) */}
         {book.status === 'lendo' && (
           isLogging ? (
             <div className="flex flex-col gap-1">

@@ -9,7 +9,9 @@ interface CreateCourseFormProps {
   existingCollections?: string[]
 }
 
-export function CreateCourseForm({ onCreate, open, onClose, existingCollections = [] }: CreateCourseFormProps) {
+const NO_COLLECTIONS: string[] = []
+
+export function CreateCourseForm({ onCreate, open, onClose, existingCollections = NO_COLLECTIONS }: CreateCourseFormProps) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [link, setLink] = useState('')
@@ -17,7 +19,6 @@ export function CreateCourseForm({ onCreate, open, onClose, existingCollections 
   const [collection, setCollection] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Reset form state when closed externally
   useEffect(() => {
     if (!open) {
       setTitle('')

@@ -29,6 +29,8 @@ const STATUS_BADGE: Partial<Record<BookStatus, { label: string; classes: string 
   quero_ler: { label: 'Quero Ler', classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
 }
 
+const NO_COLLECTIONS: string[] = []
+
 export function BookDetailModal({
   book,
   onRegisterReading,
@@ -37,14 +39,13 @@ export function BookDetailModal({
   onCoverUpdated,
   onRequestDelete,
   onClose,
-  existingCollections = [],
+  existingCollections = NO_COLLECTIONS,
 }: BookDetailModalProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [pagesInput, setPagesInput] = useState('')
   const [pagesError, setPagesError] = useState(false)
   const [isUploadingCover, setIsUploadingCover] = useState(false)
 
-  // Edit mode
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editAuthor, setEditAuthor] = useState('')
@@ -152,7 +153,6 @@ export function BookDetailModal({
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-sm rounded-2xl border border-white/20 bg-white/90 p-5 shadow-2xl backdrop-blur-xl dark:bg-black/85"
           >
-            {/* Header buttons */}
             <div className="absolute right-3 top-3 flex items-center gap-1">
               {!isEditing && (
                 <button
@@ -173,36 +173,16 @@ export function BookDetailModal({
               </button>
             </div>
 
-            {/* Cover + info row */}
             <div className="flex gap-4">
-              <div className="relative flex-shrink-0">
-                {book.coverUrl ? (
-                  <img src={book.coverUrl} alt={book.title} className="h-32 rounded-lg object-cover shadow" style={{ width: '5.5rem' }} />
-                ) : (
-                  <div
-                    className="flex h-32 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
-                    style={{ backgroundColor: coverColor, width: '5.5rem' }}
-                  >
-                    {coverLetter}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingCover}
-                  className="absolute -bottom-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
-                  title="Alterar capa"
-                >
-                  {isUploadingCover ? (
-                    <span className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
-                  ) : (
-                    <Camera className="h-3 w-3" />
-                  )}
-                </button>
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleCoverChange} />
-              </div>
-
-              {/* Info / edit fields */}
+              <CoverThumbnail
+                coverUrl={book.coverUrl}
+                title={book.title}
+                coverColor={coverColor}
+                coverLetter={coverLetter}
+                isUploading={isUploadingCover}
+                onFileChange={handleCoverChange}
+                fileInputRef={fileInputRef}
+              />
               {isEditing ? (
                 <div className="flex min-w-0 flex-1 flex-col gap-2 pt-1">
                   <input
@@ -255,7 +235,6 @@ export function BookDetailModal({
               )}
             </div>
 
-            {/* Edit save/cancel */}
             {isEditing && (
               <div className="mt-4 flex gap-2">
                 <button
@@ -276,7 +255,6 @@ export function BookDetailModal({
               </div>
             )}
 
-            {/* Progress bar — only in view mode */}
             {!isEditing && book.totalPages && (
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
@@ -299,7 +277,6 @@ export function BookDetailModal({
               </div>
             )}
 
-            {/* Actions — only in view mode */}
             {!isEditing && (
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
@@ -383,6 +360,53 @@ export function BookDetailModal({
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+function CoverThumbnail({
+  coverUrl,
+  title,
+  coverColor,
+  coverLetter,
+  isUploading,
+  onFileChange,
+  fileInputRef,
+}: {
+  coverUrl: string | null
+  title: string
+  coverColor: string
+  coverLetter: string
+  isUploading: boolean
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  fileInputRef: React.RefObject<HTMLInputElement | null>
+}) {
+  return (
+    <div className="relative flex-shrink-0">
+      {coverUrl ? (
+        <img src={coverUrl} alt={title} className="h-32 rounded-lg object-cover shadow" style={{ width: '5.5rem' }} />
+      ) : (
+        <div
+          className="flex h-32 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
+          style={{ backgroundColor: coverColor, width: '5.5rem' }}
+        >
+          {coverLetter}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="absolute -bottom-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+        title="Alterar capa"
+      >
+        {isUploading ? (
+          <span className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+        ) : (
+          <Camera className="h-3 w-3" />
+        )}
+      </button>
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFileChange} />
+    </div>
   )
 }
 

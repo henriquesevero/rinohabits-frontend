@@ -13,7 +13,7 @@ async function getTodayWithRetry(): Promise<TodayDashboard> {
   try {
     return await habitService.getToday()
   } catch {
-    await new Promise((resolve) => setTimeout(resolve, 600))
+    await new Promise<void>((resolve) => { setTimeout(resolve, 600) })
     return await habitService.getToday()
   }
 }
@@ -43,7 +43,7 @@ export function useHabits() {
       const [data, all] = await Promise.all([getTodayWithRetry(), habitService.listAll()])
       setDashboard(data)
       setAllHabits(all)
-    } catch { /* ignore */ }
+    } catch {}
   }, [])
 
   useEffect(() => {
@@ -51,17 +51,15 @@ export function useHabits() {
   }, [refresh])
 
   const toggleHabit = useCallback(async (habitId: string) => {
-    // Optimistic update: toggle isCompleted and weekCompletions; hide if quota met
     setDashboard((current) => (current ? applyToggle(current, habitId) : current))
 
     try {
       const isCompleted = await habitService.toggleLog(habitId)
       setDashboard((current) => (current ? applyToggle(current, habitId, isCompleted) : current))
 
-      // For frequency habits marked as completed, re-fetch silently so the
-      // week count is in sync and the habit disappears if the quota was met.
       const habit = allHabits.find((h) => h.id === habitId)
-      if (habit?.weeklyFrequency !== null && isCompleted) {
+      const needsWeekCountSync = habit?.weeklyFrequency !== null && isCompleted
+      if (needsWeekCountSync) {
         await refreshSilent()
       }
     } catch {
@@ -130,22 +128,24 @@ export function useHabits() {
   return { dashboard, allHabits, isLoading, error, toggleHabit, createHabit, updateHabit, deleteHabit, reorderHabits, refresh }
 }
 
+function nextWeekCompletions(item: TodayHabit, isCompleted: boolean): number {
+  const current = item.weekCompletions ?? 0
+  if (item.habit.weeklyFrequency === null) return current
+  return isCompleted ? current + 1 : Math.max(0, current - 1)
+}
+
+function hasMetWeeklyQuota(item: TodayHabit): boolean {
+  return item.habit.weeklyFrequency !== null && (item.weekCompletions ?? 0) >= item.habit.weeklyFrequency
+}
+
 function applyToggle(dashboard: TodayDashboard, habitId: string, forcedValue?: boolean): TodayDashboard {
   const newHabits = dashboard.habits.map((item: TodayHabit) => {
     if (item.habit.id !== habitId) return item
     const newIsCompleted = forcedValue ?? !item.isCompleted
-    // Track week completions for frequency habits
-    const wc = item.weekCompletions ?? 0
-    const newWeekCompletions = item.habit.weeklyFrequency !== null
-      ? (newIsCompleted ? wc + 1 : Math.max(0, wc - 1))
-      : wc
-    return { ...item, isCompleted: newIsCompleted, weekCompletions: newWeekCompletions }
+    return { ...item, isCompleted: newIsCompleted, weekCompletions: nextWeekCompletions(item, newIsCompleted) }
   })
 
-  // Remove frequency habits that just hit their weekly quota
-  const filtered = newHabits.filter(
-    (item) => !(item.habit.weeklyFrequency !== null && (item.weekCompletions ?? 0) >= item.habit.weeklyFrequency),
-  )
+  const filtered = newHabits.filter((item) => !hasMetWeeklyQuota(item))
 
   return { ...dashboard, habits: filtered }
 }

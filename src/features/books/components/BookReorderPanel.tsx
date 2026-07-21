@@ -90,7 +90,6 @@ export function BookReorderPanel({ books: initialBooks, onConfirm, onCancel }: B
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <p className="text-sm font-semibold text-black/70 dark:text-white/70">Reordenar estante</p>
         <div className="flex gap-2">
@@ -113,7 +112,6 @@ export function BookReorderPanel({ books: initialBooks, onConfirm, onCancel }: B
         </div>
       </div>
 
-      {/* Collection sections */}
       {sortedCollectionNames.map((name) => {
         const books = sections.get(name) ?? []
         return (
@@ -127,7 +125,6 @@ export function BookReorderPanel({ books: initialBooks, onConfirm, onCancel }: B
         )
       })}
 
-      {/* Ungrouped books */}
       {ungrouped.length > 0 && (
         <SortableSection
           sectionKey={null}

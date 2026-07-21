@@ -19,9 +19,8 @@ export function HabitCard({ item, onToggle, onEdit, onDelete, isScheduledToday =
 
   function subtitle() {
     if (habit.weeklyFrequency !== null) {
-      const done = isScheduledToday
-        ? (weekCompletions ?? 0)
-        : habit.weeklyFrequency // quota met → show N/N
+      const quotaAlreadyMet = !isScheduledToday
+      const done = quotaAlreadyMet ? habit.weeklyFrequency : (weekCompletions ?? 0)
       return `${done}/${habit.weeklyFrequency} essa semana`
     }
     if (!isScheduledToday) {

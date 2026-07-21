@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Camera, CheckCircle, Clock, ExternalLink, Layers, Trash2 } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { isSafeHttpUrl } from '../../../utils/url'
 import { courseService } from '../services/courseService'
 import type { Course, CourseStatus } from '../types/course.types'
 
@@ -131,7 +132,7 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
                 {course.collection}
               </span>
             )}
-            {course.link && (
+            {course.link && isSafeHttpUrl(course.link) && (
               <a
                 href={course.link}
                 target="_blank"
@@ -152,7 +153,7 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           </button>
         </div>
 
-        {course.totalHours != null && (
+        {course.totalHours !== null && (
           <div className="flex items-center gap-2">
             <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
               <motion.div
@@ -174,7 +175,6 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           </div>
         )}
 
-        {/* Status selector */}
         <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-0.5 dark:bg-white/10">
           {STATUS_OPTIONS.map((opt) => (
             <button
@@ -195,7 +195,6 @@ export function CourseCard({ course, onRegisterStudy, onChangeStatus, onDelete, 
           ))}
         </div>
 
-        {/* Registrar horas */}
         {!isDone && (
           isLogging ? (
             <div className="flex flex-col gap-1">

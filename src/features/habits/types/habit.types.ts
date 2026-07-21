@@ -37,3 +37,11 @@ export interface UpdateHabitPayload {
   weeklyFrequency: number | null
   monthlyTarget: number | null
 }
+
+export interface HabitFormValue {
+  name: string
+  icon: string
+  color: string
+  activeWeekdays: number[]
+  weeklyFrequency: number | null
+}

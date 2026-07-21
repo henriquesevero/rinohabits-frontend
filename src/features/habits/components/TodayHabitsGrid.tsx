@@ -122,7 +122,6 @@ export function TodayHabitsGrid({ habits, onToggle, onReorder }: TodayHabitsGrid
       {total === 0 ? (
         <p className="text-center text-xs text-black/40 dark:text-white/40">Nenhum hábito para hoje.</p>
       ) : (
-        // data-no-swipe: impede que o swipe de tab do AppShell dispare durante o drag
         <div data-no-swipe>
           <DndContext
             sensors={sensors}

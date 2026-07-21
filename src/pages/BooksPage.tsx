@@ -54,7 +54,6 @@ export function BooksPage() {
     clearJustCompleted,
   } = useBooks()
 
-  // Exit reorder/add mode and clear filter when tab changes
   useEffect(() => {
     if (activeStatus !== 'all') setIsReordering(false)
     setIsAddingBook(false)
@@ -180,68 +179,19 @@ export function BooksPage() {
         onCancel={() => setBookToDelete(null)}
       />
 
-      <AnimatePresence>
-        {pageResetBook && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-6"
-            onClick={() => setPageResetBook(null)}
-          >
-            <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.92, y: 12 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.92, y: 12 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-sm rounded-2xl border border-white/20 bg-white/80 p-6 shadow-2xl backdrop-blur-xl dark:bg-black/80"
-            >
-              <p className="text-base font-semibold text-black/90 dark:text-white/90">Em qual página você parou?</p>
-              <p className="mt-1 text-sm text-black/60 dark:text-white/60">
-                {pageResetBook.title}
-                {pageResetBook.totalPages ? ` · ${pageResetBook.totalPages} páginas` : ''}
-              </p>
-              <input
-                type="number"
-                inputMode="numeric"
-                min={0}
-                max={pageResetBook.totalPages ?? undefined}
-                value={pageInput}
-                onChange={(e) => setPageInput(e.target.value)}
-                placeholder="Número da página"
-                autoFocus
-                className="mt-4 w-full rounded-xl border border-black/10 bg-white/60 px-4 py-2.5 text-sm text-black/90 placeholder:text-black/30 focus:border-black/30 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/90 dark:placeholder:text-white/30"
-              />
-              <div className="mt-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setPageResetBook(null)}
-                  className="flex-1 rounded-xl border border-black/10 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePageResetConfirm}
-                  className="flex-1 rounded-xl bg-black/80 py-2.5 text-sm font-semibold text-white hover:bg-black dark:bg-white/90 dark:text-black/90"
-                >
-                  Confirmar
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <PageResetModal
+        book={pageResetBook}
+        pageInput={pageInput}
+        onPageInputChange={setPageInput}
+        onCancel={() => setPageResetBook(null)}
+        onConfirm={handlePageResetConfirm}
+      />
 
-      {/* ── Header ── */}
       <div className="flex items-baseline justify-between">
         <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Biblioteca</h1>
         <span className="text-xs text-black/50 dark:text-white/50">{books.length} livros</span>
       </div>
 
-      {/* ── Tab bar — hidden while reordering ── */}
       {!isReordering && (
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => (
@@ -273,7 +223,6 @@ export function BooksPage() {
         </div>
       )}
 
-      {/* ── Search filter — always visible when there are books ── */}
       {!isReordering && books.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30 dark:text-white/30" />
@@ -296,7 +245,6 @@ export function BooksPage() {
         </div>
       )}
 
-      {/* ── Action buttons — only on Estante tab ── */}
       {activeStatus === 'all' && !isReordering && (
         <div className="flex gap-2">
           <button
@@ -325,7 +273,6 @@ export function BooksPage() {
         </div>
       )}
 
-      {/* ── Add book form — inline, below action buttons ── */}
       {activeStatus === 'all' && !isReordering && (
         <CreateBookForm
           onCreate={createBook}
@@ -339,7 +286,6 @@ export function BooksPage() {
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
 
-      {/* ── Estante (all) ── */}
       {activeStatus === 'all' && !isReordering && (
         <>
           <BookShelfGrid
@@ -356,7 +302,6 @@ export function BooksPage() {
         </>
       )}
 
-      {/* ── Reorder panel ── */}
       {activeStatus === 'all' && isReordering && (
         <BookReorderPanel
           books={books}
@@ -365,7 +310,6 @@ export function BooksPage() {
         />
       )}
 
-      {/* ── Status tabs list ── */}
       {activeStatus !== 'all' && (
         <SortableBookList
           books={displayBooks}
@@ -382,9 +326,76 @@ export function BooksPage() {
   )
 }
 
-// ─────────────────────────────────────────────
-// Sortable list used by the individual status tabs
-// ─────────────────────────────────────────────
+function PageResetModal({
+  book,
+  pageInput,
+  onPageInputChange,
+  onCancel,
+  onConfirm,
+}: {
+  book: Book | null
+  pageInput: string
+  onPageInputChange: (value: string) => void
+  onCancel: () => void
+  onConfirm: () => void
+}) {
+  return (
+    <AnimatePresence>
+      {book && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-6"
+          onClick={onCancel}
+        >
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-sm" />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 12 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full max-w-sm rounded-2xl border border-white/20 bg-white/80 p-6 shadow-2xl backdrop-blur-xl dark:bg-black/80"
+          >
+            <p className="text-base font-semibold text-black/90 dark:text-white/90">Em qual página você parou?</p>
+            <p className="mt-1 text-sm text-black/60 dark:text-white/60">
+              {book.title}
+              {book.totalPages ? ` · ${book.totalPages} páginas` : ''}
+            </p>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              max={book.totalPages ?? undefined}
+              value={pageInput}
+              onChange={(e) => onPageInputChange(e.target.value)}
+              placeholder="Número da página"
+              autoFocus
+              className="mt-4 w-full rounded-xl border border-black/10 bg-white/60 px-4 py-2.5 text-sm text-black/90 placeholder:text-black/30 focus:border-black/30 focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-white/90 dark:placeholder:text-white/30"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                type="button"
+                onClick={onCancel}
+                className="flex-1 rounded-xl border border-black/10 py-2.5 text-sm font-medium text-black/70 hover:bg-black/5 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/5"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={onConfirm}
+                className="flex-1 rounded-xl bg-black/80 py-2.5 text-sm font-semibold text-white hover:bg-black dark:bg-white/90 dark:text-black/90"
+              >
+                Confirmar
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 interface SortableBookListProps {
   books: Book[]

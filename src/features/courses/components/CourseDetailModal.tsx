@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { Camera, CheckCircle, Clock, ExternalLink, Layers, Pencil, Trash2, X } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { CollectionAutocomplete } from '../../../components/ui/CollectionAutocomplete'
+import { isSafeHttpUrl } from '../../../utils/url'
 import { courseService } from '../services/courseService'
 import type { Course, CourseStatus, UpdateCoursePayload } from '../types/course.types'
 
@@ -30,6 +31,8 @@ const STATUS_BADGE: Record<CourseStatus, { label: string; classes: string }> = {
   quero_fazer:   { label: 'Pendente',   classes: 'bg-blue-500/15 text-blue-600 dark:text-blue-400' },
 }
 
+const NO_COLLECTIONS: string[] = []
+
 export function CourseDetailModal({
   course,
   onRegisterStudy,
@@ -38,13 +41,12 @@ export function CourseDetailModal({
   onCoverUpdated,
   onRequestDelete,
   onClose,
-  existingCollections = [],
+  existingCollections = NO_COLLECTIONS,
 }: CourseDetailModalProps) {
   const [isLogging, setIsLogging] = useState(false)
   const [hoursInput, setHoursInput] = useState('')
   const [isUploadingCover, setIsUploadingCover] = useState(false)
 
-  // Edit mode
   const [isEditing, setIsEditing] = useState(false)
   const [editTitle, setEditTitle] = useState('')
   const [editDescription, setEditDescription] = useState('')
@@ -146,7 +148,6 @@ export function CourseDetailModal({
             onClick={(e) => e.stopPropagation()}
             className="relative w-full max-w-sm rounded-2xl border border-white/20 bg-white/90 p-5 shadow-2xl backdrop-blur-xl dark:bg-black/85"
           >
-            {/* Header buttons */}
             <div className="absolute right-3 top-3 flex items-center gap-1">
               {!isEditing && (
                 <button
@@ -168,45 +169,16 @@ export function CourseDetailModal({
             </div>
 
             <div className="flex gap-4">
-              <div className="relative flex-shrink-0">
-                {course.coverUrl ? (
-                  <img
-                    src={course.coverUrl}
-                    alt={course.title}
-                    className="h-32 rounded-lg object-cover shadow"
-                    style={{ width: '5.5rem' }}
-                  />
-                ) : (
-                  <div
-                    className="flex h-32 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
-                    style={{ backgroundColor: coverColor, width: '5.5rem' }}
-                  >
-                    {coverLetter}
-                  </div>
-                )}
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploadingCover}
-                  className="absolute -bottom-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
-                  title="Alterar capa"
-                >
-                  {isUploadingCover ? (
-                    <span className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
-                  ) : (
-                    <Camera className="h-3 w-3" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={handleCoverChange}
-                />
-              </div>
+              <CoverThumbnail
+                coverUrl={course.coverUrl}
+                title={course.title}
+                coverColor={coverColor}
+                coverLetter={coverLetter}
+                isUploading={isUploadingCover}
+                onFileChange={handleCoverChange}
+                fileInputRef={fileInputRef}
+              />
 
-              {/* Info / edit fields */}
               {isEditing ? (
                 <div className="flex min-w-0 flex-1 flex-col gap-2 pt-1">
                   <input
@@ -266,7 +238,7 @@ export function CourseDetailModal({
                       {course.collection}
                     </span>
                   )}
-                  {course.link && (
+                  {course.link && isSafeHttpUrl(course.link) && (
                     <a
                       href={course.link}
                       target="_blank"
@@ -282,7 +254,6 @@ export function CourseDetailModal({
               )}
             </div>
 
-            {/* Edit save/cancel */}
             {isEditing && (
               <div className="mt-4 flex gap-2">
                 <button
@@ -303,8 +274,7 @@ export function CourseDetailModal({
               </div>
             )}
 
-            {/* Progress — only in view mode */}
-            {!isEditing && course.totalHours != null && (
+            {!isEditing && course.totalHours !== null && (
               <div className="mt-4 flex items-center gap-2">
                 <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
                   <motion.div
@@ -326,13 +296,12 @@ export function CourseDetailModal({
               </div>
             )}
 
-            {!isEditing && course.totalHours == null && course.currentHours > 0 && (
+            {!isEditing && course.totalHours === null && course.currentHours > 0 && (
               <p className="mt-3 text-xs text-black/50 dark:text-white/50">
                 {course.currentHours.toFixed(1)}h estudadas
               </p>
             )}
 
-            {/* Actions — only in view mode */}
             {!isEditing && (
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex gap-1 overflow-hidden rounded-lg bg-black/5 p-1 dark:bg-white/10">
@@ -411,6 +380,53 @@ export function CourseDetailModal({
         </motion.div>
       )}
     </AnimatePresence>
+  )
+}
+
+function CoverThumbnail({
+  coverUrl,
+  title,
+  coverColor,
+  coverLetter,
+  isUploading,
+  onFileChange,
+  fileInputRef,
+}: {
+  coverUrl: string | null
+  title: string
+  coverColor: string
+  coverLetter: string
+  isUploading: boolean
+  onFileChange: (e: React.ChangeEvent<HTMLInputElement>) => void
+  fileInputRef: React.RefObject<HTMLInputElement | null>
+}) {
+  return (
+    <div className="relative flex-shrink-0">
+      {coverUrl ? (
+        <img src={coverUrl} alt={title} className="h-32 rounded-lg object-cover shadow" style={{ width: '5.5rem' }} />
+      ) : (
+        <div
+          className="flex h-32 items-center justify-center rounded-lg text-3xl font-bold text-white shadow"
+          style={{ backgroundColor: coverColor, width: '5.5rem' }}
+        >
+          {coverLetter}
+        </div>
+      )}
+      <button
+        type="button"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploading}
+        className="absolute -bottom-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80 disabled:opacity-50"
+        title="Alterar capa"
+      >
+        {isUploading ? (
+          <span className="h-3 w-3 animate-spin rounded-full border border-white border-t-transparent" />
+        ) : (
+          <Camera className="h-3 w-3" />
+        )}
+      </button>
+      <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={onFileChange} />
+    </div>
   )
 }
 

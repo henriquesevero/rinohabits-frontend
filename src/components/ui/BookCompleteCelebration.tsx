@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { BookOpen, Sparkles, Trophy } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 
 interface Particle {
   id: number
@@ -36,7 +36,11 @@ interface BookCompleteCelebrationProps {
 }
 
 export function BookCompleteCelebration({ show, bookTitle, onDismiss }: BookCompleteCelebrationProps) {
-  const particles = useMemo(() => createParticles(70), [bookTitle])
+  const [particles, setParticles] = useState<Particle[]>(() => createParticles(70))
+
+  useEffect(() => {
+    if (show) setParticles(createParticles(70))
+  }, [show])
 
   return (
     <AnimatePresence>
@@ -102,7 +106,7 @@ export function BookCompleteCelebration({ show, bookTitle, onDismiss }: BookComp
                 Livro concluído!
               </p>
               {bookTitle && (
-                <p className="mt-1 truncate text-sm font-medium text-black/70 dark:text-white/70">"{bookTitle}"</p>
+                <p className="mt-1 truncate text-sm font-medium text-black/70 dark:text-white/70">&ldquo;{bookTitle}&rdquo;</p>
               )}
               <p className="mt-2 text-xs text-black/50 dark:text-white/50">
                 Mais uma jornada de leitura completa. Continue assim! 🎉

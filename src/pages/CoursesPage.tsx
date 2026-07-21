@@ -62,7 +62,6 @@ export function CoursesPage() {
     clearJustCompleted,
   } = useCourses()
 
-  // Exit reorder/add mode and clear filter when tab changes
   useEffect(() => {
     if (activeStatus !== 'all') setIsReordering(false)
     setIsAddingCourse(false)
@@ -145,13 +144,11 @@ export function CoursesPage() {
         onCancel={() => setCourseToDelete(null)}
       />
 
-      {/* ── Header ── */}
       <div className="flex items-baseline justify-between">
         <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Cursos</h1>
         <span className="text-xs text-black/50 dark:text-white/50">{courses.length} cursos</span>
       </div>
 
-      {/* ── Tab bar — hidden while reordering ── */}
       {!isReordering && (
         <div className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1 dark:bg-white/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {TABS.map((tab) => (
@@ -183,7 +180,6 @@ export function CoursesPage() {
         </div>
       )}
 
-      {/* ── Search filter — always visible when there are courses ── */}
       {!isReordering && courses.length > 0 && (
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-black/30 dark:text-white/30" />
@@ -206,7 +202,6 @@ export function CoursesPage() {
         </div>
       )}
 
-      {/* ── Action buttons — only on Prateleira tab ── */}
       {activeStatus === 'all' && !isReordering && (
         <div className="flex gap-2">
           <button
@@ -235,7 +230,6 @@ export function CoursesPage() {
         </div>
       )}
 
-      {/* ── Add course form — inline, below action buttons ── */}
       {activeStatus === 'all' && !isReordering && (
         <CreateCourseForm
           onCreate={createCourse}
@@ -249,7 +243,6 @@ export function CoursesPage() {
         <p className="text-center text-sm text-black/50 dark:text-white/50">Carregando…</p>
       )}
 
-      {/* ── Prateleira (all) ── */}
       {activeStatus === 'all' && !isReordering && (
         <>
           <CourseShelfGrid
@@ -266,7 +259,6 @@ export function CoursesPage() {
         </>
       )}
 
-      {/* ── Reorder panel ── */}
       {activeStatus === 'all' && isReordering && (
         <CourseReorderPanel
           courses={courses}
@@ -275,7 +267,6 @@ export function CoursesPage() {
         />
       )}
 
-      {/* ── Status tabs list ── */}
       {activeStatus !== 'all' && (
         <SortableCourseList
           courses={filtered}
@@ -291,10 +282,6 @@ export function CoursesPage() {
     </div>
   )
 }
-
-// ─────────────────────────────────────────────
-// Sortable list used by the individual status tabs
-// ─────────────────────────────────────────────
 
 interface SortableCourseListProps {
   courses: Course[]

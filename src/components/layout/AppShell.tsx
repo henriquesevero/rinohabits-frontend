@@ -27,8 +27,9 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
   const gravatarUrl = user ? `https://www.gravatar.com/avatar/${md5(user.email.trim().toLowerCase())}?d=mp&s=80` : null
   const avatarUrl = user?.avatarUrl ?? gravatarUrl
 
+  // Elements marked data-no-swipe (drag-to-reorder lists, horizontal scrollers)
+  // opt out of tab-swipe tracking so their own gestures aren't hijacked.
   function handleTouchStart(e: React.TouchEvent) {
-    // Skip swipe tracking inside horizontally-scrollable or drag-to-reorder zones
     let el = e.target as HTMLElement | null
     const boundary = e.currentTarget as HTMLElement
     while (el && el !== boundary) {
@@ -57,7 +58,6 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
 
       {showNav && (
         <>
-          {/* ── Header ── */}
           <div className="flex shrink-0 items-center justify-between px-5 py-2">
             <span className="text-[17px] font-bold tracking-tight text-black/85 dark:text-white">
               {firstName ? `Olá, ${firstName}` : 'RinoHabits'}
@@ -80,7 +80,6 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
             </button>
           </div>
 
-          {/* ── Tab pills ── */}
           <div className="shrink-0 overflow-x-auto px-5 pb-4 pt-1">
             <div className="flex gap-2">
               {MAIN_TABS.map(({ key, label, icon: Icon }) => {
@@ -106,7 +105,6 @@ export function AppShell({ children, activeTab, onTabChange, showNav, onSwipe }:
         </>
       )}
 
-      {/* ── Glass content panel ── */}
       <div
         className="relative min-h-0 flex-1 overflow-hidden rounded-t-3xl bg-white/75 backdrop-blur-xl dark:bg-[#050a07]/60"
         onTouchStart={handleTouchStart}

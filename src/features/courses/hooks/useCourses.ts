@@ -2,6 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { courseService } from '../services/courseService'
 import type { Course, CourseStatus, CreateCoursePayload, UpdateCoursePayload } from '../types/course.types'
 
+function reorderWithinPositions(current: Course[], reorderedSubsetIds: string[]): Course[] {
+  const byId = new Map(current.map((c) => [c.id, c]))
+  const reorderedSet = new Set(reorderedSubsetIds)
+
+  const positions: number[] = []
+  current.forEach((c, i) => { if (reorderedSet.has(c.id)) positions.push(i) })
+
+  const result = [...current]
+  reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
+
+  return result
+}
+
 export function useCourses(statusFilter?: CourseStatus) {
   const [courses, setCourses] = useState<Course[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -80,17 +93,7 @@ export function useCourses(statusFilter?: CourseStatus) {
     let allOrderedIds: string[] = []
 
     setCourses((current) => {
-      const byId = new Map(current.map((c) => [c.id, c]))
-      const reorderedSet = new Set(reorderedSubsetIds)
-
-      // Positions (indices) in global array occupied by the reordered subset
-      const positions: number[] = []
-      current.forEach((c, i) => { if (reorderedSet.has(c.id)) positions.push(i) })
-
-      // Slot the reordered items back into those same positions
-      const result = [...current]
-      reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
-
+      const result = reorderWithinPositions(current, reorderedSubsetIds)
       allOrderedIds = result.map((c) => c.id)
       return result
     })

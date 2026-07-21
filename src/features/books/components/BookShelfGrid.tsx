@@ -176,7 +176,6 @@ export function BookShelfGrid({ books, onSelect, onRenameCollection, onDeleteCol
 
         return (
           <div key={name} className="flex flex-col gap-2">
-            {/* Header */}
             {isConfirming ? (
               <div className="flex items-center gap-1">
                 <Trash2 className="h-3 w-3 shrink-0 text-red-400" />

@@ -56,17 +56,14 @@ function RankRow({ entry, delay }: { entry: RankEntry; delay: number }) {
           : 'border-white/15 bg-white/35 dark:bg-black/20'
       }`}
     >
-      {/* Rank number */}
       <span
         className={`w-6 shrink-0 text-center text-sm font-black ${isTop3 ? rankColor : 'text-black/30 dark:text-white/25'}`}
       >
         {entry.rank}
       </span>
 
-      {/* Avatar */}
       <Avatar entry={entry} />
 
-      {/* Name + level */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
           <p
@@ -96,7 +93,6 @@ function RankRow({ entry, delay }: { entry: RankEntry; delay: number }) {
         </div>
       </div>
 
-      {/* XP */}
       <div className="shrink-0 text-right">
         <p className={`text-base font-black ${isTop3 ? rankColor : 'text-black/70 dark:text-white/60'}`}>
           {entry.totalXP.toLocaleString('pt-BR')}

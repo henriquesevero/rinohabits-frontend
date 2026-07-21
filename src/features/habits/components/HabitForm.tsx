@@ -1,8 +1,9 @@
 import { motion } from 'framer-motion'
 import { Plus } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
-import type { CreateHabitPayload } from '../types/habit.types'
-import { COLOR_PRESETS, HabitFormFields, type HabitFormValue } from './HabitFormFields'
+import { COLOR_PRESETS } from '../constants'
+import type { CreateHabitPayload, HabitFormValue } from '../types/habit.types'
+import { HabitFormFields } from './HabitFormFields'
 
 const EMPTY_VALUE: HabitFormValue = {
   name: '',

@@ -2,6 +2,19 @@ import { useCallback, useEffect, useState } from 'react'
 import { bookService } from '../services/bookService'
 import type { Book, BookStatus, CreateBookPayload, UpdateBookPayload } from '../types/book.types'
 
+function reorderWithinPositions(current: Book[], reorderedSubsetIds: string[]): Book[] {
+  const byId = new Map(current.map((b) => [b.id, b]))
+  const reorderedSet = new Set(reorderedSubsetIds)
+
+  const positions: number[] = []
+  current.forEach((b, i) => { if (reorderedSet.has(b.id)) positions.push(i) })
+
+  const result = [...current]
+  reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
+
+  return result
+}
+
 export function useBooks(statusFilter?: BookStatus) {
   const [books, setBooks] = useState<Book[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -83,17 +96,7 @@ export function useBooks(statusFilter?: BookStatus) {
     let allOrderedIds: string[] = []
 
     setBooks((current) => {
-      const byId = new Map(current.map((b) => [b.id, b]))
-      const reorderedSet = new Set(reorderedSubsetIds)
-
-      // Positions (indices) in global array occupied by the reordered subset
-      const positions: number[] = []
-      current.forEach((b, i) => { if (reorderedSet.has(b.id)) positions.push(i) })
-
-      // Slot the reordered items back into those same positions
-      const result = [...current]
-      reorderedSubsetIds.forEach((id, i) => { result[positions[i]] = byId.get(id)! })
-
+      const result = reorderWithinPositions(current, reorderedSubsetIds)
       allOrderedIds = result.map((b) => b.id)
       return result
     })

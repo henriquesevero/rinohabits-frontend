@@ -13,7 +13,32 @@ import { accountService } from '../features/profile/services/accountService'
 
 export function AccountPage() {
   const { user, logout, refreshUser } = useAuthContext()
-  const { theme, setTheme } = useThemeContext()
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Minha Conta</h1>
+
+      <AvatarUploader />
+      <AppearanceSection />
+      <NotificationSection />
+      <ChangeEmailForm currentEmail={user?.email ?? ''} onSuccess={refreshUser} />
+      <ChangePasswordForm />
+      <ResetDataSection />
+      <DeleteAccountSection onDeleted={logout} />
+
+      <button
+        type="button"
+        onClick={logout}
+        className="rounded-lg border border-white/30 px-3 py-1.5 text-xs text-black/60 hover:bg-white/20 dark:text-white/60"
+      >
+        Sair
+      </button>
+    </div>
+  )
+}
+
+function AvatarUploader() {
+  const { user, refreshUser } = useAuthContext()
   const emailHash = user ? md5(user.email.trim().toLowerCase()) : ''
   const gravatarUrl = `https://www.gravatar.com/avatar/${emailHash}?d=mp&s=128`
   const avatarUrl = user?.avatarUrl ?? gravatarUrl
@@ -28,8 +53,6 @@ export function AccountPage() {
     try {
       await authService.uploadAvatar(file)
       await refreshUser()
-    } catch {
-      // silently ignore
     } finally {
       setIsUploadingAvatar(false)
       e.target.value = ''
@@ -37,89 +60,66 @@ export function AccountPage() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-lg font-semibold text-black/80 dark:text-white/80">Minha Conta</h1>
-
-      {/* Avatar */}
-      <div className="flex flex-col items-center gap-3 rounded-xl border border-white/20 bg-white/40 p-6 backdrop-blur-md dark:bg-black/30">
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={isUploadingAvatar}
-          className="relative h-20 w-20 shrink-0"
-        >
-          <img src={avatarUrl} alt={user?.name} className="h-20 w-20 rounded-full border border-white/30 object-cover" />
-          <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity hover:opacity-100">
-            {isUploadingAvatar ? (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
-            ) : (
-              <Camera className="h-5 w-5 text-white" />
-            )}
-          </span>
-        </button>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          className="hidden"
-          onChange={handleAvatarChange}
-        />
-        <div className="text-center">
-          <p className="text-sm font-semibold text-black/80 dark:text-white/80">{user?.name}</p>
-          <p className="text-xs text-black/50 dark:text-white/50">{user?.email}</p>
-          <p className="mt-1 text-[11px] text-black/35 dark:text-white/35">Toque na foto para alterar</p>
-        </div>
-      </div>
-
-      {/* Aparência */}
-      <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
-        <p className="text-sm font-semibold text-black/80 dark:text-white/80">Aparência</p>
-        <div className="flex gap-2 rounded-xl bg-black/5 p-1 dark:bg-white/10">
-          <button
-            type="button"
-            onClick={() => setTheme('light')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-              theme === 'light' ? 'bg-white text-black/80 shadow-sm' : 'text-black/50 dark:text-white/50'
-            }`}
-          >
-            <Sun className="h-3.5 w-3.5" />
-            Claro
-          </button>
-          <button
-            type="button"
-            onClick={() => setTheme('dark')}
-            className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-              theme === 'dark' ? 'bg-black/60 text-white/90 shadow-sm' : 'text-black/50 dark:text-white/50'
-            }`}
-          >
-            <Moon className="h-3.5 w-3.5" />
-            Escuro
-          </button>
-        </div>
-      </div>
-
-      {/* Notificações */}
-      <NotificationSection />
-
-      {/* Alterar e-mail */}
-      <ChangeEmailForm currentEmail={user?.email ?? ''} onSuccess={refreshUser} />
-
-      {/* Alterar senha */}
-      <ChangePasswordForm />
-
-      {/* Resetar dados */}
-      <ResetDataSection />
-
-      {/* Excluir conta */}
-      <DeleteAccountSection onDeleted={logout} />
-
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-white/20 bg-white/40 p-6 backdrop-blur-md dark:bg-black/30">
       <button
         type="button"
-        onClick={logout}
-        className="rounded-lg border border-white/30 px-3 py-1.5 text-xs text-black/60 hover:bg-white/20 dark:text-white/60"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={isUploadingAvatar}
+        className="relative h-20 w-20 shrink-0"
       >
-        Sair
+        <img src={avatarUrl} alt={user?.name} className="h-20 w-20 rounded-full border border-white/30 object-cover" />
+        <span className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 opacity-0 transition-opacity hover:opacity-100">
+          {isUploadingAvatar ? (
+            <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            <Camera className="h-5 w-5 text-white" />
+          )}
+        </span>
       </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={handleAvatarChange}
+      />
+      <div className="text-center">
+        <p className="text-sm font-semibold text-black/80 dark:text-white/80">{user?.name}</p>
+        <p className="text-xs text-black/50 dark:text-white/50">{user?.email}</p>
+        <p className="mt-1 text-[11px] text-black/35 dark:text-white/35">Toque na foto para alterar</p>
+      </div>
+    </div>
+  )
+}
+
+function AppearanceSection() {
+  const { theme, setTheme } = useThemeContext()
+
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-white/20 bg-white/40 p-4 backdrop-blur-md dark:bg-black/30">
+      <p className="text-sm font-semibold text-black/80 dark:text-white/80">Aparência</p>
+      <div className="flex gap-2 rounded-xl bg-black/5 p-1 dark:bg-white/10">
+        <button
+          type="button"
+          onClick={() => setTheme('light')}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+            theme === 'light' ? 'bg-white text-black/80 shadow-sm' : 'text-black/50 dark:text-white/50'
+          }`}
+        >
+          <Sun className="h-3.5 w-3.5" />
+          Claro
+        </button>
+        <button
+          type="button"
+          onClick={() => setTheme('dark')}
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
+            theme === 'dark' ? 'bg-black/60 text-white/90 shadow-sm' : 'text-black/50 dark:text-white/50'
+          }`}
+        >
+          <Moon className="h-3.5 w-3.5" />
+          Escuro
+        </button>
+      </div>
     </div>
   )
 }

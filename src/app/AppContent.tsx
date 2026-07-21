@@ -1,19 +1,19 @@
 import { AnimatePresence, motion } from 'framer-motion'
-import { useEffect, useRef, useState, type ReactElement } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ComponentType } from 'react'
 import { AppShell } from '../components/layout/AppShell'
 import { SplashOverlay } from '../components/ui/SplashOverlay'
 import { useAuthContext } from '../context/AuthContext'
 import { LockScreen } from '../features/auth/components/LockScreen'
-import { AccountPage } from '../pages/AccountPage'
-import { BooksPage } from '../pages/BooksPage'
-import { CoursesPage } from '../pages/CoursesPage'
 import { HabitsPage } from '../pages/HabitsPage'
-import { RankingPage } from '../pages/RankingPage'
-import { StatsPage } from '../pages/StatsPage'
 import type { TabKey } from './tabs'
 
-type NoPropsPage = () => ReactElement
-const PAGES: Partial<Record<TabKey, NoPropsPage>> = {
+const StatsPage = lazy(() => import('../pages/StatsPage').then((m) => ({ default: m.StatsPage })))
+const BooksPage = lazy(() => import('../pages/BooksPage').then((m) => ({ default: m.BooksPage })))
+const CoursesPage = lazy(() => import('../pages/CoursesPage').then((m) => ({ default: m.CoursesPage })))
+const RankingPage = lazy(() => import('../pages/RankingPage').then((m) => ({ default: m.RankingPage })))
+const AccountPage = lazy(() => import('../pages/AccountPage').then((m) => ({ default: m.AccountPage })))
+
+const PAGES: Partial<Record<TabKey, ComponentType>> = {
   habits:  HabitsPage,
   stats:   StatsPage,
   books:   BooksPage,
@@ -33,23 +33,23 @@ const pageVariants = {
 const pageTransition = { duration: 0.22, ease: [0.4, 0, 0.2, 1] as const }
 
 const SPLASH_DURATION = 2000
-// Full exit + enter animation + buffer before allowing another tab switch
-const TAB_LOCK_MS = pageTransition.duration * 2000 + 150
+const TRANSITION_PHASE_MS = pageTransition.duration * 1000
+const TAB_LOCK_BUFFER_MS = 150
+const TAB_LOCK_MS = TRANSITION_PHASE_MS * 2 + TAB_LOCK_BUFFER_MS
 
 export function AppContent() {
   const { isAuthenticated, isLoading } = useAuthContext()
   const [activeTab, setActiveTab] = useState<TabKey>('habits')
   const directionRef = useRef(0)
 
-  // Start with splash visible on every app load (standard PWA startup behaviour)
   const [showSplash, setShowSplash] = useState(true)
   const splashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const prevAuthRef = useRef<boolean | null>(null)
 
-  // Tab-transition lock — prevents rapid switches from confusing AnimatePresence mode="wait"
+  // Blocks tab switches mid-transition so a rapid second swipe can't interrupt
+  // AnimatePresence's mode="wait" and leave it stuck between pages.
   const tabLockRef = useRef(false)
 
-  // Startup splash: dismiss after SPLASH_DURATION
   useEffect(() => {
     splashTimerRef.current = setTimeout(() => setShowSplash(false), SPLASH_DURATION)
     return () => { if (splashTimerRef.current) clearTimeout(splashTimerRef.current) }
@@ -156,7 +156,7 @@ export function AppContent() {
                 transition={pageTransition}
                 className="h-full"
               >
-                {renderPage()}
+                <Suspense fallback={null}>{renderPage()}</Suspense>
               </motion.div>
             </AnimatePresence>
           </motion.div>
