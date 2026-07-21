@@ -17,12 +17,6 @@ export function useAuth() {
 
   async function submit() {
     setError(null)
-
-    if (mode === 'register' && inviteCode !== '1715') {
-      setError('Código de acesso inválido.')
-      return
-    }
-
     setIsSubmitting(true)
 
     try {
@@ -30,7 +24,7 @@ export function useAuth() {
       if (mode === 'login') {
         await login({ email, password, timezone })
       } else {
-        await register({ name, email, password, timezone })
+        await register({ name, email, password, timezone, inviteCode })
       }
     } catch (err) {
       setError(resolveErrorMessage(err))

@@ -18,6 +18,7 @@ export interface RegisterPayload {
   email: string
   password: string
   timezone: string
+  inviteCode: string
 }
 
 export interface AuthResponse {
